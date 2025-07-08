@@ -1,0 +1,36 @@
+import {
+	ShoppingBagOutlined,
+	LogoutOutlined,
+	StoreOutlined,
+	SellOutlined,
+	SyncAltOutlined,
+	TimelineOutlined,
+	LocalShippingOutlined,
+	AccountBalanceWalletOutlined,
+	SettingsOutlined,
+	PeopleAltOutlined,
+	PersonOutline,
+	WorkOutline,
+	Dashboard as DashboardIcon,
+} from '@mui/icons-material';
+
+export const navigationItems = [
+	{ name: 'Tableau de bord', icon: <DashboardIcon />, path: '/' },
+	{ name: 'Clients', icon: <PersonOutline />, path: '/clients' },
+	{ name: 'Employés', icon: <WorkOutline />, path: '/employees' },
+	{ name: 'Fournisseurs', icon: <StoreOutlined />, path: '/suppliers' },
+	{ name: 'Produits', icon: <SellOutlined />, path: '/products' },
+	{ name: 'Ventes', icon: <ShoppingBagOutlined />, path: '/sales' },
+	{ name: 'Achats', icon: <LocalShippingOutlined />, path: '/purchases' },
+	{ name: 'Transactions', icon: <SyncAltOutlined />, path: '/transactions' },
+	{
+		name: 'Comptes',
+		icon: <AccountBalanceWalletOutlined />,
+		path: '/accounts',
+	},
+	{ name: 'Rapports', icon: <TimelineOutlined />, path: '/reports' },
+	null,
+	{ name: 'Utilisateurs', icon: <PeopleAltOutlined />, path: '/users' },
+	{ name: 'Paramètres', icon: <SettingsOutlined />, path: '/settings' },
+	{ name: 'Déconnexion', icon: <LogoutOutlined />, path: '/logout' },
+];

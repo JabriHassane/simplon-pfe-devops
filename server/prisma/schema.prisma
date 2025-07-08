@@ -1,0 +1,316 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  AGENT
+}
+
+enum OrderStatus {
+  pending
+  partially_paid
+  paid
+  cancelled
+}
+
+enum PaymentMethod {
+  cash
+  check
+  tpe
+  bankTransfer
+}
+
+enum TransactionType {
+  purchase
+  order
+  transfer
+}
+
+enum DiscountType {
+  fixed
+  percentage
+}
+
+model User {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  username String  @unique
+  email    String  @unique
+  password String?
+  role     Role
+
+  // Relations
+  orders       Order[]
+  purchases    Purchase[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Client {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  name    String
+  phone   String
+  address String? @default("")
+
+  // Relations
+  orders Order[]
+
+  @@map("clients")
+}
+
+model Supplier {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  name    String
+  phone   String
+  address String? @default("")
+
+  // Relations
+  purchases Purchase[]
+
+  @@map("suppliers")
+}
+
+model ProductCategory {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  name String
+
+  // Relations
+  products Product[]
+
+  @@map("product_categories")
+}
+
+model Product {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  name      String
+  image     String
+  price     Float
+  inventory Int
+
+  // Relations
+  categoryId    String
+  category      ProductCategory @relation(fields: [categoryId], references: [id])
+  orderItems    OrderItem[]
+  purchaseItems PurchaseItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  date          DateTime
+  receiptNumber String
+  invoiceNumber String
+  totalPrice    Float
+  totalPaid     Float
+  totalDue      Float
+  status        OrderStatus
+  note          String
+
+  discountAmount Float        @default(0)
+  discountType   DiscountType @default(fixed)
+
+  // Relations
+  agentId String
+  agent   User   @relation(fields: [agentId], references: [id])
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  items    OrderItem[]
+  payments Transaction[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  price    Float
+  quantity Int
+
+  // Relations
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Purchase {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  date          DateTime
+  receiptNumber String
+  invoiceNumber String
+  totalPrice    Float
+  totalPaid     Float
+  totalDue      Float
+  status        OrderStatus
+  note          String
+
+  discountAmount Float        @default(0)
+  discountType   DiscountType @default(fixed)
+
+  // Relations
+  agentId String
+  agent   User   @relation(fields: [agentId], references: [id])
+
+  supplierId String
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  items    PurchaseItem[]
+  payments Transaction[]
+
+  @@map("purchases")
+}
+
+model PurchaseItem {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  price    Float
+  quantity Int
+
+  // Relations
+  purchaseId String
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@map("purchase_items")
+}
+
+model Account {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  name    String
+  balance Float
+
+  // Relations
+  transactionsFrom Transaction[] @relation("AccountFrom")
+  transactionsTo   Transaction[] @relation("AccountTo")
+
+  @@map("accounts")
+}
+
+model Transaction {
+  id        String    @id @default(cuid())
+  ref       String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  deletedAt DateTime?
+  createdBy String
+  updatedBy String?
+  deletedBy String?
+
+  date          DateTime
+  type          TransactionType
+  paymentMethod PaymentMethod?
+  amount        Float
+
+  // Relations
+  agentId String
+  agent   User   @relation(fields: [agentId], references: [id])
+
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  purchaseId String?
+  purchase   Purchase? @relation(fields: [purchaseId], references: [id])
+
+  fromId String?
+  from   Account? @relation("AccountFrom", fields: [fromId], references: [id])
+
+  toId String?
+  to   Account? @relation("AccountTo", fields: [toId], references: [id])
+
+  @@map("transactions")
+}

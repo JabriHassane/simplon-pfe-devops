@@ -1,0 +1,30 @@
+import { Router } from 'express';
+import { authenticate, requireAgent } from '../middlewares/auth.middleware';
+import {
+	getAllTransactions,
+	getTransactionById,
+	createTransaction,
+	updateTransaction,
+	deleteTransaction,
+} from '../controllers/transaction.controller';
+import { validate } from '../middlewares/validation.middleware';
+import {
+	CreateTransactionDto,
+	UpdateTransactionDto,
+	TransactionIdDto,
+} from '../../../shared/dtos/transaction.dto';
+
+const router = Router();
+
+// All routes require authentication and agent role
+router.use(authenticate);
+router.use(requireAgent);
+
+// CRUD operations
+router.get('/', getAllTransactions);
+router.get('/:id', validate(TransactionIdDto), getTransactionById);
+router.post('/', validate(CreateTransactionDto), createTransaction);
+router.put('/:id', validate(UpdateTransactionDto), updateTransaction);
+router.delete('/:id', validate(TransactionIdDto), deleteTransaction);
+
+export default router;

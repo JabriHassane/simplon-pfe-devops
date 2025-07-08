@@ -1,0 +1,63 @@
+
+Sales & Revenue Statistics
+Total revenue by period (daily, weekly, monthly, yearly)
+Average order value (AOV)
+Revenue by payment method (cash, check, TPE, bank transfer)
+Revenue by agent/salesperson
+Revenue by client (top customers)
+Revenue by product category
+Revenue by product (best sellers)
+
+Order Statistics
+Order count by period
+Order status distribution (pending, partially-paid, paid, cancelled)
+Average items per order
+Orders with discounts vs without
+Partial payment patterns
+Cancellation rate
+
+Inventory & Product Statistics
+Stock levels by product
+Low stock alerts (products with quantity < threshold)
+Product performance (most/least sold)
+Inventory turnover rate
+Product category performance
+Stock value by category
+
+Customer Statistics
+Customer count (total, new customers per period)
+Customer purchase frequency
+Customer lifetime value (CLV)
+Top customers by revenue/order count
+Customer retention rate
+
+Purchase & Supplier Statistics
+Purchase amounts by supplier
+Supplier performance (reliability, pricing)
+Inventory costs by period
+Purchase vs sales ratio
+
+Financial Statistics
+Cash flow by account (caisse espece, caisse cheque, banque, etc.)
+Account balances over time
+Transfer amounts between accounts
+Payment method preferences
+Outstanding payments (totalDue)
+
+Agent Performance Statistics
+Sales by agent (revenue, order count)
+Agent productivity (orders per day/week)
+Agent performance ranking
+Commission calculations (if applicable)
+
+Operational Statistics
+Peak sales periods (time of day, day of week, month)
+Discount usage and impact on revenue
+Transaction volume by type (purchase, order, transfer)
+System usage by user role
+
+Dashboard-Ready Metrics
+KPI Cards: Total revenue, orders today, pending payments, low stock items
+Charts: Revenue trends, top products, payment method distribution
+Tables: Top customers, best-selling products, recent transactions
+Alerts: Low stock, overdue payments, high-value orders

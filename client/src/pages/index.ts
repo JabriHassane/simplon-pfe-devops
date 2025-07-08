@@ -1,0 +1,12 @@
+export { default as Dashboard } from './Dashboard';
+export { default as Clients } from './Clients';
+export { default as Employees } from './Employees';
+export { default as Suppliers } from './Suppliers';
+export { default as Products } from './Products';
+export { default as Sales } from './Sales';
+export { default as Purchases } from './Purchases';
+export { default as Transactions } from './Transactions';
+export { default as Accounts } from './Accounts';
+export { default as Reports } from './Reports';
+export { default as Users } from './Users';
+export { default as Settings } from './Settings';
