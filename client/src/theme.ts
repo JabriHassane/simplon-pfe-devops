@@ -6,9 +6,6 @@ export const theme = createTheme({
 		primary: {
 			main: '#166C6B',
 		},
-		secondary: {
-			main: '#0f4c4b',
-		},
 		background: {
 			default: '#f5f5f5',
 			paper: '#ffffff',
@@ -26,7 +23,7 @@ export const theme = createTheme({
 		MuiPaper: {
 			styleOverrides: {
 				root: {
-					borderRadius: 12,
+					borderRadius: 10,
 				},
 			},
 		},

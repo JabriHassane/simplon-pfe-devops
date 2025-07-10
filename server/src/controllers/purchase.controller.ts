@@ -17,7 +17,7 @@ export const getAllPurchases = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -47,7 +47,7 @@ export const getPurchaseById = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -125,16 +125,16 @@ export const createPurchase = async (req: Request, res: Response) => {
 				discountAmount,
 				discountType,
 				note: note || '',
-				agentId: req.user?.userId || 'system',
+				agentId: req.user?.userId,
 				ref: `PUR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-				createdBy: req.user?.userId || 'system',
+				createdBy: req.user?.userId,
 				items: {
 					create: items.map((item: PurchaseItemInput) => ({
 						productId: item.productId,
 						price: item.price,
 						quantity: item.quantity,
 						ref: `PI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-						createdBy: req.user?.userId || 'system',
+						createdBy: req.user?.userId,
 					})),
 				},
 			},
@@ -148,7 +148,7 @@ export const createPurchase = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -263,7 +263,7 @@ export const updatePurchase = async (req: Request, res: Response) => {
 					totalDue: totalPrice - existingPurchase.totalPaid,
 				}),
 				updatedAt: new Date(),
-				updatedBy: req.user?.userId || 'system',
+				updatedBy: req.user?.userId,
 			},
 			include: {
 				supplier: true,
@@ -275,7 +275,7 @@ export const updatePurchase = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -299,7 +299,7 @@ export const updatePurchase = async (req: Request, res: Response) => {
 						price: item.price,
 						quantity: item.quantity,
 						ref: `PI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-						createdBy: req.user?.userId || 'system',
+						createdBy: req.user?.userId,
 					})
 				),
 			});
@@ -378,7 +378,7 @@ export const deletePurchase = async (req: Request, res: Response) => {
 			where: { id },
 			data: {
 				deletedAt: new Date(),
-				deletedBy: req.user?.userId || 'system',
+				deletedBy: req.user?.userId,
 			},
 		});
 

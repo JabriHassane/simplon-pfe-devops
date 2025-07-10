@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Table,
 	TableBody,
 	TableCell,
@@ -28,85 +27,49 @@ import {
 	useCreateUser,
 	useUpdateUser,
 	useDeleteUser,
-	type User,
-} from '../hooks/useUsers';
+} from '../hooks/ressources/useUsers';
 import UserForm from '../components/UserForm';
+import type { UserDtoType } from '../../../shared/dtos/user.dto';
 
 export default function Users() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingUser, setEditingUser] = useState<User | null>(null);
+	const [selectedUser, setSelectedUser] = useState<UserDtoType | null>(null);
 
 	// TanStack Query hooks
 	const { data: users = [], isLoading, error } = useUsers();
 	const createUserMutation = useCreateUser();
-	const updateUserMutation = useUpdateUser();
+	const updateUserMutation = useUpdateUser(() => setOpenDialog(false));
 	const deleteUserMutation = useDeleteUser();
 
 	const handleSubmit = async (data: any) => {
-		try {
-			if (editingUser) {
-				await updateUserMutation.mutateAsync({
-					id: editingUser.id,
-					data: {
-						username: data.username,
-						email: data.email,
-						role: data.role,
-					},
-				});
-			} else {
-				await createUserMutation.mutateAsync({
-					username: data.username,
-					email: data.email,
-					password: data.password,
-					role: data.role,
-				});
-			}
-			setOpenDialog(false);
-			setEditingUser(null);
-		} catch (err) {
-			console.error('Error saving user:', err);
+		if (selectedUser) {
+			await updateUserMutation.mutateAsync({
+				id: selectedUser.id,
+				data,
+			});
+		} else {
+			await createUserMutation.mutateAsync(data);
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this user?')) {
-			try {
-				await deleteUserMutation.mutateAsync(id);
-			} catch (err) {
-				console.error('Error deleting user:', err);
-			}
+		if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) {
+			await deleteUserMutation.mutateAsync(id);
 		}
 	};
 
-	const handleEdit = (user: User) => {
-		setEditingUser(user);
-		setOpenDialog(true);
+	const handleEdit = (user: UserDtoType) => {
+		setSelectedUser(user);
 	};
 
 	const handleAdd = () => {
-		setEditingUser(null);
+		setSelectedUser(null);
 		setOpenDialog(true);
 	};
 
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString();
-	};
-
-	const getRoleColor = (role: string) => {
-		switch (role) {
-			case 'SUPER_ADMIN':
-				return 'error';
-			case 'ADMIN':
-				return 'warning';
-			case 'AGENT':
-				return 'info';
-			default:
-				return 'default';
-		}
-	};
-
-	const getStatusColor = (status: string) => {
-		return status === 'ACTIVE' ? 'success' : 'error';
+	const handleCloseDialog = () => {
+		setOpenDialog(false);
+		setSelectedUser(null);
 	};
 
 	if (isLoading) {
@@ -130,15 +93,20 @@ export default function Users() {
 				alignItems='center'
 				mb={3}
 			>
-				<Typography variant='h4'>Users</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					Add User
+				<Typography variant='h4'>Utilisateurs</Typography>
+				<Button
+					variant='contained'
+					startIcon={<AddIcon />}
+					onClick={handleAdd}
+					disableElevation
+				>
+					Ajouter un utilisateur
 				</Button>
 			</Box>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to fetch users
+					Erreur lors de la récupération des utilisateurs
 				</Alert>
 			)}
 
@@ -149,7 +117,7 @@ export default function Users() {
 					{createUserMutation.error?.message ||
 						updateUserMutation.error?.message ||
 						deleteUserMutation.error?.message ||
-						'An error occurred'}
+						'Une erreur est survenue'}
 				</Alert>
 			)}
 
@@ -157,36 +125,17 @@ export default function Users() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							<TableCell>Username</TableCell>
+							<TableCell>Nom d'utilisateur</TableCell>
 							<TableCell>Email</TableCell>
-							<TableCell>Role</TableCell>
-							<TableCell>Status</TableCell>
-							<TableCell>Created</TableCell>
-							<TableCell>Actions</TableCell>
+							<TableCell>Rôle</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
 						{users.map((user) => (
 							<TableRow key={user.id}>
-								<TableCell>
-									<Typography variant='subtitle2'>{user.username}</Typography>
-								</TableCell>
+								<TableCell>{user.name}</TableCell>
 								<TableCell>{user.email}</TableCell>
-								<TableCell>
-									<Chip
-										label={user.role.replace('_', ' ')}
-										color={getRoleColor(user.role) as any}
-										size='small'
-									/>
-								</TableCell>
-								<TableCell>
-									<Chip
-										label={user.status}
-										color={getStatusColor(user.status) as any}
-										size='small'
-									/>
-								</TableCell>
-								<TableCell>{formatDate(user.createdAt)}</TableCell>
+								<TableCell>{user.role}</TableCell>
 								<TableCell>
 									<IconButton onClick={() => handleEdit(user)} size='small'>
 										<EditIcon />
@@ -212,25 +161,29 @@ export default function Users() {
 
 			<Dialog
 				open={openDialog}
-				onClose={() => setOpenDialog(false)}
+				onClose={handleCloseDialog}
 				maxWidth='sm'
 				fullWidth
 			>
-				<DialogTitle>{editingUser ? 'Edit User' : 'Add New User'}</DialogTitle>
-				<DialogContent>
+				<DialogTitle>
+					<Typography variant='h6' sx={{ fontWeight: 600 }}>
+						{selectedUser ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'}
+					</Typography>
+				</DialogTitle>
+
+				<DialogContent sx={{ p: 0 }}>
 					<UserForm
-						initialData={
-							editingUser
+						init={
+							selectedUser
 								? {
-										username: editingUser.username,
-										email: editingUser.email,
+										name: selectedUser.name,
+										email: selectedUser.email,
 										password: '',
-										role: editingUser.role as 'SUPER_ADMIN' | 'ADMIN' | 'AGENT',
+										role: selectedUser.role,
 								  }
 								: undefined
 						}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createUserMutation.isPending || updateUserMutation.isPending
 						}

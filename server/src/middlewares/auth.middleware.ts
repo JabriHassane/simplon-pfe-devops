@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../index';
-import { verifyToken, extractTokenFromHeader, JWTPayload } from '../utils/jwt';
+import { verifyToken, JWTPayload } from '../utils/jwt';
 
 // Extend Express Request interface to include user
 declare global {
@@ -17,33 +16,17 @@ export const authenticate = async (
 	next: NextFunction
 ) => {
 	try {
-		const authHeader = req.headers.authorization;
-		if (!authHeader) {
+		const token = req.cookies.token;
+		if (!token) {
 			return res.status(401).json({ message: 'Authorization header required' });
 		}
 
-		const token = extractTokenFromHeader(authHeader);
 		const payload = verifyToken(token);
-
-		// Verify user still exists in database
-		const user = await prisma.user.findUnique({
-			where: { id: payload.userId },
-			select: {
-				id: true,
-				username: true,
-				email: true,
-				role: true,
-				deletedAt: true,
-			},
-		});
-
-		if (!user || user.deletedAt) {
-			return res.status(401).json({ message: 'User not found or deleted' });
-		}
 
 		req.user = payload;
 		next();
 	} catch (error) {
+		console.error(error);
 		return res.status(401).json({ message: 'Invalid token' });
 	}
 };
@@ -62,6 +45,6 @@ export const requireRole = (roles: string[]) => {
 	};
 };
 
-export const requireSuperAdmin = requireRole(['SUPER_ADMIN']);
-export const requireAdmin = requireRole(['SUPER_ADMIN', 'ADMIN']);
-export const requireAgent = requireRole(['SUPER_ADMIN', 'ADMIN', 'AGENT']);
+export const requireSuperAdmin = requireRole(['super_admin']);
+export const requireAdmin = requireRole(['super_admin', 'admin']);
+export const requireAgent = requireRole(['super_admin', 'admin', 'agent']);

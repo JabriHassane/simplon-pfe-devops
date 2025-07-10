@@ -26,11 +26,11 @@ import {
 	Visibility as ViewIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { useAccounts } from '../hooks/useAccounts';
-import { useTransactions } from '../hooks/useTransactions';
-import { useProducts } from '../hooks/useProducts';
-import { useClients } from '../hooks/useClients';
-import { useSuppliers } from '../hooks/useSuppliers';
+import { useAccounts } from '../hooks/ressources/useAccounts';
+import { useTransactions } from '../hooks/ressources/useTransactions';
+import { useProducts } from '../hooks/ressources/useProducts';
+import { useClients } from '../hooks/ressources/useClients';
+import { useSuppliers } from '../hooks/ressources/useSuppliers';
 
 export default function Dashboard() {
 	const navigate = useNavigate();
@@ -77,22 +77,17 @@ export default function Dashboard() {
 
 	// Calculate dashboard stats
 	const totalRevenue = transactions
-		.filter((t) => t.type === 'INCOME')
+		.filter((t) => t.type === 'order')
 		.reduce((sum, t) => sum + t.amount, 0);
 
 	const totalExpenses = transactions
-		.filter((t) => t.type === 'EXPENSE')
+		.filter((t) => t.type === 'purchase')
 		.reduce((sum, t) => sum + t.amount, 0);
-
-	const activeProducts = products.filter((p) => p.status === 'ACTIVE').length;
-	const activeClients = clients.filter((c) => c.status === 'ACTIVE').length;
-	const activeSuppliers = suppliers.filter((s) => s.status === 'ACTIVE').length;
 
 	const recentTransactions = transactions.slice(0, 5).map((t) => ({
 		id: t.id,
 		type: t.type,
 		amount: t.amount,
-		description: t.description,
 		date: t.date,
 	}));
 
@@ -248,7 +243,7 @@ export default function Dashboard() {
 									Active Products
 								</Typography>
 								<Typography variant='h4' color='primary.main'>
-									{activeProducts}
+									{products.length}
 								</Typography>
 							</Box>
 							<InventoryIcon color='primary' sx={{ fontSize: 40 }} />
@@ -268,7 +263,7 @@ export default function Dashboard() {
 									Active Clients
 								</Typography>
 								<Typography variant='h4' color='info.main'>
-									{activeClients}
+									{clients.length}
 								</Typography>
 							</Box>
 							<PeopleIcon color='info' sx={{ fontSize: 40 }} />
@@ -292,54 +287,29 @@ export default function Dashboard() {
 					View All
 				</Button>
 			</Box>
-			
+
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
 							<TableCell>Date</TableCell>
-							<TableCell>Type</TableCell>
-							<TableCell>Description</TableCell>
-							<TableCell align='right'>Amount</TableCell>
+							<TableCell align='right'>Type</TableCell>
+							<TableCell align='right'>Montant</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
 						{recentTransactions.map((transaction) => (
 							<TableRow key={transaction.id}>
-								<TableCell>{formatDate(transaction.date)}</TableCell>
-								<TableCell>
-									<Box
-										sx={{
-											px: 1,
-											py: 0.5,
-											borderRadius: 1,
-											backgroundColor:
-												transaction.type === 'INCOME'
-													? 'success.light'
-													: 'error.light',
-											color:
-												transaction.type === 'INCOME'
-													? 'success.dark'
-													: 'error.dark',
-											display: 'inline-block',
-										}}
-									>
-										{transaction.type}
-									</Box>
-								</TableCell>
-								<TableCell>{transaction.description}</TableCell>
+								<TableCell>{formatDate(transaction.date.toString())}</TableCell>
 								<TableCell align='right'>
-									<Typography
-										color={
-											transaction.type === 'INCOME'
-												? 'success.main'
-												: 'error.main'
-										}
-										fontWeight='bold'
-									>
-										{transaction.type === 'INCOME' ? '+' : '-'}
-										{formatCurrency(transaction.amount)}
-									</Typography>
+									{transaction.type === 'order'
+										? 'Vente'
+										: transaction.type === 'purchase'
+										? 'Achat'
+										: 'Transfert'}
+								</TableCell>
+								<TableCell align='right'>
+									{formatCurrency(transaction.amount)}
 								</TableCell>
 							</TableRow>
 						))}

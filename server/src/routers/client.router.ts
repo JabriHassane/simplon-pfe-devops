@@ -2,11 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
 import { ClientController } from '../controllers/client.controller';
 import { validate } from '../middlewares/validation.middleware';
-import {
-	CreateClientDto,
-	UpdateClientDto,
-	ClientIdDto,
-} from '../../../shared/dtos/client.dto';
+import { CreateClientDto, UpdateClientDto } from '../../../shared/dtos/client.dto';
 
 const router = Router();
 
@@ -16,9 +12,9 @@ router.use(requireAgent);
 
 // CRUD operations
 router.get('/', ClientController.getAll);
-router.get('/:id', validate(ClientIdDto), ClientController.getById);
+router.get('/:id', ClientController.getById);
 router.post('/', validate(CreateClientDto), ClientController.create);
 router.put('/:id', validate(UpdateClientDto), ClientController.update);
-router.delete('/:id', validate(ClientIdDto), ClientController.delete);
+router.delete('/:id', ClientController.delete);
 
 export default router;

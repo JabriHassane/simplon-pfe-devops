@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
 	Dialog,
 	DialogTitle,
@@ -10,7 +10,6 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	Paper,
 	Button,
 	IconButton,
 	Box,
@@ -24,11 +23,12 @@ import {
 	Close as CloseIcon,
 	Check as CheckIcon,
 } from '@mui/icons-material';
-import { useClients } from '../hooks/useClients';
-import { useUsers } from '../hooks/useUsers';
-import { useSuppliers } from '../hooks/useSuppliers';
-import { useProducts } from '../hooks/useProducts';
-import { useAccounts } from '../hooks/useAccounts';
+import { useClients } from '../hooks/ressources/useClients';
+import { useUsers } from '../hooks/ressources/useUsers';
+import { useSuppliers } from '../hooks/ressources/useSuppliers';
+import { useProducts } from '../hooks/ressources/useProducts';
+import { useAccounts } from '../hooks/ressources/useAccounts';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 export type ResourceType =
 	| 'client'
@@ -39,13 +39,8 @@ export type ResourceType =
 
 interface Resource {
 	id: string;
+	ref: string;
 	name: string;
-	reference?: string;
-	email?: string;
-	phone?: string;
-	status?: string;
-	price?: number;
-	balance?: number;
 }
 
 interface ResourcePickerProps {
@@ -54,10 +49,11 @@ interface ResourcePickerProps {
 	resourceType: ResourceType;
 	onSelect: (resource: Resource) => void;
 	title?: string;
-	excludeIds?: string[];
 }
 
-const getResourceData = (resourceType: ResourceType) => {
+const useResource = (
+	resourceType: ResourceType
+): UseQueryResult<Resource[], Error> => {
 	switch (resourceType) {
 		case 'client':
 			return useClients();
@@ -70,93 +66,7 @@ const getResourceData = (resourceType: ResourceType) => {
 		case 'account':
 			return useAccounts();
 		default:
-			return { data: [], isLoading: false, error: null };
-	}
-};
-
-const getResourceColumns = (resourceType: ResourceType) => {
-	switch (resourceType) {
-		case 'client':
-			return [
-				{ field: 'name', label: 'Name', width: '30%' },
-				{ field: 'email', label: 'Email', width: '30%' },
-				{ field: 'phone', label: 'Phone', width: '20%' },
-				{ field: 'status', label: 'Status', width: '20%' },
-			];
-		case 'employee':
-			return [
-				{ field: 'name', label: 'Name', width: '30%' },
-				{ field: 'email', label: 'Email', width: '30%' },
-				{ field: 'role', label: 'Role', width: '20%' },
-				{ field: 'status', label: 'Status', width: '20%' },
-			];
-		case 'supplier':
-			return [
-				{ field: 'name', label: 'Name', width: '30%' },
-				{ field: 'email', label: 'Email', width: '30%' },
-				{ field: 'phone', label: 'Phone', width: '20%' },
-				{ field: 'status', label: 'Status', width: '20%' },
-			];
-		case 'product':
-			return [
-				{ field: 'name', label: 'Name', width: '25%' },
-				{ field: 'reference', label: 'Reference', width: '20%' },
-				{ field: 'price', label: 'Price', width: '20%' },
-				{ field: 'stockQuantity', label: 'Stock', width: '15%' },
-				{ field: 'status', label: 'Status', width: '20%' },
-			];
-		case 'account':
-			return [
-				{ field: 'name', label: 'Name', width: '40%' },
-				{ field: 'balance', label: 'Balance', width: '30%' },
-				{ field: 'status', label: 'Status', width: '30%' },
-			];
-		default:
-			return [];
-	}
-};
-
-const getResourceValue = (resource: any, field: string) => {
-	switch (field) {
-		case 'price':
-			return new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD',
-			}).format(resource[field] || 0);
-		case 'balance':
-			return new Intl.NumberFormat('en-US', {
-				style: 'currency',
-				currency: 'USD',
-			}).format(resource[field] || 0);
-		case 'stockQuantity':
-			return resource[field] || 0;
-		case 'status':
-			return (
-				<Chip
-					label={resource[field] || 'N/A'}
-					color={resource[field] === 'ACTIVE' ? 'success' : 'default'}
-					size='small'
-				/>
-			);
-		default:
-			return resource[field] || 'N/A';
-	}
-};
-
-const getResourceTitle = (resourceType: ResourceType) => {
-	switch (resourceType) {
-		case 'client':
-			return 'Select Client';
-		case 'employee':
-			return 'Select Employee';
-		case 'supplier':
-			return 'Select Supplier';
-		case 'product':
-			return 'Select Product';
-		case 'account':
-			return 'Select Account';
-		default:
-			return 'Select Resource';
+			return { data: [], isLoading: false, error: null } as any;
 	}
 };
 
@@ -166,31 +76,9 @@ export default function ResourcePicker({
 	resourceType,
 	onSelect,
 	title,
-	excludeIds = [],
 }: ResourcePickerProps) {
 	const [searchTerm, setSearchTerm] = useState('');
-	const {
-		data: resources = [],
-		isLoading,
-		error,
-	} = getResourceData(resourceType);
-
-	const columns = getResourceColumns(resourceType);
-
-	const filteredResources = useMemo(() => {
-		return resources
-			.filter((resource: Resource) => !excludeIds.includes(resource.id))
-			.filter((resource: Resource) => {
-				if (!searchTerm) return true;
-				const searchLower = searchTerm.toLowerCase();
-				return (
-					resource.name.toLowerCase().includes(searchLower) ||
-					(resource.reference &&
-						resource.reference.toLowerCase().includes(searchLower)) ||
-					(resource.email && resource.email.toLowerCase().includes(searchLower))
-				);
-			});
-	}, [resources, searchTerm, excludeIds]);
+	const { data: resources = [], isLoading, error } = useResource(resourceType);
 
 	const handleSelect = (resource: Resource) => {
 		onSelect(resource);
@@ -207,9 +95,7 @@ export default function ResourcePicker({
 		<Dialog open={open} onClose={handleClose} maxWidth='md' fullWidth>
 			<DialogTitle>
 				<Box display='flex' justifyContent='space-between' alignItems='center'>
-					<Typography variant='h6'>
-						{title || getResourceTitle(resourceType)}
-					</Typography>
+					<Typography variant='h6'>{title}</Typography>
 					<IconButton onClick={handleClose} size='small'>
 						<CloseIcon />
 					</IconButton>
@@ -255,21 +141,16 @@ export default function ResourcePicker({
 						<Table size='small'>
 							<TableHead>
 								<TableRow>
-									{columns.map((column) => (
-										<TableCell
-											key={column.field}
-											sx={{ width: column.width, fontWeight: 'bold' }}
-										>
-											{column.label}
-										</TableCell>
-									))}
+									<TableCell sx={{ width: '100%', fontWeight: 'bold' }}>
+										Name
+									</TableCell>
 									<TableCell sx={{ width: '80px' }}>Action</TableCell>
 								</TableRow>
 							</TableHead>
 							<TableBody>
-								{filteredResources.length === 0 ? (
+								{resources.length === 0 && (
 									<TableRow>
-										<TableCell colSpan={columns.length + 1} align='center'>
+										<TableCell colSpan={2} align='center'>
 											<Typography color='textSecondary'>
 												{searchTerm
 													? 'No resources found'
@@ -277,14 +158,11 @@ export default function ResourcePicker({
 											</Typography>
 										</TableCell>
 									</TableRow>
-								) : (
-									filteredResources.map((resource: Resource) => (
+								)}
+								{resources.length > 0 &&
+									resources.map((resource: Resource) => (
 										<TableRow key={resource.id} hover>
-											{columns.map((column) => (
-												<TableCell key={column.field}>
-													{getResourceValue(resource, column.field)}
-												</TableCell>
-											))}
+											<TableCell>{resource.name}</TableCell>
 											<TableCell>
 												<Button
 													variant='outlined'
@@ -296,8 +174,7 @@ export default function ResourcePicker({
 												</Button>
 											</TableCell>
 										</TableRow>
-									))
-								)}
+									))}
 							</TableBody>
 						</Table>
 					</TableContainer>

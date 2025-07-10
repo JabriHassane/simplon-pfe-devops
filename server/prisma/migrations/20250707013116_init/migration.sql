@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'AGENT');
+CREATE TYPE "Role" AS ENUM ('super_admin', 'admin', 'agent');
 
 -- CreateEnum
 CREATE TYPE "OrderStatus" AS ENUM ('pending', 'partially_paid', 'paid', 'cancelled');
@@ -23,7 +23,7 @@ CREATE TABLE "users" (
     "createdBy" TEXT NOT NULL,
     "updatedBy" TEXT,
     "deletedBy" TEXT,
-    "username" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT,
     "role" "Role" NOT NULL,
@@ -244,7 +244,7 @@ CREATE TABLE "discounts" (
 CREATE UNIQUE INDEX "users_ref_key" ON "users"("ref");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
+CREATE UNIQUE INDEX "users_username_key" ON "users"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");

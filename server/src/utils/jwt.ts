@@ -7,16 +7,14 @@ const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7D') as ms.StringValue;
 
 export interface JWTPayload {
 	userId: string;
-	username: string;
-	email: string;
+	name: string;
 	role: Role;
 }
 
 export const generateToken = (user: User): string => {
 	const payload: JWTPayload = {
 		userId: user.id,
-		username: user.username,
-		email: user.email,
+		name: user.name,
 		role: user.role,
 	};
 
@@ -29,11 +27,4 @@ export const verifyToken = (token: string): JWTPayload => {
 	} catch (error) {
 		throw new Error('Invalid token');
 	}
-};
-
-export const extractTokenFromHeader = (authHeader: string): string => {
-	if (!authHeader || !authHeader.startsWith('Bearer ')) {
-		throw new Error('Invalid authorization header');
-	}
-	return authHeader.substring(7);
 };

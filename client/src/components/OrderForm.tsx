@@ -9,29 +9,30 @@ import {
 	Typography,
 	IconButton,
 } from '@mui/material';
-import { useForm, useFieldArray } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateOrderDto } from '../utils/validation';
 import ResourcePickerField from './ResourcePickerField';
+import { CreateOrderDto } from '../../../shared/dtos/order.dto';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers';
+import { useProducts } from '../hooks/ressources/useProducts';
+import { useClients } from '../hooks/ressources/useClients';
 
 interface OrderFormProps {
 	onSubmit: (data: any) => void;
-	onCancel?: () => void;
-	initialData?: any;
-	clients: Array<{ id: string; name: string }>;
-	products: Array<{ id: string; name: string; price: number }>;
+	init?: any;
 	isLoading?: boolean;
 }
 
 export default function OrderForm({
 	onSubmit,
-	onCancel,
-	initialData,
-	clients,
-	products,
+	init,
 	isLoading = false,
 }: OrderFormProps) {
+	const { data: clients = [], isLoading: clientsLoading } = useClients();
+	const { data: products = [], isLoading: productsLoading } = useProducts();
+
 	const [selectedClient, setSelectedClient] = useState<
 		| {
 				id: string;
@@ -40,9 +41,11 @@ export default function OrderForm({
 		  }
 		| undefined
 	>(undefined);
+
 	const [selectedProducts, setSelectedProducts] = useState<{
 		[key: number]: { id: string; name: string; price: number };
 	}>({});
+
 	const {
 		register,
 		handleSubmit,
@@ -51,8 +54,8 @@ export default function OrderForm({
 		setValue,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateOrderDto.shape.body),
-		defaultValues: initialData || {
+		resolver: zodResolver(CreateOrderDto),
+		defaultValues: init || {
 			clientId: '',
 			items: [{ productId: '', quantity: 1, price: 0 }],
 			discountAmount: 0,
@@ -70,6 +73,24 @@ export default function OrderForm({
 
 	return (
 		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+			<Controller
+				name='date'
+				control={control}
+				render={({ field }) => (
+					<DatePicker
+						label='Date'
+						value={dayjs(field.value)}
+						onChange={(date) => field.onChange(date?.toISOString())}
+						slotProps={{
+							textField: {
+								error: !!errors.date,
+								helperText: errors.date?.message as string,
+							},
+						}}
+					/>
+				)}
+			/>
+
 			<ResourcePickerField
 				label='Client'
 				value={watch('clientId') || ''}
@@ -83,10 +104,48 @@ export default function OrderForm({
 				helperText={errors.clientId?.message as string}
 				required
 				selectedResource={selectedClient}
+				disabled={clientsLoading}
 			/>
 
+			<TextField
+				fullWidth
+				label='Numéro de reçu'
+				{...register('receiptNumber')}
+				margin='normal'
+				variant='outlined'
+				error={!!errors.receiptNumber}
+				helperText={errors.receiptNumber?.message as string}
+				required
+			/>
+
+			<TextField
+				fullWidth
+				label='Numéro de facture'
+				{...register('invoiceNumber')}
+				margin='normal'
+				variant='outlined'
+				error={!!errors.invoiceNumber}
+				helperText={errors.invoiceNumber?.message as string}
+				required
+			/>
+
+			<FormControl fullWidth margin='normal'>
+				<InputLabel>Statut</InputLabel>
+				<Select
+					{...register('status')}
+					label='Statut'
+					error={!!errors.status}
+					required
+				>
+					<MenuItem value='pending'>En attente</MenuItem>
+					<MenuItem value='partially-paid'>Partiellement payé</MenuItem>
+					<MenuItem value='paid'>Payé</MenuItem>
+					<MenuItem value='cancelled'>Annulé</MenuItem>
+				</Select>
+			</FormControl>
+
 			<Typography variant='h6' sx={{ mt: 3, mb: 2 }}>
-				Order Items
+				Articles
 			</Typography>
 
 			{fields.map((item, index) => (
@@ -96,7 +155,7 @@ export default function OrderForm({
 				>
 					<Box sx={{ flex: 2 }}>
 						<ResourcePickerField
-							label='Product'
+							label='Produit'
 							value={watch(`items.${index}.productId`) || ''}
 							onChange={(value) => {
 								setValue(`items.${index}.productId`, value);
@@ -116,10 +175,12 @@ export default function OrderForm({
 							}
 							required
 							selectedResource={selectedProducts[index]}
+							disabled={productsLoading}
 						/>
 					</Box>
+
 					<TextField
-						label='Qty'
+						label='Quantité'
 						type='number'
 						{...register(`items.${index}.quantity`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
@@ -130,8 +191,9 @@ export default function OrderForm({
 						}
 						required
 					/>
+
 					<TextField
-						label='Price'
+						label='Prix'
 						type='number'
 						{...register(`items.${index}.price`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
@@ -142,6 +204,7 @@ export default function OrderForm({
 						}
 						required
 					/>
+
 					<IconButton
 						onClick={() => remove(index)}
 						color='error'
@@ -151,17 +214,18 @@ export default function OrderForm({
 					</IconButton>
 				</Box>
 			))}
+
 			<Button
 				onClick={() => append({ productId: '', quantity: 1, price: 0 })}
 				variant='outlined'
 				sx={{ mb: 2 }}
 			>
-				Add Item
+				Ajouter un article
 			</Button>
 
 			<Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
 				<TextField
-					label='Discount Amount'
+					label='Remise'
 					type='number'
 					{...register('discountAmount', { valueAsNumber: true })}
 					sx={{ flex: 1 }}
@@ -170,15 +234,15 @@ export default function OrderForm({
 					helperText={errors.discountAmount?.message as string}
 				/>
 				<FormControl sx={{ flex: 1 }}>
-					<InputLabel>Discount Type</InputLabel>
+					<InputLabel>Type de remise</InputLabel>
 					<Select
 						{...register('discountType')}
-						label='Discount Type'
+						label='Type de remise'
 						error={!!errors.discountType}
 						defaultValue='fixed'
 					>
-						<MenuItem value='fixed'>Fixed Amount</MenuItem>
-						<MenuItem value='percentage'>Percentage</MenuItem>
+						<MenuItem value='fixed'>Montant fixe</MenuItem>
+						<MenuItem value='percentage'>Pourcentage</MenuItem>
 					</Select>
 				</FormControl>
 			</Box>
@@ -195,28 +259,15 @@ export default function OrderForm({
 				helperText={errors.note?.message as string}
 			/>
 
-			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-				{onCancel && (
-					<Button
-						variant='outlined'
-						onClick={onCancel}
-						fullWidth
-						size='large'
-						disabled={isLoading}
-					>
-						Cancel
-					</Button>
-				)}
-				<Button
-					type='submit'
-					variant='contained'
-					disabled={isLoading || !isValid}
-					fullWidth
-					size='large'
-				>
-					{isLoading ? 'Saving...' : initialData ? 'Update' : 'Create'}
-				</Button>
-			</Box>
+			<Button
+				type='submit'
+				variant='contained'
+				disabled={isLoading || !isValid}
+				fullWidth
+				size='large'
+			>
+				{isLoading ? 'Enregistrement...' : init ? 'Mettre à jour' : 'Créer'}
+			</Button>
 		</Box>
 	);
 }

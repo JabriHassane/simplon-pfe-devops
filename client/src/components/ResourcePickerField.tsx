@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-	TextField,
 	Button,
 	Box,
 	Typography,
@@ -27,7 +26,6 @@ interface ResourcePickerFieldProps {
 		reference?: string;
 		email?: string;
 	};
-	excludeIds?: string[];
 }
 
 export default function ResourcePickerField({
@@ -41,7 +39,6 @@ export default function ResourcePickerField({
 	required = false,
 	disabled = false,
 	selectedResource,
-	excludeIds = [],
 }: ResourcePickerFieldProps) {
 	const [open, setOpen] = useState(false);
 
@@ -140,7 +137,6 @@ export default function ResourcePickerField({
 				onClose={handleClose}
 				resourceType={resourceType}
 				onSelect={handleSelect}
-				excludeIds={excludeIds}
 			/>
 		</FormControl>
 	);

@@ -4,7 +4,6 @@ import {
 	Paper,
 	TextField,
 	Button,
-	Typography,
 	Alert,
 	CircularProgress,
 	InputAdornment,
@@ -17,44 +16,28 @@ import {
 	AccountCircle,
 	Lock,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { LoginDto } from '../utils/validation';
+import { LoginDto } from '../../../shared/dtos/auth.dto';
+import { useLogin } from '../hooks/ressources/useAuth';
 
 export default function Login() {
 	const [showPassword, setShowPassword] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 
-	const { login } = useAuth();
-	const navigate = useNavigate();
+	const loginMutation = useLogin();
 
 	const {
 		register,
 		handleSubmit,
-		formState: { errors, isValid },
+		formState: { errors },
 	} = useForm({
-		resolver: zodResolver(LoginDto.shape.body),
-		defaultValues: {
-			username: '',
-			password: '',
-		},
+		resolver: zodResolver(LoginDto),
+		defaultValues: undefined,
 		mode: 'onChange',
 	});
 
-	const onSubmit = async (data: { username: string; password: string }) => {
-		try {
-			setLoading(true);
-			setError(null);
-			await login(data.username, data.password);
-			navigate('/');
-		} catch (err) {
-			setError(err instanceof Error ? err.message : 'Erreur de connexion');
-		} finally {
-			setLoading(false);
-		}
+	const onSubmit = async (data: { name: string; password: string }) => {
+		await loginMutation.mutateAsync(data);
 	};
 
 	const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -102,22 +85,16 @@ export default function Login() {
 
 					{/* Login Form */}
 					<Box component='form' onSubmit={handleSubmit(onSubmit)}>
-						{error && (
-							<Alert severity='error' sx={{ mb: 3 }}>
-								{error}
-							</Alert>
-						)}
-
 						{/* Username Field */}
 						<TextField
 							fullWidth
 							label="Nom d'utilisateur"
-							{...register('username')}
+							{...register('name')}
 							onKeyPress={handleKeyPress}
 							margin='normal'
 							variant='outlined'
-							error={!!errors.username}
-							helperText={errors.username?.message as string}
+							error={!!errors.name}
+							helperText={errors.name?.message as string}
 							InputProps={{
 								startAdornment: (
 									<InputAdornment position='start'>
@@ -186,7 +163,7 @@ export default function Login() {
 							fullWidth
 							variant='contained'
 							size='large'
-							disabled={loading}
+							disabled={loginMutation.isPending}
 							sx={{
 								mt: 3,
 								py: 1.5,
@@ -204,7 +181,7 @@ export default function Login() {
 								transition: 'all 0.3s ease',
 							}}
 						>
-							{loading ? (
+							{loginMutation.isPending ? (
 								<CircularProgress size={24} color='inherit' />
 							) : (
 								'Se connecter'

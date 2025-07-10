@@ -16,6 +16,7 @@ import purchaseRouter from './routers/purchase.router';
 import transactionRouter from './routers/transaction.router';
 import accountRouter from './routers/account.router';
 import productCategoryRouter from './routers/product-category.router';
+import cookieParser from 'cookie-parser';
 
 // Load environment variables
 dotenv.config();
@@ -28,10 +29,16 @@ export const prisma = new PrismaClient();
 
 // Middleware
 app.use(helmet());
-app.use(cors());
+app.use(
+	cors({
+		origin: 'http://localhost:5173',
+		credentials: true,
+	})
+);
 // app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Health check endpoint
 app.get('/health', (req, res) => {

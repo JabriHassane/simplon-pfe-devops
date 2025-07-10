@@ -1,25 +1,13 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
-import {
-	CreateUserDtoType,
-	UpdateUserDtoType,
-	UserIdDtoType,
-} from '../../../shared/dtos/user.dto';
+import { CreateUserDtoType } from '../../../shared/dtos/user.dto';
+import bcrypt from 'bcryptjs';
 
 export class UserController {
 	static async getAll(req: Request, res: Response) {
 		try {
 			const users = await prisma.user.findMany({
 				where: { deletedAt: null },
-				select: {
-					id: true,
-					ref: true,
-					username: true,
-					email: true,
-					role: true,
-					createdAt: true,
-					updatedAt: true,
-				},
 				orderBy: { createdAt: 'desc' },
 			});
 
@@ -32,19 +20,10 @@ export class UserController {
 
 	static async getById(req: Request, res: Response) {
 		try {
-			const { id } = req.params as UserIdDtoType['params'];
+			const { id } = req.params;
 
 			const user = await prisma.user.findUnique({
 				where: { id },
-				select: {
-					id: true,
-					ref: true,
-					username: true,
-					email: true,
-					role: true,
-					createdAt: true,
-					updatedAt: true,
-				},
 			});
 
 			if (!user) {
@@ -60,43 +39,37 @@ export class UserController {
 
 	static async create(req: Request, res: Response) {
 		try {
-			const {
-				username,
-				email,
-				password,
-				role = 'AGENT',
-			} = req.body.body as CreateUserDtoType['body'];
+			const body = req.body as CreateUserDtoType;
+			const { userId } = req.user!;
 
 			// Check if user already exists
-			const existingUser = await prisma.user.findFirst({
-				where: {
-					OR: [{ username }, { email }],
-				},
+			const isExist = await prisma.user.findFirst({
+				where: { name: body.name },
 			});
 
-			if (existingUser) {
+			if (isExist) {
 				return res
 					.status(400)
-					.json({ message: 'Username or email already exists' });
+					.json({ message: "Nom d'utilisateur déjà existant" });
 			}
 
+			// Hash password
+			const saltRounds = 12;
+			const hashedPassword = await bcrypt.hash(body.password, saltRounds);
+
+			// Create user
 			const user = await prisma.user.create({
 				data: {
-					username,
-					email,
-					password,
-					role,
+					name: body.name,
+					password: hashedPassword,
+
+					role: body.role,
 					ref: `USER-${Date.now()}`,
-					createdBy: req.user?.userId || 'system',
-				},
-				select: {
-					id: true,
-					ref: true,
-					username: true,
-					email: true,
-					role: true,
-					createdAt: true,
-					updatedAt: true,
+					createdBy: {
+						connect: {
+							id: userId,
+						},
+					},
 				},
 			});
 
@@ -109,53 +82,24 @@ export class UserController {
 
 	static async update(req: Request, res: Response) {
 		try {
-			const { params, body } = req.body as UpdateUserDtoType;
+			const { id } = req.params;
+			const body = req.body as CreateUserDtoType;
 
 			// Check if user exists
-			const existingUser = await prisma.user.findUnique({
-				where: { id: params.id },
+			const isExist = await prisma.user.findUnique({
+				where: { id },
 			});
 
-			if (!existingUser) {
+			if (!isExist) {
 				return res.status(404).json({ message: 'User not found' });
 			}
 
-			// Check if username or email already exists
-			if (body.username || body.email) {
-				const duplicateUser = await prisma.user.findFirst({
-					where: {
-						OR: [
-							...(body.username ? [{ username: body.username }] : []),
-							...(body.email ? [{ email: body.email }] : []),
-						],
-						NOT: { id: params.id },
-					},
-				});
-
-				if (duplicateUser) {
-					return res
-						.status(400)
-						.json({ message: 'Username or email already exists' });
-				}
-			}
-
 			const user = await prisma.user.update({
-				where: { id: params.id },
+				where: { id },
 				data: {
-					...(body.username && { username: body.username }),
-					...(body.email && { email: body.email }),
-					...(body.role && { role: body.role }),
+					...body,
 					updatedAt: new Date(),
-					updatedBy: req.user?.userId || 'system',
-				},
-				select: {
-					id: true,
-					ref: true,
-					username: true,
-					email: true,
-					role: true,
-					createdAt: true,
-					updatedAt: true,
+					updatedById: req.user?.userId,
 				},
 			});
 
@@ -168,14 +112,14 @@ export class UserController {
 
 	static async delete(req: Request, res: Response) {
 		try {
-			const { id } = req.params as UserIdDtoType['params'];
+			const { id } = req.params;
 
 			// Check if user exists
-			const existingUser = await prisma.user.findUnique({
+			const isExist = await prisma.user.findUnique({
 				where: { id },
 			});
 
-			if (!existingUser) {
+			if (!isExist) {
 				return res.status(404).json({ message: 'User not found' });
 			}
 
@@ -184,7 +128,7 @@ export class UserController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: req.user?.userId || 'system',
+					deletedById: req.user?.userId,
 				},
 			});
 

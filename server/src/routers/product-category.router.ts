@@ -8,11 +8,7 @@ import {
 	deleteProductCategory,
 } from '../controllers/product-category.controller';
 import { validate } from '../middlewares/validation.middleware';
-import {
-	CreateProductCategoryDto,
-	UpdateProductCategoryDto,
-	ProductCategoryIdDto,
-} from '../../../shared/dtos/product-category.dto';
+import { CreateProductCategoryDto, UpdateProductCategoryDto } from '../../../shared/dtos/product-category.dto';
 
 const router = Router();
 
@@ -22,9 +18,9 @@ router.use(requireAgent);
 
 // CRUD operations
 router.get('/', getAllProductCategories);
-router.get('/:id', validate(ProductCategoryIdDto), getProductCategoryById);
+router.get('/:id', getProductCategoryById);
 router.post('/', validate(CreateProductCategoryDto), createProductCategory);
 router.put('/:id', validate(UpdateProductCategoryDto), updateProductCategory);
-router.delete('/:id', validate(ProductCategoryIdDto), deleteProductCategory);
+router.delete('/:id', deleteProductCategory);
 
 export default router;

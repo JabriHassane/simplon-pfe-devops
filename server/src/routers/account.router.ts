@@ -5,7 +5,6 @@ import { validate } from '../middlewares/validation.middleware';
 import {
 	CreateAccountDto,
 	UpdateAccountDto,
-	AccountIdDto,
 } from '../../../shared/dtos/account.dto';
 
 const router = Router();
@@ -16,9 +15,9 @@ router.use(requireAgent);
 
 // CRUD operations
 router.get('/', AccountController.getAll);
-router.get('/:id', validate(AccountIdDto), AccountController.getById);
+router.get('/:id', AccountController.getById);
 router.post('/', validate(CreateAccountDto), AccountController.create);
 router.put('/:id', validate(UpdateAccountDto), AccountController.update);
-router.delete('/:id', validate(AccountIdDto), AccountController.delete);
+router.delete('/:id', AccountController.delete);
 
 export default router;

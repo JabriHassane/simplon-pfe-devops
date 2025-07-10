@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Table,
 	TableBody,
 	TableCell,
@@ -27,55 +26,51 @@ import {
 	useCreateSupplier,
 	useUpdateSupplier,
 	useDeleteSupplier,
-	type Supplier,
-} from '../hooks/useSuppliers';
+} from '../hooks/ressources/useSuppliers';
 import SupplierForm from '../components/SupplierForm';
+import type { SupplierDtoType } from '../../../shared/dtos/supplier.dto';
 
 export default function Suppliers() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
+	const [selectedSupplier, setSelectedSupplier] =
+		useState<SupplierDtoType | null>(null);
 
 	// TanStack Query hooks
 	const { data: suppliers = [], isLoading, error } = useSuppliers();
 	const createSupplierMutation = useCreateSupplier();
-	const updateSupplierMutation = useUpdateSupplier();
+	const updateSupplierMutation = useUpdateSupplier(() => setOpenDialog(false));
 	const deleteSupplierMutation = useDeleteSupplier();
 
+	// Snackbar hook
 	const handleSubmit = async (data: any) => {
-		try {
-			if (editingSupplier) {
-				await updateSupplierMutation.mutateAsync({
-					id: editingSupplier.id,
-					data,
-				});
-			} else {
-				await createSupplierMutation.mutateAsync(data);
-			}
-			setOpenDialog(false);
-			setEditingSupplier(null);
-		} catch (err) {
-			console.error('Error saving supplier:', err);
+		if (selectedSupplier) {
+			await updateSupplierMutation.mutateAsync({
+				id: selectedSupplier.id,
+				data,
+			});
+		} else {
+			await createSupplierMutation.mutateAsync(data);
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this supplier?')) {
-			try {
-				await deleteSupplierMutation.mutateAsync(id);
-			} catch (err) {
-				console.error('Error deleting supplier:', err);
-			}
+		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur?')) {
+			await deleteSupplierMutation.mutateAsync(id);
 		}
 	};
 
-	const handleEdit = (supplier: Supplier) => {
-		setEditingSupplier(supplier);
-		setOpenDialog(true);
+	const handleEdit = (supplier: SupplierDtoType) => {
+		setSelectedSupplier(supplier);
 	};
 
 	const handleAdd = () => {
-		setEditingSupplier(null);
+		setSelectedSupplier(null);
 		setOpenDialog(true);
+	};
+
+	const handleCloseDialog = () => {
+		setOpenDialog(false);
+		setSelectedSupplier(null);
 	};
 
 	if (isLoading) {
@@ -99,15 +94,20 @@ export default function Suppliers() {
 				alignItems='center'
 				mb={3}
 			>
-				<Typography variant='h4'>Suppliers</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					Add Supplier
+				<Typography variant='h4'>Fournisseurs</Typography>
+				<Button
+					variant='contained'
+					startIcon={<AddIcon />}
+					onClick={handleAdd}
+					disableElevation
+				>
+					Ajouter un fournisseur
 				</Button>
 			</Box>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to fetch suppliers
+					Erreur lors de la récupération des fournisseurs
 				</Alert>
 			)}
 
@@ -118,7 +118,7 @@ export default function Suppliers() {
 					{createSupplierMutation.error?.message ||
 						updateSupplierMutation.error?.message ||
 						deleteSupplierMutation.error?.message ||
-						'An error occurred'}
+						'Une erreur est survenue'}
 				</Alert>
 			)}
 
@@ -126,46 +126,19 @@ export default function Suppliers() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							<TableCell>Name</TableCell>
-							<TableCell>Email</TableCell>
-							<TableCell>Phone</TableCell>
-							<TableCell>Contact Person</TableCell>
-							<TableCell>Status</TableCell>
-							<TableCell>Actions</TableCell>
+							<TableCell>Nom</TableCell>
+							<TableCell>Téléphone</TableCell>
+							<TableCell>Adresse</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
 						{suppliers.map((supplier) => (
 							<TableRow key={supplier.id}>
 								<TableCell>{supplier.name}</TableCell>
-								<TableCell>{supplier.email}</TableCell>
 								<TableCell>{supplier.phone}</TableCell>
-								<TableCell>{supplier.contactPerson}</TableCell>
+								<TableCell>{supplier.address}</TableCell>
 								<TableCell>
-									<Box
-										sx={{
-											px: 1,
-											py: 0.5,
-											borderRadius: 1,
-											backgroundColor:
-												supplier.status === 'ACTIVE'
-													? 'success.light'
-													: 'error.light',
-											color:
-												supplier.status === 'ACTIVE'
-													? 'success.dark'
-													: 'error.dark',
-											display: 'inline-block',
-										}}
-									>
-										{supplier.status}
-									</Box>
-								</TableCell>
-								<TableCell>
-									<IconButton
-										onClick={() => handleEdit(supplier)}
-										size='small'
-									>
+									<IconButton onClick={() => handleEdit(supplier)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
@@ -189,26 +162,30 @@ export default function Suppliers() {
 
 			<Dialog
 				open={openDialog}
-				onClose={() => setOpenDialog(false)}
+				onClose={handleCloseDialog}
 				maxWidth='sm'
 				fullWidth
 			>
 				<DialogTitle>
-					{editingSupplier ? 'Edit Supplier' : 'Add New Supplier'}
+					<Typography variant='h6' sx={{ fontWeight: 600 }}>
+						{selectedSupplier
+							? 'Modifier le fournisseur'
+							: 'Ajouter un fournisseur'}
+					</Typography>
 				</DialogTitle>
-				<DialogContent>
+
+				<DialogContent sx={{ p: 0 }}>
 					<SupplierForm
-						initialData={
-							editingSupplier
+						init={
+							selectedSupplier
 								? {
-										name: editingSupplier.name,
-										phone: editingSupplier.phone,
-										address: editingSupplier.address,
+										name: selectedSupplier.name,
+										phone: selectedSupplier.phone,
+										address: selectedSupplier.address,
 								  }
 								: undefined
 						}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createSupplierMutation.isPending ||
 							updateSupplierMutation.isPending

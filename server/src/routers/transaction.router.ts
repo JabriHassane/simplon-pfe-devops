@@ -11,7 +11,6 @@ import { validate } from '../middlewares/validation.middleware';
 import {
 	CreateTransactionDto,
 	UpdateTransactionDto,
-	TransactionIdDto,
 } from '../../../shared/dtos/transaction.dto';
 
 const router = Router();
@@ -22,9 +21,9 @@ router.use(requireAgent);
 
 // CRUD operations
 router.get('/', getAllTransactions);
-router.get('/:id', validate(TransactionIdDto), getTransactionById);
+router.get('/:id', getTransactionById);
 router.post('/', validate(CreateTransactionDto), createTransaction);
 router.put('/:id', validate(UpdateTransactionDto), updateTransaction);
-router.delete('/:id', validate(TransactionIdDto), deleteTransaction);
+router.delete('/:id', deleteTransaction);
 
 export default router;

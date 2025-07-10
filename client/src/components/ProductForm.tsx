@@ -9,47 +9,34 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateProductDto } from '../utils/validation';
+import {
+	CreateProductDto,
+	type CreateProductDtoType,
+} from '../../../shared/dtos/product.dto';
+import { useProductCategories } from '../hooks/ressources/useProductCategories';
 
-interface ProductCategory {
-	id: string;
-	name: string;
-	description: string;
-}
-
-interface ProductFormProps {
+interface Props {
 	onSubmit: (data: any) => void;
 	onCancel?: () => void;
-	initialData?: {
-		name: string;
-		price: number;
-		categoryId: string;
-		inventory: number;
-		image?: string;
-	} | null;
-	categories?: ProductCategory[];
+	init: CreateProductDtoType | null;
 	isLoading?: boolean;
 }
 
 export default function ProductForm({
 	onSubmit,
 	onCancel,
-	initialData,
-	categories = [],
+	init,
 	isLoading = false,
-}: ProductFormProps) {
+}: Props) {
+	const { data: categories = [] } = useProductCategories();
+
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateProductDto.shape.body),
-		defaultValues: initialData || {
-			name: '',
-			price: 0,
-			categoryId: '',
-			inventory: 0,
-		},
+		resolver: zodResolver(CreateProductDto),
+		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -149,7 +136,7 @@ export default function ProductForm({
 					fullWidth
 					size='large'
 				>
-					{isLoading ? 'Enregistrement...' : initialData ? 'Modifier' : 'Créer'}
+					{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
 				</Button>
 			</Box>
 		</Box>

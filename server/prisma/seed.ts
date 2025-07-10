@@ -6,8 +6,7 @@ const prisma = new PrismaClient();
 async function main() {
 	console.log('🌱 Starting database seed...');
 
-	// Clear existing data
-	await prisma.discount.deleteMany();
+	// Clear existing data (in correct order due to foreign key constraints)
 	await prisma.transaction.deleteMany();
 	await prisma.orderItem.deleteMany();
 	await prisma.purchaseItem.deleteMany();
@@ -27,11 +26,9 @@ async function main() {
 	const superAdmin = await prisma.user.create({
 		data: {
 			ref: 'USR-001',
-			username: 'admin',
-			email: 'admin@company.com',
+			name: 'admin',
 			password: hashedPassword,
-			role: 'SUPER_ADMIN',
-			createdBy: 'system',
+			role: 'super_admin',
 		},
 	});
 
@@ -39,22 +36,20 @@ async function main() {
 	const agent1 = await prisma.user.create({
 		data: {
 			ref: 'USR-002',
-			username: 'ahmed',
-			email: 'ahmed@company.com',
+			name: 'ahmed',
 			password: hashedPassword,
-			role: 'AGENT',
-			createdBy: superAdmin.id,
+			role: 'agent',
+			createdById: superAdmin.id,
 		},
 	});
 
 	const agent2 = await prisma.user.create({
 		data: {
 			ref: 'USR-003',
-			username: 'fatima',
-			email: 'fatima@company.com',
+			name: 'fatima',
 			password: hashedPassword,
-			role: 'AGENT',
-			createdBy: superAdmin.id,
+			role: 'agent',
+			createdById: superAdmin.id,
 		},
 	});
 
@@ -67,7 +62,7 @@ async function main() {
 				ref: 'ACC-001',
 				name: 'Caisse Espèces',
 				balance: 15000,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.account.create({
@@ -75,7 +70,7 @@ async function main() {
 				ref: 'ACC-002',
 				name: 'Caisse Chèques',
 				balance: 25000,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.account.create({
@@ -83,7 +78,7 @@ async function main() {
 				ref: 'ACC-003',
 				name: 'Banque Principale',
 				balance: 150000,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -96,28 +91,28 @@ async function main() {
 			data: {
 				ref: 'CAT-001',
 				name: 'Électronique',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.productCategory.create({
 			data: {
 				ref: 'CAT-002',
 				name: 'Vêtements',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.productCategory.create({
 			data: {
 				ref: 'CAT-003',
 				name: 'Livres',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.productCategory.create({
 			data: {
 				ref: 'CAT-004',
 				name: 'Maison & Jardin',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -134,7 +129,7 @@ async function main() {
 				price: 899.99,
 				inventory: 25,
 				categoryId: categories[0].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.product.create({
@@ -145,7 +140,7 @@ async function main() {
 				price: 1299.99,
 				inventory: 15,
 				categoryId: categories[0].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.product.create({
@@ -156,7 +151,7 @@ async function main() {
 				price: 29.99,
 				inventory: 100,
 				categoryId: categories[1].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.product.create({
@@ -167,7 +162,7 @@ async function main() {
 				price: 89.99,
 				inventory: 50,
 				categoryId: categories[1].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.product.create({
@@ -178,7 +173,7 @@ async function main() {
 				price: 24.99,
 				inventory: 75,
 				categoryId: categories[2].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.product.create({
@@ -189,7 +184,7 @@ async function main() {
 				price: 45.99,
 				inventory: 30,
 				categoryId: categories[3].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -204,7 +199,7 @@ async function main() {
 				name: 'Mohammed Alami',
 				phone: '0612345678',
 				address: '123 Rue Hassan II, Casablanca',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.client.create({
@@ -213,7 +208,7 @@ async function main() {
 				name: 'Amina Benjelloun',
 				phone: '0623456789',
 				address: '456 Avenue Mohammed V, Rabat',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.client.create({
@@ -222,7 +217,7 @@ async function main() {
 				name: 'Karim Tazi',
 				phone: '0634567890',
 				address: '789 Boulevard Al Massira, Marrakech',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.client.create({
@@ -231,7 +226,7 @@ async function main() {
 				name: 'Sara El Fassi',
 				phone: '0645678901',
 				address: '321 Rue Ibn Batouta, Fès',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -246,7 +241,7 @@ async function main() {
 				name: 'TechImport SARL',
 				phone: '0522345678',
 				address: '100 Rue de la Technologie, Casablanca',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.supplier.create({
@@ -255,7 +250,7 @@ async function main() {
 				name: 'TextilePlus',
 				phone: '0523456789',
 				address: '200 Avenue du Textile, Tanger',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.supplier.create({
@@ -264,7 +259,7 @@ async function main() {
 				name: 'Librairie Centrale',
 				phone: '0524567890',
 				address: '300 Boulevard des Livres, Rabat',
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -276,7 +271,7 @@ async function main() {
 		prisma.order.create({
 			data: {
 				ref: 'ORD-001',
-				date: new Date('2024-01-15'),
+				date: '2024-01-15T00:00:00.000Z',
 				receiptNumber: 'REC-001',
 				invoiceNumber: 'INV-001',
 				totalPrice: 929.98,
@@ -286,13 +281,13 @@ async function main() {
 				note: 'Livraison à domicile',
 				agentId: agent1.id,
 				clientId: clients[0].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 		prisma.order.create({
 			data: {
 				ref: 'ORD-002',
-				date: new Date('2024-01-20'),
+				date: '2024-01-20T00:00:00.000Z',
 				receiptNumber: 'REC-002',
 				invoiceNumber: 'INV-002',
 				totalPrice: 179.98,
@@ -302,13 +297,13 @@ async function main() {
 				note: 'Paiement en plusieurs fois',
 				agentId: agent2.id,
 				clientId: clients[1].id,
-				createdBy: agent2.id,
+				createdById: agent2.id,
 			},
 		}),
 		prisma.order.create({
 			data: {
 				ref: 'ORD-003',
-				date: new Date('2024-01-25'),
+				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'REC-003',
 				invoiceNumber: 'INV-003',
 				totalPrice: 1349.98,
@@ -318,7 +313,7 @@ async function main() {
 				note: 'Commande en attente de paiement',
 				agentId: agent1.id,
 				clientId: clients[2].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 	]);
@@ -329,52 +324,47 @@ async function main() {
 	await Promise.all([
 		prisma.orderItem.create({
 			data: {
-				ref: 'OI-001',
 				price: 899.99,
 				quantity: 1,
 				orderId: orders[0].id,
 				productId: products[0].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 		prisma.orderItem.create({
 			data: {
-				ref: 'OI-002',
 				price: 29.99,
 				quantity: 1,
 				orderId: orders[0].id,
 				productId: products[2].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 		prisma.orderItem.create({
 			data: {
-				ref: 'OI-003',
 				price: 89.99,
 				quantity: 2,
 				orderId: orders[1].id,
 				productId: products[3].id,
-				createdBy: agent2.id,
+				createdById: agent2.id,
 			},
 		}),
 		prisma.orderItem.create({
 			data: {
-				ref: 'OI-004',
 				price: 1299.99,
 				quantity: 1,
 				orderId: orders[2].id,
 				productId: products[1].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 		prisma.orderItem.create({
 			data: {
-				ref: 'OI-005',
 				price: 49.99,
 				quantity: 1,
 				orderId: orders[2].id,
 				productId: products[5].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 	]);
@@ -386,7 +376,7 @@ async function main() {
 		prisma.purchase.create({
 			data: {
 				ref: 'PUR-001',
-				date: new Date('2024-01-10'),
+				date: '2024-01-10T00:00:00.000Z',
 				receiptNumber: 'PUR-REC-001',
 				invoiceNumber: 'PUR-INV-001',
 				totalPrice: 5000,
@@ -396,13 +386,13 @@ async function main() {
 				note: 'Stock initial',
 				agentId: superAdmin.id,
 				supplierId: suppliers[0].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.purchase.create({
 			data: {
 				ref: 'PUR-002',
-				date: new Date('2024-01-18'),
+				date: '2024-01-18T00:00:00.000Z',
 				receiptNumber: 'PUR-REC-002',
 				invoiceNumber: 'PUR-INV-002',
 				totalPrice: 2000,
@@ -412,7 +402,7 @@ async function main() {
 				note: 'Réapprovisionnement',
 				agentId: superAdmin.id,
 				supplierId: suppliers[1].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -423,32 +413,29 @@ async function main() {
 	await Promise.all([
 		prisma.purchaseItem.create({
 			data: {
-				ref: 'PI-001',
 				price: 800,
 				quantity: 5,
 				purchaseId: purchases[0].id,
 				productId: products[0].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.purchaseItem.create({
 			data: {
-				ref: 'PI-002',
 				price: 1100,
 				quantity: 3,
 				purchaseId: purchases[0].id,
 				productId: products[1].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.purchaseItem.create({
 			data: {
-				ref: 'PI-003',
 				price: 20,
 				quantity: 50,
 				purchaseId: purchases[1].id,
 				productId: products[2].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);
@@ -460,65 +447,65 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-001',
-				date: new Date('2024-01-15'),
+				date: '2024-01-15T00:00:00.000Z',
 				type: 'order',
 				paymentMethod: 'cash',
 				amount: 929.98,
 				agentId: agent1.id,
 				orderId: orders[0].id,
 				toId: accounts[0].id,
-				createdBy: agent1.id,
+				createdById: agent1.id,
 			},
 		}),
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-002',
-				date: new Date('2024-01-20'),
+				date: '2024-01-20T00:00:00.000Z',
 				type: 'order',
 				paymentMethod: 'check',
 				amount: 100,
 				agentId: agent2.id,
 				orderId: orders[1].id,
 				toId: accounts[1].id,
-				createdBy: agent2.id,
+				createdById: agent2.id,
 			},
 		}),
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-003',
-				date: new Date('2024-01-10'),
+				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
 				amount: 5000,
 				agentId: superAdmin.id,
 				purchaseId: purchases[0].id,
 				fromId: accounts[2].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-004',
-				date: new Date('2024-01-18'),
+				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'cash',
 				amount: 1500,
 				agentId: superAdmin.id,
 				purchaseId: purchases[1].id,
 				fromId: accounts[0].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-005',
-				date: new Date('2024-01-22'),
+				date: '2024-01-22T00:00:00.000Z',
 				type: 'transfer',
 				amount: 5000,
 				agentId: superAdmin.id,
 				fromId: accounts[2].id,
 				toId: accounts[0].id,
-				createdBy: superAdmin.id,
+				createdById: superAdmin.id,
 			},
 		}),
 	]);

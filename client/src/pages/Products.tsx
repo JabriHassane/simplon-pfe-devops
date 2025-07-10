@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Table,
 	TableBody,
 	TableCell,
@@ -27,17 +26,18 @@ import {
 	useCreateProduct,
 	useUpdateProduct,
 	useDeleteProduct,
-	type Product,
-} from '../hooks/useProducts';
-import {
-	useProductCategories,
-	type ProductCategory,
-} from '../hooks/useProductCategories';
+} from '../hooks/ressources/useProducts';
 import ProductForm from '../components/ProductForm';
+import type {
+	CreateProductDtoType,
+	ProductDtoType,
+} from '../../../shared/dtos/product.dto';
 
 export default function Products() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+	const [selectedProduct, setSelectedProduct] = useState<ProductDtoType | null>(
+		null
+	);
 
 	// TanStack Query hooks
 	const {
@@ -45,60 +45,43 @@ export default function Products() {
 		isLoading: productsLoading,
 		error: productsError,
 	} = useProducts();
-	const {
-		data: categories = [],
-		isLoading: categoriesLoading,
-		error: categoriesError,
-	} = useProductCategories();
+
 	const createProductMutation = useCreateProduct();
-	const updateProductMutation = useUpdateProduct();
+	const updateProductMutation = useUpdateProduct(() => setOpenDialog(false));
 	const deleteProductMutation = useDeleteProduct();
 
-	const isLoading = productsLoading || categoriesLoading;
-	const error = productsError || categoriesError;
+	const isLoading = productsLoading;
+	const error = productsError;
 
-	const handleSubmit = async (data: any) => {
-		try {
-			if (editingProduct) {
-				await updateProductMutation.mutateAsync({
-					id: editingProduct.id,
-					data,
-				});
-			} else {
-				await createProductMutation.mutateAsync(data);
-			}
-			setOpenDialog(false);
-			setEditingProduct(null);
-		} catch (err) {
-			console.error('Error saving product:', err);
+	const handleSubmit = async (data: CreateProductDtoType) => {
+		if (selectedProduct) {
+			await updateProductMutation.mutateAsync({
+				id: selectedProduct.id,
+				data,
+			});
+		} else {
+			await createProductMutation.mutateAsync(data);
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this product?')) {
-			try {
-				await deleteProductMutation.mutateAsync(id);
-			} catch (err) {
-				console.error('Error deleting product:', err);
-			}
+		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
+			await deleteProductMutation.mutateAsync(id);
 		}
 	};
 
-	const handleEdit = (product: Product) => {
-		setEditingProduct(product);
-		setOpenDialog(true);
+	const handleEdit = (product: ProductDtoType) => {
+		setSelectedProduct(product);
 	};
 
 	const handleAdd = () => {
-		setEditingProduct(null);
+		setSelectedProduct(null);
 		setOpenDialog(true);
 	};
 
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: 'USD',
-		}).format(amount);
+	const handleCloseDialog = () => {
+		setOpenDialog(false);
+		setSelectedProduct(null);
 	};
 
 	if (isLoading) {
@@ -114,17 +97,6 @@ export default function Products() {
 		);
 	}
 
-	const headers = [
-		'Nom du produit',
-		'SKU',
-		'Catégorie',
-		'Prix',
-		'Coût',
-		'Stock',
-		'Statut',
-		'Actions',
-	];
-
 	return (
 		<Box>
 			<Box
@@ -134,14 +106,19 @@ export default function Products() {
 				mb={3}
 			>
 				<Typography variant='h4'>Produits</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					Ajouter
+				<Button
+					variant='contained'
+					startIcon={<AddIcon />}
+					onClick={handleAdd}
+					disableElevation
+				>
+					Ajouter un produit
 				</Button>
 			</Box>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to fetch data
+					Erreur lors de la récupération des produits
 				</Alert>
 			)}
 
@@ -152,7 +129,7 @@ export default function Products() {
 					{createProductMutation.error?.message ||
 						updateProductMutation.error?.message ||
 						deleteProductMutation.error?.message ||
-						'An error occurred'}
+						'Une erreur est survenue'}
 				</Alert>
 			)}
 
@@ -160,67 +137,19 @@ export default function Products() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							{headers.map((header, i) => (
-								<TableCell
-									align={i === 0 ? 'left' : 'right'}
-									key={i}
-									sx={{ fontWeight: 600 }}
-								>
-									{header}
-								</TableCell>
-							))}
+							<TableCell>Nom</TableCell>
+							<TableCell>Prix</TableCell>
+							<TableCell>Stock</TableCell>
 						</TableRow>
 					</TableHead>
-
 					<TableBody>
 						{products.map((product) => (
 							<TableRow key={product.id}>
+								<TableCell>{product.name}</TableCell>
+								<TableCell>{product.price}</TableCell>
+								<TableCell>{product.inventory}</TableCell>
 								<TableCell>
-									<Box>
-										<Typography variant='subtitle2'>
-											{product.name}
-										</Typography>
-										<Typography variant='caption' color='textSecondary'>
-											{product.description}
-										</Typography>
-									</Box>
-								</TableCell>
-								<TableCell align='right'>{product.sku}</TableCell>
-								<TableCell align='right'>
-									{product.category?.name || 'N/A'}
-								</TableCell>
-								<TableCell align='right'>
-									{formatCurrency(product.price)}
-								</TableCell>
-								<TableCell align='right'>
-									{formatCurrency(product.cost)}
-								</TableCell>
-								<TableCell align='right'>{product.stockQuantity}</TableCell>
-								<TableCell align='right'>
-									<Box
-										sx={{
-											px: 1,
-											py: 0.5,
-											borderRadius: 1,
-											backgroundColor:
-												product.status === 'ACTIVE'
-													? 'success.light'
-													: 'error.light',
-											color:
-												product.status === 'ACTIVE'
-													? 'success.dark'
-													: 'error.dark',
-											display: 'inline-block',
-										}}
-									>
-										{product.status}
-									</Box>
-								</TableCell>
-								<TableCell align='right'>
-									<IconButton
-										onClick={() => handleEdit(product)}
-										size='small'
-									>
+									<IconButton onClick={() => handleEdit(product)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
@@ -244,28 +173,20 @@ export default function Products() {
 
 			<Dialog
 				open={openDialog}
-				onClose={() => setOpenDialog(false)}
-				maxWidth='md'
+				onClose={handleCloseDialog}
+				maxWidth='sm'
 				fullWidth
 			>
 				<DialogTitle>
-					{editingProduct ? 'Edit Product' : 'Add New Product'}
+					<Typography variant='h6' sx={{ fontWeight: 600 }}>
+						{selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
+					</Typography>
 				</DialogTitle>
-				<DialogContent>
+
+				<DialogContent sx={{ p: 0 }}>
 					<ProductForm
-						initialData={
-							editingProduct
-								? {
-										name: editingProduct.name,
-										price: editingProduct.price,
-										categoryId: editingProduct.categoryId,
-										inventory: editingProduct.stockQuantity,
-								  }
-								: undefined
-						}
-						categories={categories}
+						init={selectedProduct}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createProductMutation.isPending || updateProductMutation.isPending
 						}

@@ -20,13 +20,13 @@ Authorization: Bearer <your-jwt-token>
 
 #### POST /auth/login
 
-Login with username and password.
+Login with name and password.
 
 **Request Body:**
 
 ```json
 {
-	"username": "admin",
+	"name": "admin",
 	"password": "admin123"
 }
 ```
@@ -38,9 +38,9 @@ Login with username and password.
 	"message": "Login successful",
 	"user": {
 		"id": "user-id",
-		"username": "admin",
+		"name": "admin",
 		"email": "admin@ppp.com",
-		"role": "SUPER_ADMIN"
+		"role": "super_admin"
 	},
 	"token": "jwt-token-here"
 }
@@ -48,16 +48,16 @@ Login with username and password.
 
 #### POST /auth/register
 
-Register a new user (requires ADMIN role).
+Register a new user (requires admin role).
 
 **Request Body:**
 
 ```json
 {
-	"username": "newuser",
+	"name": "newuser",
 	"email": "user@example.com",
 	"password": "password123",
-	"role": "AGENT"
+	"role": "agent"
 }
 ```
 
@@ -73,23 +73,23 @@ Update current user profile (requires authentication).
 
 #### GET /users
 
-Get all users (requires ADMIN role).
+Get all users (requires admin role).
 
 #### GET /users/:id
 
-Get user by ID (requires ADMIN role).
+Get user by ID (requires admin role).
 
 #### POST /users
 
-Create new user (requires ADMIN role).
+Create new user (requires admin role).
 
 #### PUT /users/:id
 
-Update user (requires ADMIN role).
+Update user (requires admin role).
 
 #### DELETE /users/:id
 
-Delete user (requires ADMIN role).
+Delete user (requires admin role).
 
 ### Other Endpoints
 
@@ -106,9 +106,9 @@ The following endpoints are protected and require authentication:
 
 ## Role-Based Access Control
 
-- **SUPER_ADMIN**: Full access to all endpoints
-- **ADMIN**: Access to most endpoints, can manage users
-- **AGENT**: Basic access to business operations
+- **super_admin**: Full access to all endpoints
+- **admin**: Access to most endpoints, can manage users
+- **agent**: Basic access to business operations
 
 ## Error Responses
 
@@ -179,4 +179,4 @@ After running the seed script:
 - **Username:** admin
 - **Password:** admin123
 - **Email:** admin@ppp.com
-- **Role:** SUPER_ADMIN
+- **Role:** super_admin

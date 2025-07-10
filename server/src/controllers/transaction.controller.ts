@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
+import {
+	CreateTransactionDtoType,
+	UpdateTransactionDtoType,
+} from '../../../shared/dtos/transaction.dto';
 
 export const getAllTransactions = async (req: Request, res: Response) => {
 	try {
@@ -13,7 +17,7 @@ export const getAllTransactions = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -41,7 +45,7 @@ export const getTransactionById = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -60,48 +64,39 @@ export const getTransactionById = async (req: Request, res: Response) => {
 
 export const createTransaction = async (req: Request, res: Response) => {
 	try {
-		const {
-			date,
-			type,
-			purchaseId,
-			orderId,
-			paymentMethod,
-			fromId,
-			toId,
-			amount,
-		} = req.body;
+		const body = req.body as CreateTransactionDtoType;
 
 		// Validate related entities exist
-		if (purchaseId) {
+		if (body.purchaseId) {
 			const purchase = await prisma.purchase.findUnique({
-				where: { id: purchaseId },
+				where: { id: body.purchaseId },
 			});
 			if (!purchase) {
 				return res.status(400).json({ message: 'Purchase not found' });
 			}
 		}
 
-		if (orderId) {
+		if (body.orderId) {
 			const order = await prisma.order.findUnique({
-				where: { id: orderId },
+				where: { id: body.orderId },
 			});
 			if (!order) {
 				return res.status(400).json({ message: 'Order not found' });
 			}
 		}
 
-		if (fromId) {
+		if (body.fromId) {
 			const fromAccount = await prisma.account.findUnique({
-				where: { id: fromId },
+				where: { id: body.fromId },
 			});
 			if (!fromAccount) {
 				return res.status(400).json({ message: 'Source account not found' });
 			}
 		}
 
-		if (toId) {
+		if (body.toId) {
 			const toAccount = await prisma.account.findUnique({
-				where: { id: toId },
+				where: { id: body.toId },
 			});
 			if (!toAccount) {
 				return res
@@ -112,17 +107,9 @@ export const createTransaction = async (req: Request, res: Response) => {
 
 		const transaction = await prisma.transaction.create({
 			data: {
-				date,
-				type,
-				purchaseId,
-				orderId,
-				paymentMethod,
-				fromId,
-				toId,
-				amount: parseFloat(amount),
-				agentId: req.user?.userId || 'system',
-				ref: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-				createdBy: req.user?.userId || 'system',
+				...body,
+				ref: `TXN-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+				createdById: req.user?.userId,
 			},
 			include: {
 				purchase: true,
@@ -132,28 +119,28 @@ export const createTransaction = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
 		});
 
 		// Update account balances for transfers
-		if (type === 'transfer' && fromId && toId) {
+		if (body.type === 'transfer' && body.fromId && body.toId) {
 			await prisma.account.update({
-				where: { id: fromId },
+				where: { id: body.fromId },
 				data: {
 					balance: {
-						decrement: parseFloat(amount),
+						decrement: body.amount,
 					},
 				},
 			});
 
 			await prisma.account.update({
-				where: { id: toId },
+				where: { id: body.toId },
 				data: {
 					balance: {
-						increment: parseFloat(amount),
+						increment: body.amount,
 					},
 				},
 			});
@@ -169,7 +156,7 @@ export const createTransaction = async (req: Request, res: Response) => {
 export const updateTransaction = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
-		const { date, paymentMethod, amount } = req.body;
+		const body = req.body as UpdateTransactionDtoType;
 
 		// Check if transaction exists
 		const existingTransaction = await prisma.transaction.findUnique({
@@ -181,9 +168,9 @@ export const updateTransaction = async (req: Request, res: Response) => {
 		}
 
 		// For transfers, we need to reverse the previous balance changes
-		if (existingTransaction.type === 'transfer' && amount !== undefined) {
+		if (existingTransaction.type === 'transfer' && body.amount !== undefined) {
 			const oldAmount = existingTransaction.amount;
-			const newAmount = parseFloat(amount);
+			const newAmount = body.amount;
 
 			if (existingTransaction.fromId) {
 				await prisma.account.update({
@@ -211,11 +198,9 @@ export const updateTransaction = async (req: Request, res: Response) => {
 		const transaction = await prisma.transaction.update({
 			where: { id },
 			data: {
-				...(date && { date }),
-				...(paymentMethod && { paymentMethod }),
-				...(amount !== undefined && { amount: parseFloat(amount) }),
+				...body,
 				updatedAt: new Date(),
-				updatedBy: req.user?.userId || 'system',
+				updatedById: req.user?.userId,
 			},
 			include: {
 				purchase: true,
@@ -225,7 +210,7 @@ export const updateTransaction = async (req: Request, res: Response) => {
 				agent: {
 					select: {
 						id: true,
-						username: true,
+						name: true,
 					},
 				},
 			},
@@ -281,7 +266,7 @@ export const deleteTransaction = async (req: Request, res: Response) => {
 			where: { id },
 			data: {
 				deletedAt: new Date(),
-				deletedBy: req.user?.userId || 'system',
+				deletedById: req.user?.userId,
 			},
 		});
 

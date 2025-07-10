@@ -59,7 +59,7 @@ export const createProductCategory = async (req: Request, res: Response) => {
 			data: {
 				name,
 				ref: `CAT-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-				createdBy: req.user?.userId || 'system',
+				createdBy: req.user?.userId,
 			},
 		});
 
@@ -109,7 +109,7 @@ export const updateProductCategory = async (req: Request, res: Response) => {
 			data: {
 				name,
 				updatedAt: new Date(),
-				updatedBy: req.user?.userId || 'system',
+				updatedBy: req.user?.userId,
 			},
 		});
 
@@ -149,7 +149,7 @@ export const deleteProductCategory = async (req: Request, res: Response) => {
 			where: { id },
 			data: {
 				deletedAt: new Date(),
-				deletedBy: req.user?.userId || 'system',
+				deletedBy: req.user?.userId,
 			},
 		});
 

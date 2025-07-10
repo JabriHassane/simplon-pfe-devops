@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import {
 	Typography,
-	Box,
-	Paper,
-	Table,
+	Box, Table,
 	TableBody,
 	TableCell,
 	TableContainer,
@@ -15,8 +13,7 @@ import {
 	Dialog,
 	DialogTitle,
 	DialogContent,
-	IconButton,
-	Divider,
+	IconButton
 } from '@mui/material';
 import {
 	Add as AddIcon,
@@ -28,72 +25,51 @@ import {
 	useCreateAccount,
 	useUpdateAccount,
 	useDeleteAccount,
-	type Account,
-} from '../hooks/useAccounts';
+} from '../hooks/ressources/useAccounts';
 import AccountForm from '../components/AccountForm';
+import type { AccountDtoType } from '../../../shared/dtos/account.dto';
 
 export default function Accounts() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+	const [selectedAccount, setSelectedAccount] = useState<AccountDtoType | null>(
+		null
+	);
 
 	// TanStack Query hooks
 	const { data: accounts = [], isLoading, error } = useAccounts();
 	const createAccountMutation = useCreateAccount();
-	const updateAccountMutation = useUpdateAccount();
+	const updateAccountMutation = useUpdateAccount(() => setOpenDialog(false));
 	const deleteAccountMutation = useDeleteAccount();
 
 	const handleSubmit = async (data: any) => {
-		try {
-			if (editingAccount) {
-				await updateAccountMutation.mutateAsync({
-					id: editingAccount.id,
-					data,
-				});
-			} else {
-				await createAccountMutation.mutateAsync(data);
-			}
-			setOpenDialog(false);
-			setEditingAccount(null);
-		} catch (err) {
-			console.error('Error saving account:', err);
+		if (selectedAccount) {
+			await updateAccountMutation.mutateAsync({
+				id: selectedAccount.id,
+				data,
+			});
+		} else {
+			await createAccountMutation.mutateAsync(data);
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this account?')) {
-			try {
-				await deleteAccountMutation.mutateAsync(id);
-			} catch (err) {
-				console.error('Error deleting account:', err);
-			}
+		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce compte?')) {
+			await deleteAccountMutation.mutateAsync(id);
 		}
 	};
 
-	const handleEdit = (account: Account) => {
-		setEditingAccount(account);
-		setOpenDialog(true);
+	const handleEdit = (account: AccountDtoType) => {
+		setSelectedAccount(account);
 	};
 
 	const handleAdd = () => {
-		setEditingAccount(null);
+		setSelectedAccount(null);
 		setOpenDialog(true);
 	};
 
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('fr-FR', {
-			style: 'currency',
-			currency: 'MAD',
-		}).format(amount);
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString('fr-FR');
-	};
-
-	const getBalanceColor = (balance: number) => {
-		if (balance > 0) return 'success';
-		if (balance < 0) return 'error';
-		return 'default';
+	const handleCloseDialog = () => {
+		setOpenDialog(false);
+		setSelectedAccount(null);
 	};
 
 	if (isLoading) {
@@ -109,14 +85,6 @@ export default function Accounts() {
 		);
 	}
 
-	const headers = [
-		'Nom du compte',
-		'Référence',
-		'Solde',
-		'Date de création',
-		'Actions',
-	];
-
 	return (
 		<Box>
 			<Box
@@ -126,25 +94,30 @@ export default function Accounts() {
 				mb={3}
 			>
 				<Typography variant='h4'>Comptes</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					Ajouter
+				<Button
+					variant='contained'
+					startIcon={<AddIcon />}
+					onClick={handleAdd}
+					disableElevation
+				>
+					Ajouter un compte
 				</Button>
 			</Box>
 
 			{error && (
-				<Alert severity='error' sx={{ mb: 3 }}>
-					Failed to fetch accounts
+				<Alert severity='error' sx={{ mb: 2 }}>
+					Erreur lors de la récupération des comptes
 				</Alert>
 			)}
 
 			{(createAccountMutation.error ||
 				updateAccountMutation.error ||
 				deleteAccountMutation.error) && (
-				<Alert severity='error' sx={{ mb: 3 }}>
+				<Alert severity='error' sx={{ mb: 2 }}>
 					{createAccountMutation.error?.message ||
 						updateAccountMutation.error?.message ||
 						deleteAccountMutation.error?.message ||
-						'An error occurred'}
+						'Une erreur est survenue'}
 				</Alert>
 			)}
 
@@ -152,43 +125,25 @@ export default function Accounts() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							{headers.map((header, i) => (
-								<TableCell
-									align={i === 0 ? 'left' : 'right'}
-									key={i}
-									sx={{ fontWeight: 600, paddingY: 1.5 }}
-								>
-									{header}
-								</TableCell>
-							))}
+							<TableCell>Nom</TableCell>
+							<TableCell>Référence</TableCell>
+							<TableCell>Solde</TableCell>
 						</TableRow>
 					</TableHead>
-
 					<TableBody>
 						{accounts.map((account) => (
-							<TableRow key={account.id} hover>
+							<TableRow key={account.id}>
 								<TableCell>{account.name}</TableCell>
-
-								<TableCell align='right'>{account.ref}</TableCell>
-
-								<TableCell align='right'>
-									{formatCurrency(account.balance)}
-								</TableCell>
-
-								<TableCell align='right'>
-									{formatDate(account.createdAt)}
-								</TableCell>
-
-								<TableCell align='right'>
-									<IconButton
-										size='small'
-										onClick={() => handleEdit(account)}
-									>
+								<TableCell>{account.ref}</TableCell>
+								<TableCell>{account.balance}</TableCell>
+								<TableCell>
+									<IconButton onClick={() => handleEdit(account)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
-										size='small'
 										onClick={() => handleDelete(account.id)}
+										size='small'
+										color='error'
 										disabled={deleteAccountMutation.isPending}
 									>
 										{deleteAccountMutation.isPending ? (
@@ -206,25 +161,20 @@ export default function Accounts() {
 
 			<Dialog
 				open={openDialog}
-				onClose={() => setOpenDialog(false)}
+				onClose={handleCloseDialog}
 				maxWidth='sm'
 				fullWidth
 			>
 				<DialogTitle>
-					{editingAccount ? 'Edit Account' : 'Add New Account'}
+					<Typography variant='h6' sx={{ fontWeight: 600 }}>
+						{selectedAccount ? 'Modifier le compte' : 'Ajouter un compte'}
+					</Typography>
 				</DialogTitle>
-				<DialogContent>
+
+				<DialogContent sx={{ p: 0 }}>
 					<AccountForm
-						initialData={
-							editingAccount
-								? {
-										name: editingAccount.name,
-										balance: editingAccount.balance,
-								  }
-								: undefined
-						}
+						init={selectedAccount}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createAccountMutation.isPending || updateAccountMutation.isPending
 						}

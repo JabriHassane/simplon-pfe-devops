@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Table,
 	TableBody,
 	TableCell,
@@ -28,15 +27,16 @@ import {
 	useCreatePurchase,
 	useUpdatePurchase,
 	useDeletePurchase,
-	type Purchase,
-} from '../hooks/usePurchases';
-import { useSuppliers, type Supplier } from '../hooks/useSuppliers';
-import { useProducts, type Product } from '../hooks/useProducts';
+} from '../hooks/ressources/usePurchases';
+import { useSnackbar } from '../hooks/ressources/useSnackbar';
 import PurchaseForm from '../components/PurchaseForm';
+import type { PurchaseDtoType } from '../../../shared/dtos/purchase.dto';
+import { formatDate } from '../utils/date.utils';
 
 export default function Purchases() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
+	const [selectedPurchase, setSelectedPurchase] =
+		useState<PurchaseDtoType | null>(null);
 
 	// TanStack Query hooks
 	const {
@@ -44,37 +44,34 @@ export default function Purchases() {
 		isLoading: purchasesLoading,
 		error: purchasesError,
 	} = usePurchases();
-	const {
-		data: suppliers = [],
-		isLoading: suppliersLoading,
-		error: suppliersError,
-	} = useSuppliers();
-	const {
-		data: products = [],
-		isLoading: productsLoading,
-		error: productsError,
-	} = useProducts();
+
 	const createPurchaseMutation = useCreatePurchase();
-	const updatePurchaseMutation = useUpdatePurchase();
+	const updatePurchaseMutation = useUpdatePurchase(() => setOpenDialog(false));
 	const deletePurchaseMutation = useDeletePurchase();
 
-	const isLoading = purchasesLoading || suppliersLoading || productsLoading;
-	const error = purchasesError || suppliersError || productsError;
+	// Snackbar hook
+	const { showSuccess, showError } = useSnackbar();
+
+	const isLoading = purchasesLoading;
+	const error = purchasesError;
 
 	const handleSubmit = async (data: any) => {
 		try {
-			if (editingPurchase) {
+			if (selectedPurchase) {
 				await updatePurchaseMutation.mutateAsync({
-					id: editingPurchase.id,
+					id: selectedPurchase.id,
 					data,
 				});
+				showSuccess('Purchase updated successfully');
 			} else {
 				await createPurchaseMutation.mutateAsync(data);
+				showSuccess('Purchase created successfully');
 			}
 			setOpenDialog(false);
-			setEditingPurchase(null);
+			setSelectedPurchase(null);
 		} catch (err) {
 			console.error('Error saving purchase:', err);
+			showError('Failed to save purchase');
 		}
 	};
 
@@ -82,19 +79,21 @@ export default function Purchases() {
 		if (window.confirm('Are you sure you want to delete this purchase?')) {
 			try {
 				await deletePurchaseMutation.mutateAsync(id);
+				showSuccess('Purchase deleted successfully');
 			} catch (err) {
 				console.error('Error deleting purchase:', err);
+				showError('Failed to delete purchase');
 			}
 		}
 	};
 
-	const handleEdit = (purchase: Purchase) => {
-		setEditingPurchase(purchase);
+	const handleEdit = (purchase: PurchaseDtoType) => {
+		setSelectedPurchase(purchase);
 		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
-		setEditingPurchase(null);
+		setSelectedPurchase(null);
 		setOpenDialog(true);
 	};
 
@@ -103,10 +102,6 @@ export default function Purchases() {
 			style: 'currency',
 			currency: 'USD',
 		}).format(amount);
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString();
 	};
 
 	const getStatusColor = (status: string) => {
@@ -185,14 +180,16 @@ export default function Purchases() {
 					<TableBody>
 						{purchases.map((purchase) => (
 							<TableRow key={purchase.id}>
-								<TableCell>{purchase.id}</TableCell>
+								<TableCell>{purchase.ref}</TableCell>
+								<TableCell>{formatDate(purchase.date)}</TableCell>
+								<TableCell>{purchase.agent?.name || 'N/A'}</TableCell>
 								<TableCell>{purchase.supplier?.name || 'N/A'}</TableCell>
 								<TableCell>{purchase.items?.length || 0} items</TableCell>
-								<TableCell>{formatCurrency(purchase.totalAmount)}</TableCell>
+								<TableCell>{formatCurrency(purchase.totalPrice)}</TableCell>
 								<TableCell>
 									{purchase.discountAmount > 0
 										? `${purchase.discountAmount}${
-												purchase.discountType === 'PERCENTAGE' ? '%' : ''
+												purchase.discountType === 'percentage' ? '%' : ''
 										  }`
 										: 'None'}
 								</TableCell>
@@ -203,12 +200,8 @@ export default function Purchases() {
 										size='small'
 									/>
 								</TableCell>
-								<TableCell>{formatDate(purchase.createdAt)}</TableCell>
 								<TableCell>
-									<IconButton
-										onClick={() => handleEdit(purchase)}
-										size='small'
-									>
+									<IconButton onClick={() => handleEdit(purchase)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
@@ -237,15 +230,12 @@ export default function Purchases() {
 				fullWidth
 			>
 				<DialogTitle>
-					{editingPurchase ? 'Edit Purchase' : 'New Purchase'}
+					{selectedPurchase ? 'Modifier la commande' : 'Nouvelle commande'}
 				</DialogTitle>
 				<DialogContent>
 					<PurchaseForm
-						initialData={editingPurchase}
-						suppliers={suppliers}
-						products={products}
+						init={selectedPurchase}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createPurchaseMutation.isPending ||
 							updatePurchaseMutation.isPending

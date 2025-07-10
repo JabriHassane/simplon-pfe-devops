@@ -27,15 +27,15 @@ import {
 	useCreateTransaction,
 	useUpdateTransaction,
 	useDeleteTransaction,
-	type Transaction,
-} from '../hooks/useTransactions';
-import { useAccounts, type Account } from '../hooks/useAccounts';
+} from '../hooks/ressources/useTransactions';
+import { useAccounts } from '../hooks/ressources/useAccounts';
 import TransactionForm from '../components/TransactionForm';
+import type { TransactionDtoType } from '../../../shared/dtos/transaction.dto';
 
 export default function Transactions() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingTransaction, setEditingTransaction] =
-		useState<Transaction | null>(null);
+	const [selectedTransaction, setSelectedTransaction] =
+		useState<TransactionDtoType | null>(null);
 
 	// TanStack Query hooks
 	const {
@@ -49,46 +49,38 @@ export default function Transactions() {
 		error: accountsError,
 	} = useAccounts();
 	const createTransactionMutation = useCreateTransaction();
-	const updateTransactionMutation = useUpdateTransaction();
+	const updateTransactionMutation = useUpdateTransaction(() =>
+		setOpenDialog(false)
+	);
 	const deleteTransactionMutation = useDeleteTransaction();
 
 	const isLoading = transactionsLoading || accountsLoading;
 	const error = transactionsError || accountsError;
 
 	const handleSubmit = async (data: any) => {
-		try {
-			if (editingTransaction) {
-				await updateTransactionMutation.mutateAsync({
-					id: editingTransaction.id,
-					data,
-				});
-			} else {
-				await createTransactionMutation.mutateAsync(data);
-			}
-			setOpenDialog(false);
-			setEditingTransaction(null);
-		} catch (err) {
-			console.error('Error saving transaction:', err);
+		if (selectedTransaction) {
+			await updateTransactionMutation.mutateAsync({
+				id: selectedTransaction.id,
+				data,
+			});
+		} else {
+			await createTransactionMutation.mutateAsync(data);
 		}
 	};
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm('Are you sure you want to delete this transaction?')) {
-			try {
-				await deleteTransactionMutation.mutateAsync(id);
-			} catch (err) {
-				console.error('Error deleting transaction:', err);
-			}
+			await deleteTransactionMutation.mutateAsync(id);
 		}
 	};
 
-	const handleEdit = (transaction: Transaction) => {
-		setEditingTransaction(transaction);
+	const handleEdit = (transaction: TransactionDtoType) => {
+		setSelectedTransaction(transaction);
 		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
-		setEditingTransaction(null);
+		setSelectedTransaction(null);
 		setOpenDialog(true);
 	};
 
@@ -97,10 +89,6 @@ export default function Transactions() {
 			style: 'currency',
 			currency: 'USD',
 		}).format(amount);
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString();
 	};
 
 	if (isLoading) {
@@ -160,11 +148,14 @@ export default function Transactions() {
 							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
+
 					<TableBody>
 						{transactions.map((transaction) => (
 							<TableRow key={transaction.id}>
-								<TableCell>{formatDate(transaction.date)}</TableCell>
-								<TableCell>{transaction.account?.name || 'N/A'}</TableCell>
+								<TableCell>
+									{new Date(transaction.date).toLocaleDateString()}
+								</TableCell>
+								<TableCell>{transaction.fromId || 'N/A'}</TableCell>
 								<TableCell>
 									<Box
 										sx={{
@@ -172,11 +163,11 @@ export default function Transactions() {
 											py: 0.5,
 											borderRadius: 1,
 											backgroundColor:
-												transaction.type === 'INCOME'
+												transaction.type === 'purchase'
 													? 'success.light'
 													: 'error.light',
 											color:
-												transaction.type === 'INCOME'
+												transaction.type === 'purchase'
 													? 'success.dark'
 													: 'error.dark',
 											display: 'inline-block',
@@ -185,8 +176,7 @@ export default function Transactions() {
 										{transaction.type}
 									</Box>
 								</TableCell>
-								<TableCell>{transaction.description}</TableCell>
-								<TableCell>{transaction.reference}</TableCell>
+								<TableCell>{transaction.ref}</TableCell>
 								<TableCell>{formatCurrency(transaction.amount)}</TableCell>
 								<TableCell>
 									<IconButton
@@ -221,14 +211,17 @@ export default function Transactions() {
 				fullWidth
 			>
 				<DialogTitle>
-					{editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
+					<Typography variant='h6' sx={{ fontWeight: 600 }}>
+						{selectedTransaction
+							? 'Modifier la transaction'
+							: 'Ajouter une transaction'}
+					</Typography>
 				</DialogTitle>
-				<DialogContent>
+
+				<DialogContent sx={{ p: 0 }}>
 					<TransactionForm
-						initialData={editingTransaction}
-						accounts={accounts}
+						init={selectedTransaction}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createTransactionMutation.isPending ||
 							updateTransactionMutation.isPending

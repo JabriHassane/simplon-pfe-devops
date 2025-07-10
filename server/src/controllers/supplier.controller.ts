@@ -58,7 +58,7 @@ export const createSupplier = async (req: Request, res: Response) => {
 				phone,
 				address,
 				ref: `SUP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-				createdBy: req.user?.userId || 'system',
+				createdBy: req.user?.userId,
 			},
 		});
 
@@ -107,7 +107,7 @@ export const updateSupplier = async (req: Request, res: Response) => {
 				...(phone && { phone }),
 				...(address && { address }),
 				updatedAt: new Date(),
-				updatedBy: req.user?.userId || 'system',
+				updatedBy: req.user?.userId,
 			},
 		});
 
@@ -147,7 +147,7 @@ export const deleteSupplier = async (req: Request, res: Response) => {
 			where: { id },
 			data: {
 				deletedAt: new Date(),
-				deletedBy: req.user?.userId || 'system',
+				deletedBy: req.user?.userId,
 			},
 		});
 

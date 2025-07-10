@@ -9,24 +9,22 @@ import {
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateUserDto } from '../utils/validation';
+import {
+	CreateUserDto,
+	type CreateUserDtoType,
+} from '../../../shared/dtos/user.dto';
 
 interface UserFormProps {
 	onSubmit: (data: any) => void;
 	onCancel?: () => void;
-	initialData?: {
-		username: string;
-		email: string;
-		password: string;
-		role: 'SUPER_ADMIN' | 'ADMIN' | 'AGENT';
-	} | null;
+	init?: CreateUserDtoType | null;
 	isLoading?: boolean;
 }
 
 export default function UserForm({
 	onSubmit,
 	onCancel,
-	initialData,
+	init,
 	isLoading = false,
 }: UserFormProps) {
 	const {
@@ -34,13 +32,8 @@ export default function UserForm({
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateUserDto.shape.body),
-		defaultValues: initialData || {
-			username: '',
-			email: '',
-			password: '',
-			role: 'AGENT' as const,
-		},
+		resolver: zodResolver(CreateUserDto),
+		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -50,23 +43,11 @@ export default function UserForm({
 			<TextField
 				fullWidth
 				label="Nom d'utilisateur"
-				{...register('username')}
+				{...register('name')}
 				margin='normal'
 				variant='outlined'
-				error={!!errors.username}
-				helperText={errors.username?.message as string}
-				required
-			/>
-
-			<TextField
-				fullWidth
-				label='Email'
-				type='email'
-				{...register('email')}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.email}
-				helperText={errors.email?.message as string}
+				error={!!errors.name}
+				helperText={errors.name?.message as string}
 				required
 			/>
 
@@ -90,9 +71,9 @@ export default function UserForm({
 					error={!!errors.role}
 					required
 				>
-					<MenuItem value='SUPER_ADMIN'>Super Admin</MenuItem>
-					<MenuItem value='ADMIN'>Admin</MenuItem>
-					<MenuItem value='AGENT'>Agent</MenuItem>
+					<MenuItem value='super_admin'>Super Admin</MenuItem>
+					<MenuItem value='admin'>Admin</MenuItem>
+					<MenuItem value='agent'>Agent</MenuItem>
 				</Select>
 			</FormControl>
 
@@ -115,7 +96,7 @@ export default function UserForm({
 					fullWidth
 					size='large'
 				>
-					{isLoading ? 'Enregistrement...' : initialData ? 'Modifier' : 'Créer'}
+					{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
 				</Button>
 			</Box>
 		</Box>

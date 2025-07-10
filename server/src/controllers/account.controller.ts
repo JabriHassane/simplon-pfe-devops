@@ -3,7 +3,6 @@ import { prisma } from '../index';
 import {
 	CreateAccountDtoType,
 	UpdateAccountDtoType,
-	AccountIdDtoType,
 } from '../../../shared/dtos/account.dto';
 
 export class AccountController {
@@ -23,7 +22,7 @@ export class AccountController {
 
 	static async getById(req: Request, res: Response) {
 		try {
-			const { id } = req.params as AccountIdDtoType['params'];
+			const { id } = req.params;
 
 			const account = await prisma.account.findUnique({
 				where: { id },
@@ -42,13 +41,12 @@ export class AccountController {
 
 	static async create(req: Request, res: Response) {
 		try {
-			const { name, balance = 0 } = req.body
-				.body as CreateAccountDtoType['body'];
-
+			const body = req.body as CreateAccountDtoType;
+			const { userId } = req.user!;
 			// Check if account with same name already exists
 			const existingAccount = await prisma.account.findFirst({
 				where: {
-					name,
+					name: body.name,
 					deletedAt: null,
 				},
 			});
@@ -61,10 +59,14 @@ export class AccountController {
 
 			const account = await prisma.account.create({
 				data: {
-					name,
-					balance: parseFloat(balance.toString()),
+					...body,
+					balance: 0,
 					ref: `ACC-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-					createdBy: req.user?.userId || 'system',
+					createdBy: {
+						connect: {
+							id: userId,
+						},
+					},
 				},
 			});
 
@@ -77,11 +79,13 @@ export class AccountController {
 
 	static async update(req: Request, res: Response) {
 		try {
-			const { params, body } = req.body as UpdateAccountDtoType;
+			const { id } = req.params;
+			const body = req.body as UpdateAccountDtoType;
+			const { userId } = req.user!;
 
 			// Check if account exists
 			const existingAccount = await prisma.account.findUnique({
-				where: { id: params.id },
+				where: { id },
 			});
 
 			if (!existingAccount) {
@@ -94,7 +98,7 @@ export class AccountController {
 					where: {
 						name: body.name,
 						deletedAt: null,
-						NOT: { id: params.id },
+						NOT: { id },
 					},
 				});
 
@@ -106,14 +110,15 @@ export class AccountController {
 			}
 
 			const account = await prisma.account.update({
-				where: { id: params.id },
+				where: { id },
 				data: {
-					...(body.name && { name: body.name }),
-					...(body.balance !== undefined && {
-						balance: parseFloat(body.balance.toString()),
-					}),
+					...body,
 					updatedAt: new Date(),
-					updatedBy: req.user?.userId || 'system',
+					updatedBy: {
+						connect: {
+							id: userId,
+						},
+					},
 				},
 			});
 
@@ -126,7 +131,8 @@ export class AccountController {
 
 	static async delete(req: Request, res: Response) {
 		try {
-			const { id } = req.params as AccountIdDtoType['params'];
+			const { id } = req.params;
+			const { userId } = req.user!;
 
 			// Check if account exists
 			const existingAccount = await prisma.account.findUnique({
@@ -155,7 +161,11 @@ export class AccountController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: req.user?.userId || 'system',
+					deletedBy: {
+						connect: {
+							id: userId,
+						},
+					},
 				},
 			});
 
@@ -168,11 +178,10 @@ export class AccountController {
 
 	static async getBalance(req: Request, res: Response) {
 		try {
-			const { id } = req.params as AccountIdDtoType['params'];
+			const { id } = req.params;
 
 			const account = await prisma.account.findUnique({
 				where: { id },
-				select: { id: true, name: true, balance: true },
 			});
 
 			if (!account) {

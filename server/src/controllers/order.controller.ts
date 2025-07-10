@@ -23,7 +23,7 @@ export class OrderController {
 					agent: {
 						select: {
 							id: true,
-							username: true,
+							name: true,
 						},
 					},
 				},
@@ -53,7 +53,7 @@ export class OrderController {
 					agent: {
 						select: {
 							id: true,
-							username: true,
+							name: true,
 						},
 					},
 				},
@@ -82,7 +82,7 @@ export class OrderController {
 				discountAmount = 0,
 				discountType = 'fixed',
 				note,
-			} = req.body.body as CreateOrderDtoType['body'];
+			} = req.body.body as CreateOrderDtoType;
 
 			// Check if client exists
 			const client = await prisma.client.findUnique({
@@ -137,16 +137,16 @@ export class OrderController {
 					discountAmount,
 					discountType,
 					note: note || '',
-					agentId: req.user?.userId || 'system',
+					agentId: req.user?.userId,
 					ref: `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-					createdBy: req.user?.userId || 'system',
+					createdBy: req.user?.userId,
 					items: {
 						create: items.map((item: OrderItemInput) => ({
 							productId: item.productId,
 							price: item.price,
 							quantity: item.quantity,
 							ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-							createdBy: req.user?.userId || 'system',
+							createdBy: req.user?.userId,
 						})),
 					},
 				},
@@ -160,7 +160,7 @@ export class OrderController {
 					agent: {
 						select: {
 							id: true,
-							username: true,
+							name: true,
 						},
 					},
 				},
@@ -276,7 +276,7 @@ export class OrderController {
 						totalDue: totalPrice - existingOrder.totalPaid,
 					}),
 					updatedAt: new Date(),
-					updatedBy: req.user?.userId || 'system',
+					updatedBy: req.user?.userId,
 
 					items: body.items
 						? {
@@ -284,7 +284,7 @@ export class OrderController {
 								createMany: {
 									data: body.items.map((item) => ({
 										...item,
-										createdBy: req.user?.userId || 'system',
+										createdBy: req.user?.userId,
 									})),
 								},
 						  }
@@ -300,7 +300,7 @@ export class OrderController {
 					agent: {
 						select: {
 							id: true,
-							username: true,
+							name: true,
 						},
 					},
 				},
@@ -382,7 +382,7 @@ export class OrderController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: req.user?.userId || 'system',
+					deletedBy: req.user?.userId,
 				},
 			});
 

@@ -2,7 +2,6 @@ import { useState } from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Table,
 	TableBody,
 	TableCell,
@@ -27,52 +26,52 @@ import {
 	useCreateClient,
 	useUpdateClient,
 	useDeleteClient,
-	type Client,
-} from '../hooks/useClients';
+} from '../hooks/ressources/useClients';
 import ClientForm from '../components/ClientForm';
+import type { ClientDtoType } from '../../../shared/dtos/client.dto';
 
 export default function Clients() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingClient, setEditingClient] = useState<Client | null>(null);
+	const [selectedClient, setSelectedClient] = useState<ClientDtoType | null>(
+		null
+	);
 
 	// TanStack Query hooks
 	const { data: clients = [], isLoading, error } = useClients();
 	const createClientMutation = useCreateClient();
-	const updateClientMutation = useUpdateClient();
+	const updateClientMutation = useUpdateClient(() => setOpenDialog(false));
 	const deleteClientMutation = useDeleteClient();
 
+	// Snackbar hook
 	const handleSubmit = async (data: any) => {
-		try {
-			if (editingClient) {
-				await updateClientMutation.mutateAsync({ id: editingClient.id, data });
-			} else {
-				await createClientMutation.mutateAsync(data);
-			}
-			setOpenDialog(false);
-			setEditingClient(null);
-		} catch (err) {
-			console.error('Error saving client:', err);
+		if (selectedClient) {
+			await updateClientMutation.mutateAsync({
+				id: selectedClient.id,
+				data,
+			});
+		} else {
+			await createClientMutation.mutateAsync(data);
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this client?')) {
-			try {
-				await deleteClientMutation.mutateAsync(id);
-			} catch (err) {
-				console.error('Error deleting client:', err);
-			}
+		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce client?')) {
+			await deleteClientMutation.mutateAsync(id);
 		}
 	};
 
-	const handleEdit = (client: Client) => {
-		setEditingClient(client);
-		setOpenDialog(true);
+	const handleEdit = (client: ClientDtoType) => {
+		setSelectedClient(client);
 	};
 
 	const handleAdd = () => {
-		setEditingClient(null);
+		setSelectedClient(null);
 		setOpenDialog(true);
+	};
+
+	const handleCloseDialog = () => {
+		setOpenDialog(false);
+		setSelectedClient(null);
 	};
 
 	if (isLoading) {
@@ -97,14 +96,19 @@ export default function Clients() {
 				mb={3}
 			>
 				<Typography variant='h4'>Clients</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					Add Client
+				<Button
+					variant='contained'
+					startIcon={<AddIcon />}
+					onClick={handleAdd}
+					disableElevation
+				>
+					Ajouter un client
 				</Button>
 			</Box>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to fetch clients
+					Erreur lors de la récupération des clients
 				</Alert>
 			)}
 
@@ -115,7 +119,7 @@ export default function Clients() {
 					{createClientMutation.error?.message ||
 						updateClientMutation.error?.message ||
 						deleteClientMutation.error?.message ||
-						'An error occurred'}
+						'Une erreur est survenue'}
 				</Alert>
 			)}
 
@@ -124,10 +128,8 @@ export default function Clients() {
 					<TableHead>
 						<TableRow>
 							<TableCell>Name</TableCell>
-							<TableCell>Email</TableCell>
 							<TableCell>Phone</TableCell>
-							<TableCell>Type</TableCell>
-							<TableCell>Status</TableCell>
+							<TableCell>Address</TableCell>
 							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
@@ -135,29 +137,8 @@ export default function Clients() {
 						{clients.map((client) => (
 							<TableRow key={client.id}>
 								<TableCell>{client.name}</TableCell>
-								<TableCell>{client.email}</TableCell>
 								<TableCell>{client.phone}</TableCell>
-								<TableCell>{client.type}</TableCell>
-								<TableCell>
-									<Box
-										sx={{
-											px: 1,
-											py: 0.5,
-											borderRadius: 1,
-											backgroundColor:
-												client.status === 'ACTIVE'
-													? 'success.light'
-													: 'error.light',
-											color:
-												client.status === 'ACTIVE'
-													? 'success.dark'
-													: 'error.dark',
-											display: 'inline-block',
-										}}
-									>
-										{client.status}
-									</Box>
-								</TableCell>
+								<TableCell>{client.address}</TableCell>
 								<TableCell>
 									<IconButton onClick={() => handleEdit(client)} size='small'>
 										<EditIcon />
@@ -183,18 +164,20 @@ export default function Clients() {
 
 			<Dialog
 				open={openDialog}
-				onClose={() => setOpenDialog(false)}
+				onClose={handleCloseDialog}
 				maxWidth='sm'
 				fullWidth
 			>
 				<DialogTitle>
-					{editingClient ? 'Edit Client' : 'Add New Client'}
+					<Typography variant='h6' sx={{ fontWeight: 600 }}>
+						{selectedClient ? 'Modifier le client' : 'Ajouter un client'}
+					</Typography>
 				</DialogTitle>
-				<DialogContent>
+
+				<DialogContent sx={{ p: 0 }}>
 					<ClientForm
-						initialData={editingClient}
+						init={selectedClient}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createClientMutation.isPending || updateClientMutation.isPending
 						}

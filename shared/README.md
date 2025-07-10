@@ -60,8 +60,8 @@ import type {
 } from '../../../shared/dtos/auth.dto';
 
 // Use the inferred types
-const loginData: LoginDtoType['body'] = {
-	username: 'user',
+const loginData: LoginDtoType = {
+	name: 'user',
 	password: 'password',
 };
 ```

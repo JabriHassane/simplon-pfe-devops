@@ -11,9 +11,9 @@ datasource db {
 }
 
 enum Role {
-  SUPER_ADMIN
-  ADMIN
-  AGENT
+  super_admin
+  admin
+  agent
 }
 
 enum OrderStatus {
@@ -47,19 +47,66 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
-  username String  @unique
-  email    String  @unique
+  name     String  @unique
   password String?
   role     Role
 
   // Relations
-  orders       Order[]
-  purchases    Purchase[]
-  transactions Transaction[]
+  agentOrders       Order[]       @relation("OrderAgent")
+  agentPurchases    Purchase[]    @relation("PurchaseAgent")
+  agentTransactions Transaction[] @relation("TransactionAgent")
+
+  createdOrders Order[] @relation("OrderCreatedBy")
+  updatedOrders Order[] @relation("OrderUpdatedBy")
+  deletedOrders Order[] @relation("OrderDeletedBy")
+
+  createdPurchases Purchase[] @relation("PurchaseCreatedBy")
+  updatedPurchases Purchase[] @relation("PurchaseUpdatedBy")
+  deletedPurchases Purchase[] @relation("PurchaseDeletedBy")
+
+  createdAccounts Account[] @relation("AccountCreatedBy")
+  updatedAccounts Account[] @relation("AccountUpdatedBy")
+  deletedAccounts Account[] @relation("AccountDeletedBy")
+
+  createdTransactions Transaction[] @relation("TransactionCreatedBy")
+  updatedTransactions Transaction[] @relation("TransactionUpdatedBy")
+  deletedTransactions Transaction[] @relation("TransactionDeletedBy")
+
+  createdClients Client[] @relation("ClientCreatedBy")
+  updatedClients Client[] @relation("ClientUpdatedBy")
+  deletedClients Client[] @relation("ClientDeletedBy")
+
+  createdSuppliers Supplier[] @relation("SupplierCreatedBy")
+  updatedSuppliers Supplier[] @relation("SupplierUpdatedBy")
+  deletedSuppliers Supplier[] @relation("SupplierDeletedBy")
+
+  createdProductCategories ProductCategory[] @relation("ProductCategoryCreatedBy")
+  updatedProductCategories ProductCategory[] @relation("ProductCategoryUpdatedBy")
+  deletedProductCategories ProductCategory[] @relation("ProductCategoryDeletedBy")
+
+  createdProducts Product[] @relation("ProductCreatedBy")
+  updatedProducts Product[] @relation("ProductUpdatedBy")
+  deletedProducts Product[] @relation("ProductDeletedBy")
+
+  createdOrderItems OrderItem[] @relation("OrderItemCreatedBy")
+  updatedOrderItems OrderItem[] @relation("OrderItemUpdatedBy")
+  deletedOrderItems OrderItem[] @relation("OrderItemDeletedBy")
+
+  createdPurchaseItems PurchaseItem[] @relation("PurchaseItemCreatedBy")
+  updatedPurchaseItems PurchaseItem[] @relation("PurchaseItemUpdatedBy")
+  deletedPurchaseItems PurchaseItem[] @relation("PurchaseItemDeletedBy")
+
+  createdUsers User[] @relation("UserCreatedBy")
+  updatedUsers User[] @relation("UserUpdatedBy")
+  deletedUsers User[] @relation("UserDeletedBy")
+
+  createdById String?
+  createdBy   User?   @relation("UserCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("UserUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("UserDeletedBy", fields: [deletedById], references: [id])
 
   @@map("users")
 }
@@ -70,9 +117,6 @@ model Client {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   name    String
   phone   String
@@ -80,6 +124,13 @@ model Client {
 
   // Relations
   orders Order[]
+
+  createdById String?
+  createdBy   User?   @relation("ClientCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("ClientUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("ClientDeletedBy", fields: [deletedById], references: [id])
 
   @@map("clients")
 }
@@ -90,9 +141,6 @@ model Supplier {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   name    String
   phone   String
@@ -100,6 +148,13 @@ model Supplier {
 
   // Relations
   purchases Purchase[]
+
+  createdById String?
+  createdBy   User?   @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("SupplierUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("SupplierDeletedBy", fields: [deletedById], references: [id])
 
   @@map("suppliers")
 }
@@ -110,14 +165,18 @@ model ProductCategory {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   name String
 
   // Relations
   products Product[]
+
+  createdById String?
+  createdBy   User?   @relation("ProductCategoryCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("ProductCategoryUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("ProductCategoryDeletedBy", fields: [deletedById], references: [id])
 
   @@map("product_categories")
 }
@@ -128,9 +187,6 @@ model Product {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   name      String
   image     String
@@ -143,6 +199,13 @@ model Product {
   orderItems    OrderItem[]
   purchaseItems PurchaseItem[]
 
+  createdById String?
+  createdBy   User?   @relation("ProductCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("ProductDeletedBy", fields: [deletedById], references: [id])
+
   @@map("products")
 }
 
@@ -152,31 +215,38 @@ model Order {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
-  date          DateTime
+  date DateTime
+
   receiptNumber String
   invoiceNumber String
-  totalPrice    Float
-  totalPaid     Float
-  totalDue      Float
-  status        OrderStatus
-  note          String
+
+  totalPrice Float
+  totalPaid  Float
+  totalDue   Float
+
+  status OrderStatus
+  note   String
 
   discountAmount Float        @default(0)
   discountType   DiscountType @default(fixed)
 
   // Relations
   agentId String
-  agent   User   @relation(fields: [agentId], references: [id])
+  agent   User   @relation("OrderAgent", fields: [agentId], references: [id])
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
 
   items    OrderItem[]
   payments Transaction[]
+
+  createdById String?
+  createdBy   User?   @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("OrderUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("OrderDeletedBy", fields: [deletedById], references: [id])
 
   @@map("orders")
 }
@@ -186,9 +256,6 @@ model OrderItem {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   price    Float
   quantity Int
@@ -200,6 +267,13 @@ model OrderItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
+  createdById String?
+  createdBy   User?   @relation("OrderItemCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("OrderItemUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("OrderItemDeletedBy", fields: [deletedById], references: [id])
+
   @@map("order_items")
 }
 
@@ -209,25 +283,25 @@ model Purchase {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
-  date          DateTime
+  date DateTime
+
   receiptNumber String
   invoiceNumber String
-  totalPrice    Float
-  totalPaid     Float
-  totalDue      Float
-  status        OrderStatus
-  note          String
+
+  totalPrice Float
+  totalPaid  Float
+  totalDue   Float
+
+  status OrderStatus
+  note   String
 
   discountAmount Float        @default(0)
   discountType   DiscountType @default(fixed)
 
   // Relations
   agentId String
-  agent   User   @relation(fields: [agentId], references: [id])
+  agent   User   @relation("PurchaseAgent", fields: [agentId], references: [id])
 
   supplierId String
   supplier   Supplier @relation(fields: [supplierId], references: [id])
@@ -235,18 +309,21 @@ model Purchase {
   items    PurchaseItem[]
   payments Transaction[]
 
+  createdById String?
+  createdBy   User?   @relation("PurchaseCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("PurchaseUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("PurchaseDeletedBy", fields: [deletedById], references: [id])
+
   @@map("purchases")
 }
 
 model PurchaseItem {
   id        String    @id @default(cuid())
-  ref       String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   price    Float
   quantity Int
@@ -258,6 +335,13 @@ model PurchaseItem {
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
+  createdById String?
+  createdBy   User?   @relation("PurchaseItemCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("PurchaseItemUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("PurchaseItemDeletedBy", fields: [deletedById], references: [id])
+
   @@map("purchase_items")
 }
 
@@ -267,9 +351,6 @@ model Account {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   name    String
   balance Float
@@ -277,6 +358,13 @@ model Account {
   // Relations
   transactionsFrom Transaction[] @relation("AccountFrom")
   transactionsTo   Transaction[] @relation("AccountTo")
+
+  createdById String?
+  createdBy   User?   @relation("AccountCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("AccountUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("AccountDeletedBy", fields: [deletedById], references: [id])
 
   @@map("accounts")
 }
@@ -287,9 +375,6 @@ model Transaction {
   createdAt DateTime  @default(now())
   updatedAt DateTime?
   deletedAt DateTime?
-  createdBy String
-  updatedBy String?
-  deletedBy String?
 
   date          DateTime
   type          TransactionType
@@ -298,7 +383,7 @@ model Transaction {
 
   // Relations
   agentId String
-  agent   User   @relation(fields: [agentId], references: [id])
+  agent   User   @relation("TransactionAgent", fields: [agentId], references: [id])
 
   orderId String?
   order   Order?  @relation(fields: [orderId], references: [id])
@@ -311,6 +396,13 @@ model Transaction {
 
   toId String?
   to   Account? @relation("AccountTo", fields: [toId], references: [id])
+
+  createdById String?
+  createdBy   User?   @relation("TransactionCreatedBy", fields: [createdById], references: [id])
+  updatedById String?
+  updatedBy   User?   @relation("TransactionUpdatedBy", fields: [updatedById], references: [id])
+  deletedById String?
+  deletedBy   User?   @relation("TransactionDeletedBy", fields: [deletedById], references: [id])
 
   @@map("transactions")
 }

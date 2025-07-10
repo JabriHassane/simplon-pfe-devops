@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Table,
 	TableBody,
 	TableCell,
@@ -23,20 +22,20 @@ import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 } from '@mui/icons-material';
-import {
-	useOrders,
-	useCreateOrder,
-	useUpdateOrder,
-	useDeleteOrder,
-	type Order,
-} from '../hooks/useOrders';
-import { useClients, type Client } from '../hooks/useClients';
-import { useProducts, type Product } from '../hooks/useProducts';
+import { useSnackbar } from '../hooks/ressources/useSnackbar';
 import OrderForm from '../components/OrderForm';
+import {
+	useCreateOrder,
+	useDeleteOrder,
+	useOrders,
+	useUpdateOrder,
+} from '../hooks/ressources/useOrders';
+import type { OrderDtoType } from '../../../shared/dtos/order.dto';
+import { formatDate } from '../utils/date.utils';
 
 export default function Sales() {
 	const [openDialog, setOpenDialog] = useState(false);
-	const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+	const [selectedOrder, setSelectedOrder] = useState<OrderDtoType | null>(null);
 
 	// TanStack Query hooks
 	const {
@@ -44,34 +43,31 @@ export default function Sales() {
 		isLoading: ordersLoading,
 		error: ordersError,
 	} = useOrders();
-	const {
-		data: clients = [],
-		isLoading: clientsLoading,
-		error: clientsError,
-	} = useClients();
-	const {
-		data: products = [],
-		isLoading: productsLoading,
-		error: productsError,
-	} = useProducts();
+
 	const createOrderMutation = useCreateOrder();
-	const updateOrderMutation = useUpdateOrder();
+	const updateOrderMutation = useUpdateOrder(() => setOpenDialog(false));
 	const deleteOrderMutation = useDeleteOrder();
 
-	const isLoading = ordersLoading || clientsLoading || productsLoading;
-	const error = ordersError || clientsError || productsError;
+	// Snackbar hook
+	const { showSuccess, showError } = useSnackbar();
+
+	const isLoading = ordersLoading;
+	const error = ordersError;
 
 	const handleSubmit = async (data: any) => {
 		try {
-			if (editingOrder) {
-				await updateOrderMutation.mutateAsync({ id: editingOrder.id, data });
+			if (selectedOrder) {
+				await updateOrderMutation.mutateAsync({ id: selectedOrder.id, data });
+				showSuccess('Order updated successfully');
 			} else {
 				await createOrderMutation.mutateAsync(data);
+				showSuccess('Order created successfully');
 			}
 			setOpenDialog(false);
-			setEditingOrder(null);
+			setSelectedOrder(null);
 		} catch (err) {
 			console.error('Error saving order:', err);
+			showError('Failed to save order');
 		}
 	};
 
@@ -79,19 +75,21 @@ export default function Sales() {
 		if (window.confirm('Are you sure you want to delete this order?')) {
 			try {
 				await deleteOrderMutation.mutateAsync(id);
+				showSuccess('Order deleted successfully');
 			} catch (err) {
 				console.error('Error deleting order:', err);
+				showError('Failed to delete order');
 			}
 		}
 	};
 
-	const handleEdit = (order: Order) => {
-		setEditingOrder(order);
+	const handleEdit = (order: OrderDtoType) => {
+		setSelectedOrder(order);
 		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
-		setEditingOrder(null);
+		setSelectedOrder(null);
 		setOpenDialog(true);
 	};
 
@@ -102,9 +100,7 @@ export default function Sales() {
 		}).format(amount);
 	};
 
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString();
-	};
+	
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
@@ -171,27 +167,29 @@ export default function Sales() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							<TableCell>Order ID</TableCell>
-							<TableCell>Client</TableCell>
-							<TableCell>Items</TableCell>
-							<TableCell>Total</TableCell>
-							<TableCell>Discount</TableCell>
-							<TableCell>Status</TableCell>
+							<TableCell>Ref</TableCell>
 							<TableCell>Date</TableCell>
-							<TableCell>Actions</TableCell>
+							<TableCell>Agent</TableCell>
+							<TableCell>Client</TableCell>
+							<TableCell>Articles</TableCell>
+							<TableCell>Total</TableCell>
+							<TableCell>Remise</TableCell>
+							<TableCell>Statut</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
 						{orders.map((order) => (
 							<TableRow key={order.id}>
-								<TableCell>{order.id}</TableCell>
+								<TableCell>{order.ref}</TableCell>
+								<TableCell>{formatDate(order.date)}</TableCell>
+								<TableCell>{order.agent?.name || 'N/A'}</TableCell>
 								<TableCell>{order.client?.name || 'N/A'}</TableCell>
 								<TableCell>{order.items?.length || 0} items</TableCell>
-								<TableCell>{formatCurrency(order.totalAmount)}</TableCell>
+								<TableCell>{formatCurrency(order.totalPrice)}</TableCell>
 								<TableCell>
 									{order.discountAmount > 0
 										? `${order.discountAmount}${
-												order.discountType === 'PERCENTAGE' ? '%' : ''
+												order.discountType === 'percentage' ? '%' : ''
 										  }`
 										: 'None'}
 								</TableCell>
@@ -202,7 +200,6 @@ export default function Sales() {
 										size='small'
 									/>
 								</TableCell>
-								<TableCell>{formatDate(order.createdAt)}</TableCell>
 								<TableCell>
 									<IconButton onClick={() => handleEdit(order)} size='small'>
 										<EditIcon />
@@ -232,14 +229,13 @@ export default function Sales() {
 				maxWidth='md'
 				fullWidth
 			>
-				<DialogTitle>{editingOrder ? 'Edit Order' : 'New Sale'}</DialogTitle>
+				<DialogTitle>
+					{selectedOrder ? 'Modifier la commande' : 'Nouvelle commande'}
+				</DialogTitle>
 				<DialogContent>
 					<OrderForm
-						initialData={editingOrder}
-						clients={clients}
-						products={products}
+						init={selectedOrder}
 						onSubmit={handleSubmit}
-						onCancel={() => setOpenDialog(false)}
 						isLoading={
 							createOrderMutation.isPending || updateOrderMutation.isPending
 						}

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Box, Typography, Button, Paper, Chip, Stack } from '@mui/material';
-import ResourcePicker, { ResourceType } from './ResourcePicker';
 import ResourcePickerField from './ResourcePickerField';
 
 export default function ResourcePickerExample() {

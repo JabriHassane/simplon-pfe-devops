@@ -1,19 +1,17 @@
 import { Box, TextField, Button } from '@mui/material';
-import { CreateClientDto } from '../utils/validation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { CreateClientDto } from '../../../shared/dtos/client.dto';
 
 interface ClientFormProps {
 	onSubmit: (data: any) => void;
-	onCancel?: () => void;
-	initialData?: any;
+	init?: any;
 	isLoading?: boolean;
 }
 
 export default function ClientForm({
 	onSubmit,
-	onCancel,
-	initialData,
+	init,
 	isLoading = false,
 }: ClientFormProps) {
 	const {
@@ -21,8 +19,8 @@ export default function ClientForm({
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateClientDto.shape.body),
-		defaultValues: initialData || {
+		resolver: zodResolver(CreateClientDto),
+		defaultValues: init || {
 			name: '',
 			phone: '',
 			address: '',
@@ -30,8 +28,6 @@ export default function ClientForm({
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
-
-	// console.log(errors);
 
 	return (
 		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
@@ -69,28 +65,15 @@ export default function ClientForm({
 				helperText={errors.address?.message as string}
 			/>
 
-			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-				{onCancel && (
-					<Button
-						type='button'
-						variant='outlined'
-						size='large'
-						onClick={onCancel}
-						fullWidth
-					>
-						Cancel
-					</Button>
-				)}
-				<Button
-					type='submit'
-					variant='contained'
-					size='large'
-					disabled={isLoading || !isValid}
-					fullWidth
-				>
-					{isLoading ? 'Enregistrement...' : initialData ? 'Modifier' : 'Créer'}
-				</Button>
-			</Box>
+			<Button
+				type='submit'
+				variant='contained'
+				size='large'
+				disabled={isLoading || !isValid}
+				fullWidth
+			>
+				{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
+			</Button>
 		</Box>
 	);
 }

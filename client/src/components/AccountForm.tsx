@@ -4,19 +4,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateAccountDto,
 	type CreateAccountDtoType,
-} from '../utils/validation';
+} from '../../../shared/dtos/account.dto';
 
 interface AccountFormProps {
 	onSubmit: (data: any) => void;
 	onCancel?: () => void;
-	initialData?: CreateAccountDtoType['body'] | null;
+	init?: CreateAccountDtoType | null;
 	isLoading?: boolean;
 }
 
 export default function AccountForm({
 	onSubmit,
 	onCancel,
-	initialData,
+	init,
 	isLoading = false,
 }: AccountFormProps) {
 	const {
@@ -24,8 +24,11 @@ export default function AccountForm({
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateAccountDto.shape.body),
-		defaultValues: initialData,
+		resolver: zodResolver(CreateAccountDto),
+		defaultValues: init || {
+			name: '',
+			balance: 0,
+		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -47,10 +50,10 @@ export default function AccountForm({
 			<TextField
 				fullWidth
 				label='Référence'
-				{...register('ref')}
+				{...register('balance')}
 				margin='normal'
-				error={!!errors.ref}
-				helperText={errors.ref?.message as string}
+				error={!!errors.balance}
+				helperText={errors.balance?.message as string}
 				required
 			/>
 
@@ -73,7 +76,7 @@ export default function AccountForm({
 					fullWidth
 					size='large'
 				>
-					{isLoading ? 'Enregistrement...' : initialData ? 'Modifier' : 'Créer'}
+					{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
 				</Button>
 			</Box>
 		</Box>

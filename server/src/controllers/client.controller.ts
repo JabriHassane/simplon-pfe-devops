@@ -42,8 +42,7 @@ export class ClientController {
 
 	static async create(req: Request, res: Response) {
 		try {
-			const { name, phone, address } = req.body
-				.body as CreateClientDtoType['body'];
+			const { name, phone, address } = req.body.body as CreateClientDtoType;
 
 			// Check if client with same phone already exists
 			const existingClient = await prisma.client.findFirst({
@@ -65,7 +64,7 @@ export class ClientController {
 					phone,
 					address,
 					ref: `CLI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-					createdBy: req.user?.userId || 'system',
+					createdBy: req.user?.userId,
 				},
 			});
 
@@ -114,7 +113,7 @@ export class ClientController {
 					...(body?.phone && { phone: body.phone }),
 					...(body?.address && { address: body.address }),
 					updatedAt: new Date(),
-					updatedBy: req.user?.userId || 'system',
+					updatedBy: req.user?.userId,
 				},
 			});
 
@@ -154,7 +153,7 @@ export class ClientController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: req.user?.userId || 'system',
+					deletedBy: req.user?.userId,
 				},
 			});
 

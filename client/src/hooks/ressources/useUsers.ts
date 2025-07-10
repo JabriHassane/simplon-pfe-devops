@@ -1,0 +1,123 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { UserService } from '../../services/user.service';
+import type {
+	CreateUserDtoType,
+	UpdateUserDtoType,
+} from '../../../../shared/dtos/user.dto';
+import { useSnackbar } from './useSnackbar';
+
+// Query keys
+export const userKeys = {
+	lists: () => ['users'],
+	detail: (id: string) => [...userKeys.lists(), id],
+};
+
+// Get all users
+export const useUsers = () => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: userKeys.lists(),
+		queryFn: async () => {
+			try {
+				return await UserService.getAll();
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des utilisateurs');
+				return [];
+			}
+		},
+	});
+};
+
+// Get single user
+export const useUser = (id: string) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: userKeys.detail(id),
+		queryFn: async () => {
+			try {
+				return await UserService.getById(id);
+			} catch (error) {
+				console.error(error);
+				showError("Erreur lors de la récupération de l'utilisateur");
+				return null;
+			}
+		},
+		enabled: !!id,
+	});
+};
+
+// Create user mutation
+export const useCreateUser = () => {
+	const { showSuccess, showError } = useSnackbar();
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (data: CreateUserDtoType) => {
+			try {
+				await UserService.create(data);
+				queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+
+				showSuccess('Utilisateur créé');
+			} catch (error) {
+				console.error(error);
+				showError("Erreur lors de la création de l'utilisateur");
+			}
+		},
+		onSuccess: () => {},
+	});
+};
+
+// Update user mutation
+export const useUpdateUser = (callback: () => void) => {
+	const { showSuccess, showError } = useSnackbar();
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async ({
+			id,
+			data,
+		}: {
+			id: string;
+			data: UpdateUserDtoType;
+		}) => {
+			try {
+				await UserService.update(id, data);
+
+				queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+				queryClient.setQueryData(userKeys.detail(id), data);
+
+				showSuccess('Utilisateur modifié');
+				callback();
+			} catch (error) {
+				console.error(error);
+				showError("Erreur lors de la modification de l'utilisateur");
+			}
+		},
+	});
+};
+
+// Delete user mutation
+// TODO: add callback
+export const useDeleteUser = () => {
+	const { showSuccess, showError } = useSnackbar();
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (id: string) => {
+			try {
+				await UserService.delete(id);
+
+				queryClient.invalidateQueries({ queryKey: userKeys.lists() });
+				queryClient.removeQueries({ queryKey: userKeys.detail(id) });
+
+				showSuccess('Utilisateur supprimé');
+			} catch (error) {
+				console.error(error);
+				showError("Erreur lors de la suppression de l'utilisateur");
+			}
+		},
+	});
+};

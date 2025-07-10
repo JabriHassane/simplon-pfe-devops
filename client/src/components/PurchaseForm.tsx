@@ -6,72 +6,105 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
+	Typography,
+	IconButton,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreatePurchaseDto } from '../utils/validation';
+import ResourcePickerField from './ResourcePickerField';
+import { CreatePurchaseDto } from '../../../shared/dtos/purchase.dto';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers';
+import { useProducts } from '../hooks/ressources/useProducts';
+import { useSuppliers } from '../hooks/ressources/useSuppliers';
 
 interface PurchaseFormProps {
 	onSubmit: (data: any) => void;
-	onCancel?: () => void;
-	initialData?: any;
-	suppliers: Array<{ id: string; name: string }>;
-	products: Array<{ id: string; name: string; price: number }>;
+	init?: any;
 	isLoading?: boolean;
 }
 
 export default function PurchaseForm({
 	onSubmit,
-	onCancel,
-	initialData,
-	suppliers,
-	products,
+	init,
 	isLoading = false,
 }: PurchaseFormProps) {
+	const { data: suppliers = [], isLoading: suppliersLoading } = useSuppliers();
+	const { data: products = [], isLoading: productsLoading } = useProducts();
+
+	const [selectedSupplier, setSelectedSupplier] = useState<
+		| {
+				id: string;
+				name: string;
+				email?: string;
+		  }
+		| undefined
+	>(undefined);
+
+	const [selectedProducts, setSelectedProducts] = useState<{
+		[key: number]: { id: string; name: string; price: number };
+	}>({});
+
 	const {
 		register,
 		handleSubmit,
+		control,
+		watch,
+		setValue,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreatePurchaseDto.shape.body),
-		defaultValues: initialData || {
-			date: new Date().toISOString().split('T')[0],
+		resolver: zodResolver(CreatePurchaseDto),
+		defaultValues: init || {
 			supplierId: '',
-			receiptNumber: '',
-			invoiceNumber: '',
-			items: [{ productId: '', price: 0, quantity: 1 }],
-			status: 'pending' as const,
+			items: [{ productId: '', quantity: 1, price: 0 }],
 			discountAmount: 0,
-			discountType: 'fixed' as const,
+			discountType: 'fixed',
 			note: '',
 		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
 
+	const { fields, append, remove } = useFieldArray({
+		control,
+		name: 'items',
+	});
+
 	return (
 		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
-			<TextField
-				fullWidth
-				label='Date'
-				type='date'
-				{...register('date')}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.date}
-				helperText={errors.date?.message as string}
-				required
+			<Controller
+				name='date'
+				control={control}
+				render={({ field }) => (
+					<DatePicker
+						label='Date'
+						value={dayjs(field.value)}
+						onChange={(date) => field.onChange(date?.toISOString())}
+						slotProps={{
+							textField: {
+								error: !!errors.date,
+								helperText: errors.date?.message as string,
+							},
+						}}
+					/>
+				)}
 			/>
 
-			<TextField
-				fullWidth
-				label='ID du fournisseur'
-				{...register('supplierId')}
-				margin='normal'
-				variant='outlined'
+			<ResourcePickerField
+				label='Fournisseur'
+				value={watch('supplierId') || ''}
+				onChange={(value) => {
+					setValue('supplierId', value);
+					const supplier = suppliers.find((c) => c.id === value);
+					setSelectedSupplier(supplier || undefined);
+				}}
+				resourceType='supplier'
 				error={!!errors.supplierId}
 				helperText={errors.supplierId?.message as string}
 				required
+				selectedResource={selectedSupplier}
+				disabled={suppliersLoading}
 			/>
 
 			<TextField
@@ -111,32 +144,112 @@ export default function PurchaseForm({
 				</Select>
 			</FormControl>
 
-			<TextField
-				fullWidth
-				label='Montant de remise'
-				type='number'
-				{...register('discountAmount', { valueAsNumber: true })}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.discountAmount}
-				helperText={errors.discountAmount?.message as string}
-			/>
+			<Typography variant='h6' sx={{ mt: 3, mb: 2 }}>
+				Articles
+			</Typography>
 
-			<FormControl fullWidth margin='normal'>
-				<InputLabel>Type de remise</InputLabel>
-				<Select
-					{...register('discountType')}
-					label='Type de remise'
-					error={!!errors.discountType}
+			{fields.map((item, index) => (
+				<Box
+					key={item.id}
+					sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}
 				>
-					<MenuItem value='fixed'>Montant fixe</MenuItem>
-					<MenuItem value='percentage'>Pourcentage</MenuItem>
-				</Select>
-			</FormControl>
+					<Box sx={{ flex: 2 }}>
+						<ResourcePickerField
+							label='Produit'
+							value={watch(`items.${index}.productId`) || ''}
+							onChange={(value) => {
+								setValue(`items.${index}.productId`, value);
+								const product = products.find((p) => p.id === value);
+								if (product) {
+									setSelectedProducts((prev) => ({
+										...prev,
+										[index]: product,
+									}));
+									setValue(`items.${index}.price`, product.price);
+								}
+							}}
+							resourceType='product'
+							error={!!(errors.items as any)?.[index]?.productId}
+							helperText={
+								(errors.items as any)?.[index]?.productId?.message as string
+							}
+							required
+							selectedResource={selectedProducts[index]}
+							disabled={productsLoading}
+						/>
+					</Box>
+
+					<TextField
+						label='Quantité'
+						type='number'
+						{...register(`items.${index}.quantity`, { valueAsNumber: true })}
+						sx={{ flex: 1 }}
+						inputProps={{ min: 1 }}
+						error={!!(errors.items as any)?.[index]?.quantity}
+						helperText={
+							(errors.items as any)?.[index]?.quantity?.message as string
+						}
+						required
+					/>
+
+					<TextField
+						label='Prix'
+						type='number'
+						{...register(`items.${index}.price`, { valueAsNumber: true })}
+						sx={{ flex: 1 }}
+						inputProps={{ min: 0, step: 0.01 }}
+						error={!!(errors.items as any)?.[index]?.price}
+						helperText={
+							(errors.items as any)?.[index]?.price?.message as string
+						}
+						required
+					/>
+
+					<IconButton
+						onClick={() => remove(index)}
+						color='error'
+						disabled={fields.length === 1}
+					>
+						×
+					</IconButton>
+				</Box>
+			))}
+
+			<Button
+				onClick={() => append({ productId: '', quantity: 1, price: 0 })}
+				variant='outlined'
+				sx={{ mb: 2 }}
+			>
+				Ajouter un article
+			</Button>
+
+			<Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+				<TextField
+					label='Remise'
+					type='number'
+					{...register('discountAmount', { valueAsNumber: true })}
+					sx={{ flex: 1 }}
+					inputProps={{ min: 0, step: 0.01 }}
+					error={!!errors.discountAmount}
+					helperText={errors.discountAmount?.message as string}
+				/>
+				<FormControl sx={{ flex: 1 }}>
+					<InputLabel>Type de remise</InputLabel>
+					<Select
+						{...register('discountType')}
+						label='Type de remise'
+						error={!!errors.discountType}
+						defaultValue='fixed'
+					>
+						<MenuItem value='fixed'>Montant fixe</MenuItem>
+						<MenuItem value='percentage'>Pourcentage</MenuItem>
+					</Select>
+				</FormControl>
+			</Box>
 
 			<TextField
 				fullWidth
-				label='Note (optionnel)'
+				label='Note'
 				{...register('note')}
 				margin='normal'
 				variant='outlined'
@@ -146,28 +259,15 @@ export default function PurchaseForm({
 				helperText={errors.note?.message as string}
 			/>
 
-			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-				{onCancel && (
-					<Button
-						variant='outlined'
-						onClick={onCancel}
-						fullWidth
-						size='large'
-						disabled={isLoading}
-					>
-						Cancel
-					</Button>
-				)}
-				<Button
-					type='submit'
-					variant='contained'
-					disabled={isLoading || !isValid}
-					fullWidth
-					size='large'
-				>
-					{isLoading ? 'Saving...' : initialData ? 'Update' : 'Create'}
-				</Button>
-			</Box>
+			<Button
+				type='submit'
+				variant='contained'
+				disabled={isLoading || !isValid}
+				fullWidth
+				size='large'
+			>
+				{isLoading ? 'Enregistrement...' : init ? 'Mettre à jour' : 'Créer'}
+			</Button>
 		</Box>
 	);
 }

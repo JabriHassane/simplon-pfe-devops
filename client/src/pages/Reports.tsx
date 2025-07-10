@@ -23,13 +23,13 @@ import {
 	Inventory as InventoryIcon,
 	People as PeopleIcon,
 } from '@mui/icons-material';
-import { useAccounts } from '../hooks/useAccounts';
-import { useTransactions } from '../hooks/useTransactions';
-import { useProducts } from '../hooks/useProducts';
-import { useClients } from '../hooks/useClients';
-import { useSuppliers } from '../hooks/useSuppliers';
-import { useOrders } from '../hooks/useOrders';
-import { usePurchases } from '../hooks/usePurchases';
+import { useAccounts } from '../hooks/ressources/useAccounts';
+import { useTransactions } from '../hooks/ressources/useTransactions';
+import { useProducts } from '../hooks/ressources/useProducts';
+import { useClients } from '../hooks/ressources/useClients';
+import { useSuppliers } from '../hooks/ressources/useSuppliers';
+import { useOrders } from '../hooks/ressources/useOrders';
+import { usePurchases } from '../hooks/ressources/usePurchases';
 
 export default function Reports() {
 	// TanStack Query hooks
@@ -95,9 +95,9 @@ export default function Reports() {
 		.filter((t) => t.type === 'EXPENSE')
 		.reduce((sum, t) => sum + t.amount, 0);
 
-	const totalSales = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+	const totalSales = orders.reduce((sum, order) => sum + order.totalPrice, 0);
 	const totalPurchases = purchases.reduce(
-		(sum, purchase) => sum + purchase.totalAmount,
+		(sum, purchase) => sum + purchase.totalPrice,
 		0
 	);
 
@@ -316,7 +316,7 @@ export default function Reports() {
 			<Typography variant='h6' gutterBottom>
 				Recent Transactions
 			</Typography>
-			
+
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>

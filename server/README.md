@@ -40,7 +40,7 @@ Backend server for the PPP (Point de Vente) application.
 
 The Prisma schema includes the following models:
 
-- **User** - System users with roles (SUPER_ADMIN, ADMIN, AGENT)
+- **User** - System users with roles (super_admin, admin, agent)
 - **Client** - Customer information
 - **Supplier** - Supplier information
 - **ProductCategory** - Product categories
