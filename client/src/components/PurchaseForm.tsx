@@ -13,7 +13,10 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from './ResourcePickerField';
-import { CreatePurchaseDto } from '../../../shared/dtos/purchase.dto';
+import {
+	CreatePurchaseDto,
+	type PurchaseDtoType,
+} from '../../../shared/dtos/purchase.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useProducts } from '../hooks/ressources/useProducts';
@@ -21,7 +24,7 @@ import { useSuppliers } from '../hooks/ressources/useSuppliers';
 
 interface PurchaseFormProps {
 	onSubmit: (data: any) => void;
-	init?: any;
+	init: PurchaseDtoType | null;
 	isLoading?: boolean;
 }
 
@@ -55,13 +58,7 @@ export default function PurchaseForm({
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreatePurchaseDto),
-		defaultValues: init || {
-			supplierId: '',
-			items: [{ productId: '', quantity: 1, price: 0 }],
-			discountAmount: 0,
-			discountType: 'fixed',
-			note: '',
-		},
+		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});

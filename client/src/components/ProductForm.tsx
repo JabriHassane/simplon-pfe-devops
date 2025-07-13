@@ -1,7 +1,6 @@
 import {
 	Box,
 	TextField,
-	Button,
 	FormControl,
 	InputLabel,
 	Select,
@@ -12,22 +11,21 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateProductDto,
 	type CreateProductDtoType,
+	type ProductDtoType,
 } from '../../../shared/dtos/product.dto';
 import { useProductCategories } from '../hooks/ressources/useProductCategories';
+import ResourceForm from './ResourceForm';
+import {
+	useCreateProduct,
+	useUpdateProduct,
+} from '../hooks/ressources/useProducts';
 
 interface Props {
-	onSubmit: (data: any) => void;
-	onCancel?: () => void;
-	init: CreateProductDtoType | null;
-	isLoading?: boolean;
+	init: ProductDtoType | null;
+	onClose: () => void;
 }
 
-export default function ProductForm({
-	onSubmit,
-	onCancel,
-	init,
-	isLoading = false,
-}: Props) {
+export default function ProductForm({ init, onClose }: Props) {
 	const { data: categories = [] } = useProductCategories();
 
 	const {
@@ -41,8 +39,28 @@ export default function ProductForm({
 		reValidateMode: 'onChange',
 	});
 
+	const createProductMutation = useCreateProduct(onClose);
+	const updateProductMutation = useUpdateProduct(onClose);
+
+	const onSubmit = async (data: CreateProductDtoType) => {
+		if (init) {
+			await updateProductMutation.mutateAsync({
+				id: init.id,
+				data,
+			});
+		} else {
+			await createProductMutation.mutateAsync(data);
+		}
+	};
+
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+		<ResourceForm
+			onSubmit={handleSubmit(onSubmit)}
+			isValid={isValid}
+			isLoading={
+				createProductMutation.isPending || updateProductMutation.isPending
+			}
+		>
 			<TextField
 				fullWidth
 				label='Nom du produit'
@@ -116,29 +134,6 @@ export default function ProductForm({
 					required
 				/>
 			)}
-
-			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-				{onCancel && (
-					<Button
-						type='button'
-						variant='outlined'
-						size='large'
-						onClick={onCancel}
-						fullWidth
-					>
-						Cancel
-					</Button>
-				)}
-				<Button
-					type='submit'
-					variant='contained'
-					disabled={isLoading || !isValid}
-					fullWidth
-					size='large'
-				>
-					{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
-				</Button>
-			</Box>
-		</Box>
+		</ResourceForm>
 	);
 }

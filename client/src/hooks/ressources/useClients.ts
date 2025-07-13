@@ -50,7 +50,7 @@ export const useClient = (id: string) => {
 };
 
 // Create client mutation
-export const useCreateClient = () => {
+export const useCreateClient = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -62,6 +62,7 @@ export const useCreateClient = () => {
 				queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
 
 				showSuccess('Client créé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création du client');

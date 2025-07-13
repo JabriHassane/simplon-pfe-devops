@@ -62,27 +62,27 @@ export default function Purchases() {
 					id: selectedPurchase.id,
 					data,
 				});
-				showSuccess('Purchase updated successfully');
+				showSuccess('Achat modifié avec succès');
 			} else {
 				await createPurchaseMutation.mutateAsync(data);
-				showSuccess('Purchase created successfully');
+				showSuccess('Achat créé avec succès');
 			}
 			setOpenDialog(false);
 			setSelectedPurchase(null);
 		} catch (err) {
 			console.error('Error saving purchase:', err);
-			showError('Failed to save purchase');
+			showError("Échec de la sauvegarde de l'achat");
 		}
 	};
 
 	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this purchase?')) {
+		if (window.confirm('Êtes-vous sûr de vouloir supprimer cet achat ?')) {
 			try {
 				await deletePurchaseMutation.mutateAsync(id);
-				showSuccess('Purchase deleted successfully');
+				showSuccess('Achat supprimé avec succès');
 			} catch (err) {
 				console.error('Error deleting purchase:', err);
-				showError('Failed to delete purchase');
+				showError("Échec de la suppression de l'achat");
 			}
 		}
 	};
@@ -167,12 +167,12 @@ export default function Purchases() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							<TableCell>Purchase ID</TableCell>
-							<TableCell>Supplier</TableCell>
-							<TableCell>Items</TableCell>
+							<TableCell>ID Achat</TableCell>
+							<TableCell>Fournisseur</TableCell>
+							<TableCell>Articles</TableCell>
 							<TableCell>Total</TableCell>
-							<TableCell>Discount</TableCell>
-							<TableCell>Status</TableCell>
+							<TableCell>Réduction</TableCell>
+							<TableCell>Statut</TableCell>
 							<TableCell>Date</TableCell>
 							<TableCell>Actions</TableCell>
 						</TableRow>
@@ -184,14 +184,14 @@ export default function Purchases() {
 								<TableCell>{formatDate(purchase.date)}</TableCell>
 								<TableCell>{purchase.agent?.name || 'N/A'}</TableCell>
 								<TableCell>{purchase.supplier?.name || 'N/A'}</TableCell>
-								<TableCell>{purchase.items?.length || 0} items</TableCell>
+								<TableCell>{purchase.items?.length || 0} articles</TableCell>
 								<TableCell>{formatCurrency(purchase.totalPrice)}</TableCell>
 								<TableCell>
 									{purchase.discountAmount > 0
 										? `${purchase.discountAmount}${
 												purchase.discountType === 'percentage' ? '%' : ''
 										  }`
-										: 'None'}
+										: 'Aucune'}
 								</TableCell>
 								<TableCell>
 									<Chip
@@ -200,7 +200,7 @@ export default function Purchases() {
 										size='small'
 									/>
 								</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(purchase)} size='small'>
 										<EditIcon />
 									</IconButton>

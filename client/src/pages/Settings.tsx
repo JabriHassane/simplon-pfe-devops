@@ -85,18 +85,18 @@ export default function Settings() {
 	return (
 		<Box>
 			<Typography variant='h4' gutterBottom>
-				Settings
+				Paramètres
 			</Typography>
 
 			{saved && (
 				<Alert severity='success' sx={{ mb: 2 }}>
-					Settings saved successfully!
+					Paramètres sauvegardés avec succès !
 				</Alert>
 			)}
 
 			<Paper sx={{ p: 3, mb: 3 }}>
 				<Typography variant='h6' gutterBottom>
-					General Settings
+					Paramètres généraux
 				</Typography>
 				<Box
 					sx={{
@@ -107,20 +107,20 @@ export default function Settings() {
 				>
 					<TextField
 						fullWidth
-						label='Company Name'
+						label="Nom de l'entreprise"
 						value={settings.companyName}
 						onChange={(e) =>
 							setSettings({ ...settings, companyName: e.target.value })
 						}
 					/>
 					<FormControl fullWidth>
-						<InputLabel>Currency</InputLabel>
+						<InputLabel>Devise</InputLabel>
 						<Select
 							value={settings.currency}
 							onChange={(e) =>
 								setSettings({ ...settings, currency: e.target.value })
 							}
-							label='Currency'
+							label='Devise'
 						>
 							<MenuItem value='USD'>USD ($)</MenuItem>
 							<MenuItem value='EUR'>EUR (€)</MenuItem>
@@ -129,28 +129,28 @@ export default function Settings() {
 						</Select>
 					</FormControl>
 					<FormControl fullWidth>
-						<InputLabel>Timezone</InputLabel>
+						<InputLabel>Fuseau horaire</InputLabel>
 						<Select
 							value={settings.timezone}
 							onChange={(e) =>
 								setSettings({ ...settings, timezone: e.target.value })
 							}
-							label='Timezone'
+							label='Fuseau horaire'
 						>
 							<MenuItem value='UTC'>UTC</MenuItem>
-							<MenuItem value='EST'>Eastern Time</MenuItem>
-							<MenuItem value='PST'>Pacific Time</MenuItem>
-							<MenuItem value='CET'>Central European Time</MenuItem>
+							<MenuItem value='EST'>Heure de l'Est</MenuItem>
+							<MenuItem value='PST'>Heure du Pacifique</MenuItem>
+							<MenuItem value='CET'>Heure d'Europe centrale</MenuItem>
 						</Select>
 					</FormControl>
 					<FormControl fullWidth>
-						<InputLabel>Language</InputLabel>
+						<InputLabel>Langue</InputLabel>
 						<Select
 							value={settings.language}
 							onChange={(e) =>
 								setSettings({ ...settings, language: e.target.value })
 							}
-							label='Language'
+							label='Langue'
 						>
 							<MenuItem value='en'>English</MenuItem>
 							<MenuItem value='fr'>Français</MenuItem>
@@ -173,7 +173,7 @@ export default function Settings() {
 								onChange={handleNotificationChange('email')}
 							/>
 						}
-						label='Email Notifications'
+						label='Notifications par email'
 					/>
 					<FormControlLabel
 						control={
@@ -182,7 +182,7 @@ export default function Settings() {
 								onChange={handleNotificationChange('sms')}
 							/>
 						}
-						label='SMS Notifications'
+						label='Notifications par SMS'
 					/>
 					<FormControlLabel
 						control={
@@ -191,7 +191,7 @@ export default function Settings() {
 								onChange={handleNotificationChange('push')}
 							/>
 						}
-						label='Push Notifications'
+						label='Notifications push'
 					/>
 				</Box>
 			</Paper>

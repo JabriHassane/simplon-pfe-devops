@@ -10,9 +10,6 @@ import {
 	TableRow,
 	Button,
 	IconButton,
-	Dialog,
-	DialogTitle,
-	DialogContent,
 	Alert,
 	CircularProgress,
 } from '@mui/material';
@@ -21,14 +18,10 @@ import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 } from '@mui/icons-material';
-import {
-	useClients,
-	useCreateClient,
-	useUpdateClient,
-	useDeleteClient,
-} from '../hooks/ressources/useClients';
+import { useClients, useDeleteClient } from '../hooks/ressources/useClients';
 import ClientForm from '../components/ClientForm';
 import type { ClientDtoType } from '../../../shared/dtos/client.dto';
+import ResourceFormPopup from '../components/ResourceFormPopup';
 
 export default function Clients() {
 	const [openDialog, setOpenDialog] = useState(false);
@@ -38,21 +31,7 @@ export default function Clients() {
 
 	// TanStack Query hooks
 	const { data: clients = [], isLoading, error } = useClients();
-	const createClientMutation = useCreateClient();
-	const updateClientMutation = useUpdateClient(() => setOpenDialog(false));
 	const deleteClientMutation = useDeleteClient();
-
-	// Snackbar hook
-	const handleSubmit = async (data: any) => {
-		if (selectedClient) {
-			await updateClientMutation.mutateAsync({
-				id: selectedClient.id,
-				data,
-			});
-		} else {
-			await createClientMutation.mutateAsync(data);
-		}
-	};
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce client?')) {
@@ -62,6 +41,7 @@ export default function Clients() {
 
 	const handleEdit = (client: ClientDtoType) => {
 		setSelectedClient(client);
+		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
@@ -112,25 +92,13 @@ export default function Clients() {
 				</Alert>
 			)}
 
-			{(createClientMutation.error ||
-				updateClientMutation.error ||
-				deleteClientMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createClientMutation.error?.message ||
-						updateClientMutation.error?.message ||
-						deleteClientMutation.error?.message ||
-						'Une erreur est survenue'}
-				</Alert>
-			)}
-
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
-							<TableCell>Name</TableCell>
-							<TableCell>Phone</TableCell>
-							<TableCell>Address</TableCell>
-							<TableCell>Actions</TableCell>
+							<TableCell>Nom</TableCell>
+							<TableCell>Téléphone</TableCell>
+							<TableCell>Adresse</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -139,14 +107,13 @@ export default function Clients() {
 								<TableCell>{client.name}</TableCell>
 								<TableCell>{client.phone}</TableCell>
 								<TableCell>{client.address}</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(client)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
 										onClick={() => handleDelete(client.id)}
 										size='small'
-										color='error'
 										disabled={deleteClientMutation.isPending}
 									>
 										{deleteClientMutation.isPending ? (
@@ -162,28 +129,13 @@ export default function Clients() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
+			<ResourceFormPopup
 				open={openDialog}
 				onClose={handleCloseDialog}
-				maxWidth='sm'
-				fullWidth
+				title={selectedClient ? 'Modifier le client' : 'Ajouter un client'}
 			>
-				<DialogTitle>
-					<Typography variant='h6' sx={{ fontWeight: 600 }}>
-						{selectedClient ? 'Modifier le client' : 'Ajouter un client'}
-					</Typography>
-				</DialogTitle>
-
-				<DialogContent sx={{ p: 0 }}>
-					<ClientForm
-						init={selectedClient}
-						onSubmit={handleSubmit}
-						isLoading={
-							createClientMutation.isPending || updateClientMutation.isPending
-						}
-					/>
-				</DialogContent>
-			</Dialog>
+				<ClientForm init={selectedClient} onClose={handleCloseDialog} />
+			</ResourceFormPopup>
 		</Box>
 	);
 }

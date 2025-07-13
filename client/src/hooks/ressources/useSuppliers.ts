@@ -50,7 +50,7 @@ export const useSupplier = (id: string) => {
 };
 
 // Create supplier mutation
-export const useCreateSupplier = () => {
+export const useCreateSupplier = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -61,12 +61,12 @@ export const useCreateSupplier = () => {
 				queryClient.invalidateQueries({ queryKey: supplierKeys.lists() });
 
 				showSuccess('Fournisseur créé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création du fournisseur');
 			}
 		},
-		onSuccess: () => {},
 	});
 };
 

@@ -14,4 +14,8 @@ export const AuthService = {
 	async logout() {
 		return ApiService.post<void>('/auth/logout');
 	},
+
+	async refresh() {
+		return ApiService.post<{ message: string }>('/auth/refresh');
+	},
 };

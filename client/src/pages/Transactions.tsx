@@ -112,15 +112,15 @@ export default function Transactions() {
 				alignItems='center'
 				mb={3}
 			>
-				<Typography variant='h4'>Transactions</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					Add Transaction
-				</Button>
+							<Typography variant='h4'>Transactions</Typography>
+			<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
+				Ajouter une transaction
+			</Button>
 			</Box>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to fetch data
+					Échec de la récupération des données
 				</Alert>
 			)}
 
@@ -131,7 +131,7 @@ export default function Transactions() {
 					{createTransactionMutation.error?.message ||
 						updateTransactionMutation.error?.message ||
 						deleteTransactionMutation.error?.message ||
-						'An error occurred'}
+						'Une erreur est survenue'}
 				</Alert>
 			)}
 
@@ -178,7 +178,7 @@ export default function Transactions() {
 								</TableCell>
 								<TableCell>{transaction.ref}</TableCell>
 								<TableCell>{formatCurrency(transaction.amount)}</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton
 										onClick={() => handleEdit(transaction)}
 										size='small'
@@ -188,7 +188,6 @@ export default function Transactions() {
 									<IconButton
 										onClick={() => handleDelete(transaction.id)}
 										size='small'
-										color='error'
 										disabled={deleteTransactionMutation.isPending}
 									>
 										{deleteTransactionMutation.isPending ? (

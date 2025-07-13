@@ -50,7 +50,7 @@ export const useProduct = (id: string) => {
 };
 
 // Create product mutation
-export const useCreateProduct = () => {
+export const useCreateProduct = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -61,12 +61,12 @@ export const useCreateProduct = () => {
 				queryClient.invalidateQueries({ queryKey: productKeys.lists() });
 
 				showSuccess('Produit créé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création du produit');
 			}
 		},
-		onSuccess: () => {},
 	});
 };
 

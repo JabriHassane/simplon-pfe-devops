@@ -50,7 +50,7 @@ export const useUser = (id: string) => {
 };
 
 // Create user mutation
-export const useCreateUser = () => {
+export const useCreateUser = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -61,12 +61,12 @@ export const useCreateUser = () => {
 				queryClient.invalidateQueries({ queryKey: userKeys.lists() });
 
 				showSuccess('Utilisateur créé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError("Erreur lors de la création de l'utilisateur");
 			}
 		},
-		onSuccess: () => {},
 	});
 };
 

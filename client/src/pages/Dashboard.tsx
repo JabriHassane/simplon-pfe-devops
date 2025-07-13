@@ -118,19 +118,19 @@ export default function Dashboard() {
 	return (
 		<Box>
 			<Typography variant='h4' gutterBottom>
-				Dashboard
+				Tableau de bord
 			</Typography>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to load dashboard data
+					Échec du chargement des données du tableau de bord
 				</Alert>
 			)}
 
 			{/* Quick Actions */}
 			<Paper sx={{ p: 3, mb: 3 }}>
 				<Typography variant='h6' gutterBottom>
-					Quick Actions
+					Actions rapides
 				</Typography>
 				<Box
 					sx={{
@@ -149,7 +149,7 @@ export default function Dashboard() {
 						onClick={() => navigate('/clients')}
 						fullWidth
 					>
-						Add Client
+						Ajouter un client
 					</Button>
 					<Button
 						variant='outlined'
@@ -157,7 +157,7 @@ export default function Dashboard() {
 						onClick={() => navigate('/products')}
 						fullWidth
 					>
-						Add Product
+						Ajouter un produit
 					</Button>
 					<Button
 						variant='outlined'
@@ -165,7 +165,7 @@ export default function Dashboard() {
 						onClick={() => navigate('/transactions')}
 						fullWidth
 					>
-						Add Transaction
+						Ajouter une transaction
 					</Button>
 					<Button
 						variant='outlined'
@@ -173,7 +173,7 @@ export default function Dashboard() {
 						onClick={() => navigate('/sales')}
 						fullWidth
 					>
-						New Sale
+						Nouvelle vente
 					</Button>
 				</Box>
 			</Paper>

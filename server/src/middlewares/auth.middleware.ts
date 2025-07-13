@@ -16,9 +16,9 @@ export const authenticate = async (
 	next: NextFunction
 ) => {
 	try {
-		const token = req.cookies.token;
+		const token = req.cookies.accessToken;
 		if (!token) {
-			return res.status(401).json({ message: 'Authorization header required' });
+			return res.status(401).json({ message: 'Access token required' });
 		}
 
 		const payload = verifyToken(token);

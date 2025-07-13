@@ -20,7 +20,7 @@ export default function Employees() {
 		>
 			<CircularProgress />
 			<Typography variant='body1' sx={{ mt: 2 }}>
-				Redirecting to Users...
+				Redirection vers les utilisateurs...
 			</Typography>
 		</Box>
 	);

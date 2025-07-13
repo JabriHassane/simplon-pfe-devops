@@ -9,27 +9,18 @@ import {
 	TableHead,
 	TableRow,
 	Button,
-	IconButton,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	Alert,
-	CircularProgress,
-	Chip,
+	IconButton, Alert,
+	CircularProgress
 } from '@mui/material';
 import {
 	Add as AddIcon,
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 } from '@mui/icons-material';
-import {
-	useUsers,
-	useCreateUser,
-	useUpdateUser,
-	useDeleteUser,
-} from '../hooks/ressources/useUsers';
+import { useUsers, useDeleteUser } from '../hooks/ressources/useUsers';
 import UserForm from '../components/UserForm';
 import type { UserDtoType } from '../../../shared/dtos/user.dto';
+import ResourceFormPopup from '../components/ResourceFormPopup';
 
 export default function Users() {
 	const [openDialog, setOpenDialog] = useState(false);
@@ -37,20 +28,7 @@ export default function Users() {
 
 	// TanStack Query hooks
 	const { data: users = [], isLoading, error } = useUsers();
-	const createUserMutation = useCreateUser();
-	const updateUserMutation = useUpdateUser(() => setOpenDialog(false));
 	const deleteUserMutation = useDeleteUser();
-
-	const handleSubmit = async (data: any) => {
-		if (selectedUser) {
-			await updateUserMutation.mutateAsync({
-				id: selectedUser.id,
-				data,
-			});
-		} else {
-			await createUserMutation.mutateAsync(data);
-		}
-	};
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur?')) {
@@ -110,23 +88,11 @@ export default function Users() {
 				</Alert>
 			)}
 
-			{(createUserMutation.error ||
-				updateUserMutation.error ||
-				deleteUserMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createUserMutation.error?.message ||
-						updateUserMutation.error?.message ||
-						deleteUserMutation.error?.message ||
-						'Une erreur est survenue'}
-				</Alert>
-			)}
-
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
 							<TableCell>Nom d'utilisateur</TableCell>
-							<TableCell>Email</TableCell>
 							<TableCell>Rôle</TableCell>
 						</TableRow>
 					</TableHead>
@@ -134,16 +100,14 @@ export default function Users() {
 						{users.map((user) => (
 							<TableRow key={user.id}>
 								<TableCell>{user.name}</TableCell>
-								<TableCell>{user.email}</TableCell>
 								<TableCell>{user.role}</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(user)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
 										onClick={() => handleDelete(user.id)}
 										size='small'
-										color='error'
 										disabled={deleteUserMutation.isPending}
 									>
 										{deleteUserMutation.isPending ? (
@@ -159,37 +123,15 @@ export default function Users() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
+			<ResourceFormPopup
 				open={openDialog}
 				onClose={handleCloseDialog}
-				maxWidth='sm'
-				fullWidth
+				title={
+					selectedUser ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'
+				}
 			>
-				<DialogTitle>
-					<Typography variant='h6' sx={{ fontWeight: 600 }}>
-						{selectedUser ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'}
-					</Typography>
-				</DialogTitle>
-
-				<DialogContent sx={{ p: 0 }}>
-					<UserForm
-						init={
-							selectedUser
-								? {
-										name: selectedUser.name,
-										email: selectedUser.email,
-										password: '',
-										role: selectedUser.role,
-								  }
-								: undefined
-						}
-						onSubmit={handleSubmit}
-						isLoading={
-							createUserMutation.isPending || updateUserMutation.isPending
-						}
-					/>
-				</DialogContent>
-			</Dialog>
+				<UserForm init={selectedUser} onClose={handleCloseDialog} />
+			</ResourceFormPopup>
 		</Box>
 	);
 }

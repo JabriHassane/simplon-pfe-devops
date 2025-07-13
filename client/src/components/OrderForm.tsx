@@ -13,7 +13,7 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from './ResourcePickerField';
-import { CreateOrderDto } from '../../../shared/dtos/order.dto';
+import { CreateOrderDto, type OrderDtoType } from '../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import { useProducts } from '../hooks/ressources/useProducts';
@@ -21,7 +21,7 @@ import { useClients } from '../hooks/ressources/useClients';
 
 interface OrderFormProps {
 	onSubmit: (data: any) => void;
-	init?: any;
+	init: OrderDtoType | null;
 	isLoading?: boolean;
 }
 

@@ -41,6 +41,9 @@ export const useLogout = () => {
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la déconnexion');
+				// Still clear user state even if logout fails
+				setUser(null);
+				navigate('/login');
 			}
 		},
 	});

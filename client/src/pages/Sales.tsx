@@ -200,14 +200,13 @@ export default function Sales() {
 										size='small'
 									/>
 								</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(order)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
 										onClick={() => handleDelete(order.id)}
 										size='small'
-										color='error'
 										disabled={deleteOrderMutation.isPending}
 									>
 										{deleteOrderMutation.isPending ? (

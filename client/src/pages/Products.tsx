@@ -10,9 +10,6 @@ import {
 	TableRow,
 	Button,
 	IconButton,
-	Dialog,
-	DialogTitle,
-	DialogContent,
 	Alert,
 	CircularProgress,
 } from '@mui/material';
@@ -21,17 +18,10 @@ import {
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 } from '@mui/icons-material';
-import {
-	useProducts,
-	useCreateProduct,
-	useUpdateProduct,
-	useDeleteProduct,
-} from '../hooks/ressources/useProducts';
+import { useProducts, useDeleteProduct } from '../hooks/ressources/useProducts';
 import ProductForm from '../components/ProductForm';
-import type {
-	CreateProductDtoType,
-	ProductDtoType,
-} from '../../../shared/dtos/product.dto';
+import type { ProductDtoType } from '../../../shared/dtos/product.dto';
+import ResourceFormPopup from '../components/ResourceFormPopup';
 
 export default function Products() {
 	const [openDialog, setOpenDialog] = useState(false);
@@ -46,23 +36,10 @@ export default function Products() {
 		error: productsError,
 	} = useProducts();
 
-	const createProductMutation = useCreateProduct();
-	const updateProductMutation = useUpdateProduct(() => setOpenDialog(false));
 	const deleteProductMutation = useDeleteProduct();
 
 	const isLoading = productsLoading;
 	const error = productsError;
-
-	const handleSubmit = async (data: CreateProductDtoType) => {
-		if (selectedProduct) {
-			await updateProductMutation.mutateAsync({
-				id: selectedProduct.id,
-				data,
-			});
-		} else {
-			await createProductMutation.mutateAsync(data);
-		}
-	};
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
@@ -72,6 +49,7 @@ export default function Products() {
 
 	const handleEdit = (product: ProductDtoType) => {
 		setSelectedProduct(product);
+		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
@@ -122,17 +100,6 @@ export default function Products() {
 				</Alert>
 			)}
 
-			{(createProductMutation.error ||
-				updateProductMutation.error ||
-				deleteProductMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createProductMutation.error?.message ||
-						updateProductMutation.error?.message ||
-						deleteProductMutation.error?.message ||
-						'Une erreur est survenue'}
-				</Alert>
-			)}
-
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
@@ -140,6 +107,7 @@ export default function Products() {
 							<TableCell>Nom</TableCell>
 							<TableCell>Prix</TableCell>
 							<TableCell>Stock</TableCell>
+							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -148,14 +116,13 @@ export default function Products() {
 								<TableCell>{product.name}</TableCell>
 								<TableCell>{product.price}</TableCell>
 								<TableCell>{product.inventory}</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(product)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
 										onClick={() => handleDelete(product.id)}
 										size='small'
-										color='error'
 										disabled={deleteProductMutation.isPending}
 									>
 										{deleteProductMutation.isPending ? (
@@ -171,28 +138,13 @@ export default function Products() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
+			<ResourceFormPopup
 				open={openDialog}
 				onClose={handleCloseDialog}
-				maxWidth='sm'
-				fullWidth
+				title={selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
 			>
-				<DialogTitle>
-					<Typography variant='h6' sx={{ fontWeight: 600 }}>
-						{selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
-					</Typography>
-				</DialogTitle>
-
-				<DialogContent sx={{ p: 0 }}>
-					<ProductForm
-						init={selectedProduct}
-						onSubmit={handleSubmit}
-						isLoading={
-							createProductMutation.isPending || updateProductMutation.isPending
-						}
-					/>
-				</DialogContent>
-			</Dialog>
+				<ProductForm init={selectedProduct} onClose={handleCloseDialog} />
+			</ResourceFormPopup>
 		</Box>
 	);
 }

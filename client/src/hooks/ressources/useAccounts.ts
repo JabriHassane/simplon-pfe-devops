@@ -53,7 +53,7 @@ export const useAccount = (id: string) => {
 };
 
 // Create account mutation
-export const useCreateAccount = () => {
+export const useCreateAccount = (callback: () => void) => {
 	const queryClient = useQueryClient();
 	const { showSuccess, showError } = useSnackbar();
 
@@ -65,6 +65,7 @@ export const useCreateAccount = () => {
 				queryClient.invalidateQueries({ queryKey: accountKeys.lists() });
 
 				showSuccess('Compte créé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création du compte');

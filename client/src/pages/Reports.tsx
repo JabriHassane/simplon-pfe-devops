@@ -140,12 +140,12 @@ export default function Reports() {
 	return (
 		<Box>
 			<Typography variant='h4' gutterBottom>
-				Reports & Analytics
+				Rapports et analyses
 			</Typography>
 
 			{error && (
 				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to load reports data
+					Échec du chargement des données de rapports
 				</Alert>
 			)}
 
@@ -171,7 +171,7 @@ export default function Reports() {
 						>
 							<Box>
 								<Typography color='textSecondary' gutterBottom>
-									Total Revenue
+									Revenus totaux
 								</Typography>
 								<Typography variant='h4' color='success.main'>
 									{formatCurrency(totalRevenue)}
@@ -191,7 +191,7 @@ export default function Reports() {
 						>
 							<Box>
 								<Typography color='textSecondary' gutterBottom>
-									Total Expenses
+									Dépenses totales
 								</Typography>
 								<Typography variant='h4' color='error.main'>
 									{formatCurrency(totalExpenses)}

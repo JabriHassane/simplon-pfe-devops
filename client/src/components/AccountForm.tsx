@@ -1,40 +1,56 @@
-import { Box, Button, TextField } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateAccountDto,
 	type CreateAccountDtoType,
+	type AccountDtoType,
 } from '../../../shared/dtos/account.dto';
+import ResourceForm from './ResourceForm';
+import {
+	useCreateAccount,
+	useUpdateAccount,
+} from '../hooks/ressources/useAccounts';
 
 interface AccountFormProps {
-	onSubmit: (data: any) => void;
-	onCancel?: () => void;
-	init?: CreateAccountDtoType | null;
-	isLoading?: boolean;
+	init: AccountDtoType | null;
+	onClose: () => void;
 }
 
-export default function AccountForm({
-	onSubmit,
-	onCancel,
-	init,
-	isLoading = false,
-}: AccountFormProps) {
+export default function AccountForm({ init, onClose }: AccountFormProps) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateAccountDto),
-		defaultValues: init || {
-			name: '',
-			balance: 0,
-		},
+		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
 
+	const createAccountMutation = useCreateAccount(onClose);
+	const updateAccountMutation = useUpdateAccount(onClose);
+
+	const onSubmit = async (data: CreateAccountDtoType) => {
+		if (init) {
+			await updateAccountMutation.mutateAsync({
+				id: init.id,
+				data,
+			});
+		} else {
+			await createAccountMutation.mutateAsync(data);
+		}
+	};
+
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+		<ResourceForm
+			onSubmit={handleSubmit(onSubmit)}
+			isValid={isValid}
+			isLoading={
+				createAccountMutation.isPending || updateAccountMutation.isPending
+			}
+		>
 			<TextField
 				fullWidth
 				label='Nom du compte'
@@ -47,38 +63,6 @@ export default function AccountForm({
 					marginTop: 0,
 				}}
 			/>
-			<TextField
-				fullWidth
-				label='Référence'
-				{...register('balance')}
-				margin='normal'
-				error={!!errors.balance}
-				helperText={errors.balance?.message as string}
-				required
-			/>
-
-			<Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-				{onCancel && (
-					<Button
-						type='button'
-						variant='outlined'
-						size='large'
-						onClick={onCancel}
-						fullWidth
-					>
-						Cancel
-					</Button>
-				)}
-				<Button
-					type='submit'
-					variant='contained'
-					disabled={isLoading || !isValid}
-					fullWidth
-					size='large'
-				>
-					{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
-				</Button>
-			</Box>
-		</Box>
+		</ResourceForm>
 	);
 }

@@ -1,36 +1,56 @@
-import { Box, TextField, Button } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CreateClientDto } from '../../../shared/dtos/client.dto';
+import {
+	CreateClientDto,
+	type CreateClientDtoType,
+	type ClientDtoType,
+} from '../../../shared/dtos/client.dto';
+import ResourceForm from './ResourceForm';
+import {
+	useCreateClient,
+	useUpdateClient,
+} from '../hooks/ressources/useClients';
 
 interface ClientFormProps {
-	onSubmit: (data: any) => void;
-	init?: any;
-	isLoading?: boolean;
+	init: ClientDtoType | null;
+	onClose: () => void;
 }
 
-export default function ClientForm({
-	onSubmit,
-	init,
-	isLoading = false,
-}: ClientFormProps) {
+export default function ClientForm({ init, onClose }: ClientFormProps) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateClientDto),
-		defaultValues: init || {
-			name: '',
-			phone: '',
-			address: '',
-		},
+		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
 
+	const createClientMutation = useCreateClient(onClose);
+	const updateClientMutation = useUpdateClient(onClose);
+
+	const onSubmit = async (data: CreateClientDtoType) => {
+		if (init) {
+			await updateClientMutation.mutateAsync({
+				id: init.id,
+				data,
+			});
+		} else {
+			await createClientMutation.mutateAsync(data);
+		}
+	};
+
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+		<ResourceForm
+			onSubmit={handleSubmit(onSubmit)}
+			isValid={isValid}
+			isLoading={
+				createClientMutation.isPending || updateClientMutation.isPending
+			}
+		>
 			<TextField
 				fullWidth
 				label='Nom du client'
@@ -64,16 +84,6 @@ export default function ClientForm({
 				error={!!errors.address}
 				helperText={errors.address?.message as string}
 			/>
-
-			<Button
-				type='submit'
-				variant='contained'
-				size='large'
-				disabled={isLoading || !isValid}
-				fullWidth
-			>
-				{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
-			</Button>
-		</Box>
+		</ResourceForm>
 	);
 }

@@ -10,9 +10,6 @@ import {
 	TableRow,
 	Button,
 	IconButton,
-	Dialog,
-	DialogTitle,
-	DialogContent,
 	Alert,
 	CircularProgress,
 } from '@mui/material';
@@ -23,12 +20,11 @@ import {
 } from '@mui/icons-material';
 import {
 	useSuppliers,
-	useCreateSupplier,
-	useUpdateSupplier,
 	useDeleteSupplier,
 } from '../hooks/ressources/useSuppliers';
 import SupplierForm from '../components/SupplierForm';
 import type { SupplierDtoType } from '../../../shared/dtos/supplier.dto';
+import ResourceFormPopup from '../components/ResourceFormPopup';
 
 export default function Suppliers() {
 	const [openDialog, setOpenDialog] = useState(false);
@@ -37,21 +33,7 @@ export default function Suppliers() {
 
 	// TanStack Query hooks
 	const { data: suppliers = [], isLoading, error } = useSuppliers();
-	const createSupplierMutation = useCreateSupplier();
-	const updateSupplierMutation = useUpdateSupplier(() => setOpenDialog(false));
 	const deleteSupplierMutation = useDeleteSupplier();
-
-	// Snackbar hook
-	const handleSubmit = async (data: any) => {
-		if (selectedSupplier) {
-			await updateSupplierMutation.mutateAsync({
-				id: selectedSupplier.id,
-				data,
-			});
-		} else {
-			await createSupplierMutation.mutateAsync(data);
-		}
-	};
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur?')) {
@@ -61,6 +43,7 @@ export default function Suppliers() {
 
 	const handleEdit = (supplier: SupplierDtoType) => {
 		setSelectedSupplier(supplier);
+		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
@@ -111,17 +94,6 @@ export default function Suppliers() {
 				</Alert>
 			)}
 
-			{(createSupplierMutation.error ||
-				updateSupplierMutation.error ||
-				deleteSupplierMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createSupplierMutation.error?.message ||
-						updateSupplierMutation.error?.message ||
-						deleteSupplierMutation.error?.message ||
-						'Une erreur est survenue'}
-				</Alert>
-			)}
-
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
@@ -137,14 +109,13 @@ export default function Suppliers() {
 								<TableCell>{supplier.name}</TableCell>
 								<TableCell>{supplier.phone}</TableCell>
 								<TableCell>{supplier.address}</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(supplier)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
 										onClick={() => handleDelete(supplier.id)}
 										size='small'
-										color='error'
 										disabled={deleteSupplierMutation.isPending}
 									>
 										{deleteSupplierMutation.isPending ? (
@@ -160,39 +131,17 @@ export default function Suppliers() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
+			<ResourceFormPopup
 				open={openDialog}
 				onClose={handleCloseDialog}
-				maxWidth='sm'
-				fullWidth
+				title={
+					selectedSupplier
+						? 'Modifier le fournisseur'
+						: 'Ajouter un fournisseur'
+				}
 			>
-				<DialogTitle>
-					<Typography variant='h6' sx={{ fontWeight: 600 }}>
-						{selectedSupplier
-							? 'Modifier le fournisseur'
-							: 'Ajouter un fournisseur'}
-					</Typography>
-				</DialogTitle>
-
-				<DialogContent sx={{ p: 0 }}>
-					<SupplierForm
-						init={
-							selectedSupplier
-								? {
-										name: selectedSupplier.name,
-										phone: selectedSupplier.phone,
-										address: selectedSupplier.address,
-								  }
-								: undefined
-						}
-						onSubmit={handleSubmit}
-						isLoading={
-							createSupplierMutation.isPending ||
-							updateSupplierMutation.isPending
-						}
-					/>
-				</DialogContent>
-			</Dialog>
+				<SupplierForm init={selectedSupplier} onClose={handleCloseDialog} />
+			</ResourceFormPopup>
 		</Box>
 	);
 }

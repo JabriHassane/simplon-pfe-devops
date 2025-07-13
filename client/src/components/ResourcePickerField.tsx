@@ -33,7 +33,7 @@ export default function ResourcePickerField({
 	value,
 	onChange,
 	resourceType,
-	placeholder = 'Click to select...',
+	placeholder = 'Cliquez pour sélectionner...',
 	error = false,
 	helperText,
 	required = false,
@@ -61,7 +61,7 @@ export default function ResourcePickerField({
 			return selectedResource.name;
 		}
 		if (value) {
-			return 'Selected (ID: ' + value + ')';
+			return 'Sélectionné (ID: ' + value + ')';
 		}
 		return '';
 	};

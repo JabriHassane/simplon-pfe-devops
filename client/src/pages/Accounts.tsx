@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import {
 	Typography,
-	Box, Table,
+	Box,
+	Table,
 	TableBody,
 	TableCell,
 	TableContainer,
@@ -10,24 +11,17 @@ import {
 	Button,
 	CircularProgress,
 	Alert,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	IconButton
+	IconButton,
 } from '@mui/material';
 import {
 	Add as AddIcon,
 	Edit as EditIcon,
 	Delete as DeleteIcon,
 } from '@mui/icons-material';
-import {
-	useAccounts,
-	useCreateAccount,
-	useUpdateAccount,
-	useDeleteAccount,
-} from '../hooks/ressources/useAccounts';
+import { useAccounts, useDeleteAccount } from '../hooks/ressources/useAccounts';
 import AccountForm from '../components/AccountForm';
 import type { AccountDtoType } from '../../../shared/dtos/account.dto';
+import ResourceFormPopup from '../components/ResourceFormPopup';
 
 export default function Accounts() {
 	const [openDialog, setOpenDialog] = useState(false);
@@ -37,20 +31,7 @@ export default function Accounts() {
 
 	// TanStack Query hooks
 	const { data: accounts = [], isLoading, error } = useAccounts();
-	const createAccountMutation = useCreateAccount();
-	const updateAccountMutation = useUpdateAccount(() => setOpenDialog(false));
 	const deleteAccountMutation = useDeleteAccount();
-
-	const handleSubmit = async (data: any) => {
-		if (selectedAccount) {
-			await updateAccountMutation.mutateAsync({
-				id: selectedAccount.id,
-				data,
-			});
-		} else {
-			await createAccountMutation.mutateAsync(data);
-		}
-	};
 
 	const handleDelete = async (id: string) => {
 		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce compte?')) {
@@ -60,6 +41,7 @@ export default function Accounts() {
 
 	const handleEdit = (account: AccountDtoType) => {
 		setSelectedAccount(account);
+		setOpenDialog(true);
 	};
 
 	const handleAdd = () => {
@@ -110,17 +92,6 @@ export default function Accounts() {
 				</Alert>
 			)}
 
-			{(createAccountMutation.error ||
-				updateAccountMutation.error ||
-				deleteAccountMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createAccountMutation.error?.message ||
-						updateAccountMutation.error?.message ||
-						deleteAccountMutation.error?.message ||
-						'Une erreur est survenue'}
-				</Alert>
-			)}
-
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
@@ -136,14 +107,13 @@ export default function Accounts() {
 								<TableCell>{account.name}</TableCell>
 								<TableCell>{account.ref}</TableCell>
 								<TableCell>{account.balance}</TableCell>
-								<TableCell>
+								<TableCell align='right'>
 									<IconButton onClick={() => handleEdit(account)} size='small'>
 										<EditIcon />
 									</IconButton>
 									<IconButton
 										onClick={() => handleDelete(account.id)}
 										size='small'
-										color='error'
 										disabled={deleteAccountMutation.isPending}
 									>
 										{deleteAccountMutation.isPending ? (
@@ -159,28 +129,13 @@ export default function Accounts() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
+			<ResourceFormPopup
 				open={openDialog}
 				onClose={handleCloseDialog}
-				maxWidth='sm'
-				fullWidth
+				title={selectedAccount ? 'Modifier le compte' : 'Ajouter un compte'}
 			>
-				<DialogTitle>
-					<Typography variant='h6' sx={{ fontWeight: 600 }}>
-						{selectedAccount ? 'Modifier le compte' : 'Ajouter un compte'}
-					</Typography>
-				</DialogTitle>
-
-				<DialogContent sx={{ p: 0 }}>
-					<AccountForm
-						init={selectedAccount}
-						onSubmit={handleSubmit}
-						isLoading={
-							createAccountMutation.isPending || updateAccountMutation.isPending
-						}
-					/>
-				</DialogContent>
-			</Dialog>
+				<AccountForm init={selectedAccount} onClose={handleCloseDialog} />
+			</ResourceFormPopup>
 		</Box>
 	);
 }

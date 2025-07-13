@@ -50,10 +50,10 @@ export default function TransactionForm({
 				InputLabelProps={{ shrink: true }}
 			/>
 			<FormControl fullWidth margin='normal'>
-				<InputLabel>Account</InputLabel>
+				<InputLabel>Compte</InputLabel>
 				<Select
 					{...register('fromId')}
-					label='Account'
+					label='Compte'
 					error={!!errors.fromId}
 					required
 					defaultValue=''
@@ -68,8 +68,8 @@ export default function TransactionForm({
 					required
 					defaultValue='EXPENSE'
 				>
-					<MenuItem value='INCOME'>Income</MenuItem>
-					<MenuItem value='EXPENSE'>Expense</MenuItem>
+					<MenuItem value='INCOME'>Revenus</MenuItem>
+					<MenuItem value='EXPENSE'>Dépenses</MenuItem>
 				</Select>
 			</FormControl>
 			<TextField
@@ -96,7 +96,7 @@ export default function TransactionForm({
 				fullWidth
 				size='large'
 			>
-				{isLoading ? 'Saving...' : init ? 'Update' : 'Create'}
+				{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
 			</Button>
 		</Box>
 	);

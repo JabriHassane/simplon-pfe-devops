@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { EntityDto } from './entity.dto';
+import { ROLES } from '../constants';
 
 export const CreateUserDto = z.object({
 	name: z
@@ -12,10 +13,17 @@ export const CreateUserDto = z.object({
 	password: z
 		.string()
 		.min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-	role: z.enum(['super_admin', 'admin', 'agent']),
+	role: z.enum(ROLES),
 });
 
-export const UpdateUserDto = CreateUserDto.omit({ password: true });
+export const UpdateUserDto = CreateUserDto.extend({
+	password: z
+		.string()
+		.optional()
+		.refine((val) => !val || val.length >= 6, {
+			message: 'Le mot de passe doit contenir au moins 6 caractères',
+		}),
+});
 
 export const UserDto = z.object({
 	...EntityDto.shape,
@@ -26,3 +34,4 @@ export const UserDto = z.object({
 export type CreateUserDtoType = z.infer<typeof CreateUserDto>;
 export type UpdateUserDtoType = z.infer<typeof UpdateUserDto>;
 export type UserDtoType = z.infer<typeof UserDto>;
+
