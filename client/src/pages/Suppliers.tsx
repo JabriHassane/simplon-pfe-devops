@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-	Typography,
 	Box,
 	Table,
 	TableBody,
@@ -8,16 +7,9 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	Button,
 	IconButton,
-	Alert,
-	CircularProgress,
 } from '@mui/material';
-import {
-	Add as AddIcon,
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
 	useSuppliers,
 	useDeleteSupplier,
@@ -25,74 +17,56 @@ import {
 import SupplierForm from '../components/SupplierForm';
 import type { SupplierDtoType } from '../../../shared/dtos/supplier.dto';
 import ResourceFormPopup from '../components/ResourceFormPopup';
+import ResourceHeader from '../components/ResourceHeader';
+import ResourceLoader from '../components/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
 
 export default function Suppliers() {
-	const [openDialog, setOpenDialog] = useState(false);
+	const [openFormPopup, setOpenFormPopup] = useState(false);
+	const [openDeletePopup, setOpenDeletePopup] = useState(false);
 	const [selectedSupplier, setSelectedSupplier] =
 		useState<SupplierDtoType | null>(null);
 
-	// TanStack Query hooks
 	const { data: suppliers = [], isLoading, error } = useSuppliers();
 	const deleteSupplierMutation = useDeleteSupplier();
 
-	const handleDelete = async (id: string) => {
-		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce fournisseur?')) {
-			await deleteSupplierMutation.mutateAsync(id);
+	const handleDelete = () => {
+		if (selectedSupplier) {
+			deleteSupplierMutation.mutate(selectedSupplier.id);
 		}
 	};
 
-	const handleEdit = (supplier: SupplierDtoType) => {
+	const handleOpenDeletePopup = (supplier: SupplierDtoType) => {
 		setSelectedSupplier(supplier);
-		setOpenDialog(true);
+		setOpenDeletePopup(true);
 	};
 
-	const handleAdd = () => {
+	const handleOpenEditPopup = (supplier: SupplierDtoType) => {
+		setSelectedSupplier(supplier);
+		setOpenFormPopup(true);
+	};
+
+	const handleOpenAddPopup = () => {
 		setSelectedSupplier(null);
-		setOpenDialog(true);
+		setOpenFormPopup(true);
 	};
 
-	const handleCloseDialog = () => {
-		setOpenDialog(false);
+	const handleCloseFormPopup = () => {
+		setOpenFormPopup(false);
 		setSelectedSupplier(null);
 	};
 
 	if (isLoading) {
-		return (
-			<Box
-				display='flex'
-				justifyContent='center'
-				alignItems='center'
-				minHeight='400px'
-			>
-				<CircularProgress />
-			</Box>
-		);
+		return <ResourceLoader />;
 	}
 
 	return (
 		<Box>
-			<Box
-				display='flex'
-				justifyContent='space-between'
-				alignItems='center'
-				mb={3}
-			>
-				<Typography variant='h4'>Fournisseurs</Typography>
-				<Button
-					variant='contained'
-					startIcon={<AddIcon />}
-					onClick={handleAdd}
-					disableElevation
-				>
-					Ajouter un fournisseur
-				</Button>
-			</Box>
-
-			{error && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					Erreur lors de la récupération des fournisseurs
-				</Alert>
-			)}
+			<ResourceHeader
+				title='Fournisseurs'
+				handleAdd={handleOpenAddPopup}
+				error={!!error}
+			/>
 
 			<TableContainer>
 				<Table size='small'>
@@ -110,19 +84,17 @@ export default function Suppliers() {
 								<TableCell>{supplier.phone}</TableCell>
 								<TableCell>{supplier.address}</TableCell>
 								<TableCell align='right'>
-									<IconButton onClick={() => handleEdit(supplier)} size='small'>
+									<IconButton
+										onClick={() => handleOpenEditPopup(supplier)}
+										size='small'
+									>
 										<EditIcon />
 									</IconButton>
 									<IconButton
-										onClick={() => handleDelete(supplier.id)}
+										onClick={() => handleOpenDeletePopup(supplier)}
 										size='small'
-										disabled={deleteSupplierMutation.isPending}
 									>
-										{deleteSupplierMutation.isPending ? (
-											<CircularProgress size={20} />
-										) : (
-											<DeleteIcon />
-										)}
+										<DeleteIcon />
 									</IconButton>
 								</TableCell>
 							</TableRow>
@@ -131,17 +103,30 @@ export default function Suppliers() {
 				</Table>
 			</TableContainer>
 
-			<ResourceFormPopup
-				open={openDialog}
-				onClose={handleCloseDialog}
-				title={
-					selectedSupplier
-						? 'Modifier le fournisseur'
-						: 'Ajouter un fournisseur'
-				}
-			>
-				<SupplierForm init={selectedSupplier} onClose={handleCloseDialog} />
-			</ResourceFormPopup>
+			{openFormPopup && (
+				<ResourceFormPopup
+					onClose={handleCloseFormPopup}
+					title={
+						selectedSupplier
+							? 'Modifier le fournisseur'
+							: 'Ajouter un fournisseur'
+					}
+				>
+					<SupplierForm
+						init={selectedSupplier}
+						onClose={handleCloseFormPopup}
+					/>
+				</ResourceFormPopup>
+			)}
+
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={() => setOpenDeletePopup(false)}
+					title='Supprimer le fournisseur'
+					description='Voulez-vous vraiment supprimer ce fournisseur ?'
+					onDelete={handleDelete}
+				/>
+			)}
 		</Box>
 	);
 }

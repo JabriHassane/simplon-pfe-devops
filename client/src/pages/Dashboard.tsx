@@ -128,7 +128,7 @@ export default function Dashboard() {
 			)}
 
 			{/* Quick Actions */}
-			<Paper sx={{ p: 3, mb: 3 }}>
+			<Paper sx={{ p: 3, mb: 3 }} variant='outlined'>
 				<Typography variant='h6' gutterBottom>
 					Actions rapides
 				</Typography>
@@ -191,7 +191,7 @@ export default function Dashboard() {
 					mb: 3,
 				}}
 			>
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -211,7 +211,7 @@ export default function Dashboard() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -231,7 +231,7 @@ export default function Dashboard() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -251,7 +251,7 @@ export default function Dashboard() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'

@@ -1,87 +1,59 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-	Typography,
-	Box,
-	Paper,
-	Table,
+	Box, Table,
 	TableBody,
 	TableCell,
 	TableContainer,
 	TableHead,
-	TableRow,
-	Button,
-	IconButton,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	Alert,
-	CircularProgress,
+	TableRow, IconButton, CircularProgress
 } from '@mui/material';
 import {
-	Add as AddIcon,
 	Edit as EditIcon,
-	Delete as DeleteIcon,
+	Delete as DeleteIcon
 } from '@mui/icons-material';
 import {
-	useTransactions,
-	useCreateTransaction,
-	useUpdateTransaction,
-	useDeleteTransaction,
+	useTransactions, useDeleteTransaction
 } from '../hooks/ressources/useTransactions';
-import { useAccounts } from '../hooks/ressources/useAccounts';
 import TransactionForm from '../components/TransactionForm';
 import type { TransactionDtoType } from '../../../shared/dtos/transaction.dto';
+import ResourceFormPopup from '../components/ResourceFormPopup';
+import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceLoader from '../components/ResourceLoader';
+import ResourceHeader from '../components/ResourceHeader';
 
 export default function Transactions() {
-	const [openDialog, setOpenDialog] = useState(false);
+	const [openFormPopup, setOpenFormPopup] = useState(false);
+	const [openDeletePopup, setOpenDeletePopup] = useState(false);
 	const [selectedTransaction, setSelectedTransaction] =
 		useState<TransactionDtoType | null>(null);
 
-	// TanStack Query hooks
-	const {
-		data: transactions = [],
-		isLoading: transactionsLoading,
-		error: transactionsError,
-	} = useTransactions();
-	const {
-		data: accounts = [],
-		isLoading: accountsLoading,
-		error: accountsError,
-	} = useAccounts();
-	const createTransactionMutation = useCreateTransaction();
-	const updateTransactionMutation = useUpdateTransaction(() =>
-		setOpenDialog(false)
-	);
+	const { data: transactions = [], isLoading, error } = useTransactions();
 	const deleteTransactionMutation = useDeleteTransaction();
 
-	const isLoading = transactionsLoading || accountsLoading;
-	const error = transactionsError || accountsError;
-
-	const handleSubmit = async (data: any) => {
+	const handleDelete = () => {
 		if (selectedTransaction) {
-			await updateTransactionMutation.mutateAsync({
-				id: selectedTransaction.id,
-				data,
-			});
-		} else {
-			await createTransactionMutation.mutateAsync(data);
+			deleteTransactionMutation.mutate(selectedTransaction.id);
 		}
 	};
 
-	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this transaction?')) {
-			await deleteTransactionMutation.mutateAsync(id);
-		}
-	};
-
-	const handleEdit = (transaction: TransactionDtoType) => {
+	const handleOpenDeletePopup = (transaction: TransactionDtoType) => {
 		setSelectedTransaction(transaction);
-		setOpenDialog(true);
+		setOpenDeletePopup(true);
 	};
 
-	const handleAdd = () => {
+	const handleOpenEditPopup = (transaction: TransactionDtoType) => {
+		setSelectedTransaction(transaction);
+		setOpenFormPopup(true);
+	};
+
+	const handleOpenAddPopup = () => {
 		setSelectedTransaction(null);
-		setOpenDialog(true);
+		setOpenFormPopup(true);
+	};
+
+	const handleCloseFormPopup = () => {
+		setOpenFormPopup(false);
+		setSelectedTransaction(null);
 	};
 
 	const formatCurrency = (amount: number) => {
@@ -92,49 +64,16 @@ export default function Transactions() {
 	};
 
 	if (isLoading) {
-		return (
-			<Box
-				display='flex'
-				justifyContent='center'
-				alignItems='center'
-				minHeight='400px'
-			>
-				<CircularProgress />
-			</Box>
-		);
+		return <ResourceLoader />;
 	}
 
 	return (
 		<Box>
-			<Box
-				display='flex'
-				justifyContent='space-between'
-				alignItems='center'
-				mb={3}
-			>
-							<Typography variant='h4'>Transactions</Typography>
-			<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-				Ajouter une transaction
-			</Button>
-			</Box>
-
-			{error && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					Échec de la récupération des données
-				</Alert>
-			)}
-
-			{(createTransactionMutation.error ||
-				updateTransactionMutation.error ||
-				deleteTransactionMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createTransactionMutation.error?.message ||
-						updateTransactionMutation.error?.message ||
-						deleteTransactionMutation.error?.message ||
-						'Une erreur est survenue'}
-				</Alert>
-			)}
-
+			<ResourceHeader
+				title='Transactions'
+				handleAdd={handleOpenAddPopup}
+				error={!!error}
+			/>
 			<TableContainer>
 				<Table size='small'>
 					<TableHead>
@@ -145,7 +84,6 @@ export default function Transactions() {
 							<TableCell>Description</TableCell>
 							<TableCell>Reference</TableCell>
 							<TableCell>Amount</TableCell>
-							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
 
@@ -180,13 +118,13 @@ export default function Transactions() {
 								<TableCell>{formatCurrency(transaction.amount)}</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleEdit(transaction)}
+										onClick={() => handleOpenEditPopup(transaction)}
 										size='small'
 									>
 										<EditIcon />
 									</IconButton>
 									<IconButton
-										onClick={() => handleDelete(transaction.id)}
+										onClick={() => handleOpenDeletePopup(transaction)}
 										size='small'
 										disabled={deleteTransactionMutation.isPending}
 									>
@@ -203,31 +141,31 @@ export default function Transactions() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
-				open={openDialog}
-				onClose={() => setOpenDialog(false)}
-				maxWidth='sm'
-				fullWidth
-			>
-				<DialogTitle>
-					<Typography variant='h6' sx={{ fontWeight: 600 }}>
-						{selectedTransaction
+			{openFormPopup && (
+				<ResourceFormPopup
+					onClose={() => setOpenFormPopup(false)}
+					title={
+						selectedTransaction
 							? 'Modifier la transaction'
-							: 'Ajouter une transaction'}
-					</Typography>
-				</DialogTitle>
-
-				<DialogContent sx={{ p: 0 }}>
+							: 'Nouvelle transaction'
+					}
+				>
 					<TransactionForm
 						init={selectedTransaction}
-						onSubmit={handleSubmit}
-						isLoading={
-							createTransactionMutation.isPending ||
-							updateTransactionMutation.isPending
-						}
+						onSubmit={handleCloseFormPopup}
+						isLoading={false}
 					/>
-				</DialogContent>
-			</Dialog>
+				</ResourceFormPopup>
+			)}
+
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={() => setOpenDeletePopup(false)}
+					title='Supprimer la transaction'
+					description='Voulez-vous vraiment supprimer cette transaction ?'
+					onDelete={handleDelete}
+				/>
+			)}
 		</Box>
 	);
 }

@@ -1,26 +1,25 @@
 import { Dialog, DialogTitle, DialogContent, Typography } from '@mui/material';
 
 interface ResourceFormPopupProps {
-	open: boolean;
 	onClose: () => void;
 	title: string;
 	children: React.ReactNode;
+	description?: string;
 }
 
 function ResourceFormPopup({
-	open,
 	onClose,
 	title,
 	children,
+	description,
 }: ResourceFormPopupProps) {
-	if (!open) return null;
-
 	return (
-		<Dialog open={true} onClose={onClose} maxWidth='sm' fullWidth>
+		<Dialog open onClose={onClose} maxWidth='sm' fullWidth>
 			<DialogTitle>
 				<Typography variant='h6' sx={{ fontWeight: 600 }}>
 					{title}
 				</Typography>
+				{description && <Typography variant='body1'>{description}</Typography>}
 			</DialogTitle>
 
 			<DialogContent sx={{ p: 0 }}>{children}</DialogContent>

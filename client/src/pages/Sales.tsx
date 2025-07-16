@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-	Typography,
 	Box,
 	Table,
 	TableBody,
@@ -8,89 +7,52 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	Button,
 	IconButton,
-	Dialog,
-	DialogTitle,
-	DialogContent,
-	Alert,
 	CircularProgress,
 	Chip,
 } from '@mui/material';
-import {
-	Add as AddIcon,
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-} from '@mui/icons-material';
-import { useSnackbar } from '../hooks/ressources/useSnackbar';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import OrderForm from '../components/OrderForm';
-import {
-	useCreateOrder,
-	useDeleteOrder,
-	useOrders,
-	useUpdateOrder,
-} from '../hooks/ressources/useOrders';
+import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
 import type { OrderDtoType } from '../../../shared/dtos/order.dto';
 import { formatDate } from '../utils/date.utils';
+import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/ResourceFormPopup';
+import ResourceLoader from '../components/ResourceLoader';
+import ResourceHeader from '../components/ResourceHeader';
 
 export default function Sales() {
-	const [openDialog, setOpenDialog] = useState(false);
+	const [openFormPopup, setOpenFormPopup] = useState(false);
+	const [openDeletePopup, setOpenDeletePopup] = useState(false);
 	const [selectedOrder, setSelectedOrder] = useState<OrderDtoType | null>(null);
 
-	// TanStack Query hooks
-	const {
-		data: orders = [],
-		isLoading: ordersLoading,
-		error: ordersError,
-	} = useOrders();
-
-	const createOrderMutation = useCreateOrder();
-	const updateOrderMutation = useUpdateOrder(() => setOpenDialog(false));
+	const { data: orders = [], isLoading, error } = useOrders();
 	const deleteOrderMutation = useDeleteOrder();
 
-	// Snackbar hook
-	const { showSuccess, showError } = useSnackbar();
-
-	const isLoading = ordersLoading;
-	const error = ordersError;
-
-	const handleSubmit = async (data: any) => {
-		try {
-			if (selectedOrder) {
-				await updateOrderMutation.mutateAsync({ id: selectedOrder.id, data });
-				showSuccess('Order updated successfully');
-			} else {
-				await createOrderMutation.mutateAsync(data);
-				showSuccess('Order created successfully');
-			}
-			setOpenDialog(false);
-			setSelectedOrder(null);
-		} catch (err) {
-			console.error('Error saving order:', err);
-			showError('Failed to save order');
+	const handleDelete = () => {
+		if (selectedOrder) {
+			deleteOrderMutation.mutate(selectedOrder.id);
 		}
 	};
 
-	const handleDelete = async (id: string) => {
-		if (window.confirm('Are you sure you want to delete this order?')) {
-			try {
-				await deleteOrderMutation.mutateAsync(id);
-				showSuccess('Order deleted successfully');
-			} catch (err) {
-				console.error('Error deleting order:', err);
-				showError('Failed to delete order');
-			}
-		}
-	};
-
-	const handleEdit = (order: OrderDtoType) => {
+	const handleOpenDeletePopup = (order: OrderDtoType) => {
 		setSelectedOrder(order);
-		setOpenDialog(true);
+		setOpenDeletePopup(true);
 	};
 
-	const handleAdd = () => {
+	const handleOpenEditPopup = (order: OrderDtoType) => {
+		setSelectedOrder(order);
+		setOpenFormPopup(true);
+	};
+
+	const handleOpenAddPopup = () => {
 		setSelectedOrder(null);
-		setOpenDialog(true);
+		setOpenFormPopup(true);
+	};
+
+	const handleCloseFormPopup = () => {
+		setOpenFormPopup(false);
+		setSelectedOrder(null);
 	};
 
 	const formatCurrency = (amount: number) => {
@@ -99,8 +61,6 @@ export default function Sales() {
 			currency: 'USD',
 		}).format(amount);
 	};
-
-	
 
 	const getStatusColor = (status: string) => {
 		switch (status) {
@@ -120,48 +80,16 @@ export default function Sales() {
 	};
 
 	if (isLoading) {
-		return (
-			<Box
-				display='flex'
-				justifyContent='center'
-				alignItems='center'
-				minHeight='400px'
-			>
-				<CircularProgress />
-			</Box>
-		);
+		return <ResourceLoader />;
 	}
 
 	return (
 		<Box>
-			<Box
-				display='flex'
-				justifyContent='space-between'
-				alignItems='center'
-				mb={3}
-			>
-				<Typography variant='h4'>Sales</Typography>
-				<Button variant='contained' startIcon={<AddIcon />} onClick={handleAdd}>
-					New Sale
-				</Button>
-			</Box>
-
-			{error && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					Failed to fetch data
-				</Alert>
-			)}
-
-			{(createOrderMutation.error ||
-				updateOrderMutation.error ||
-				deleteOrderMutation.error) && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					{createOrderMutation.error?.message ||
-						updateOrderMutation.error?.message ||
-						deleteOrderMutation.error?.message ||
-						'An error occurred'}
-				</Alert>
-			)}
+			<ResourceHeader
+				title='Ventes'
+				handleAdd={handleOpenAddPopup}
+				error={!!error}
+			/>
 
 			<TableContainer>
 				<Table size='small'>
@@ -177,6 +105,7 @@ export default function Sales() {
 							<TableCell>Statut</TableCell>
 						</TableRow>
 					</TableHead>
+					
 					<TableBody>
 						{orders.map((order) => (
 							<TableRow key={order.id}>
@@ -201,11 +130,14 @@ export default function Sales() {
 									/>
 								</TableCell>
 								<TableCell align='right'>
-									<IconButton onClick={() => handleEdit(order)} size='small'>
+									<IconButton
+										onClick={() => handleOpenEditPopup(order)}
+										size='small'
+									>
 										<EditIcon />
 									</IconButton>
 									<IconButton
-										onClick={() => handleDelete(order.id)}
+										onClick={() => handleOpenDeletePopup(order)}
 										size='small'
 										disabled={deleteOrderMutation.isPending}
 									>
@@ -222,25 +154,27 @@ export default function Sales() {
 				</Table>
 			</TableContainer>
 
-			<Dialog
-				open={openDialog}
-				onClose={() => setOpenDialog(false)}
-				maxWidth='md'
-				fullWidth
-			>
-				<DialogTitle>
-					{selectedOrder ? 'Modifier la commande' : 'Nouvelle commande'}
-				</DialogTitle>
-				<DialogContent>
+			{openFormPopup && (
+				<ResourceFormPopup
+					onClose={() => setOpenFormPopup(false)}
+					title={selectedOrder ? 'Modifier la vente' : 'Nouvelle vente'}
+				>
 					<OrderForm
 						init={selectedOrder}
-						onSubmit={handleSubmit}
-						isLoading={
-							createOrderMutation.isPending || updateOrderMutation.isPending
-						}
+						onSubmit={handleCloseFormPopup}
+						isLoading={false}
 					/>
-				</DialogContent>
-			</Dialog>
+				</ResourceFormPopup>
+			)}
+
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={() => setOpenDeletePopup(false)}
+					title='Supprimer la vente'
+					description='Voulez-vous vraiment supprimer cette vente ?'
+					onDelete={handleDelete}
+				/>
+			)}
 		</Box>
 	);
 }

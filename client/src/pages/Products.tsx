@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-	Typography,
 	Box,
 	Table,
 	TableBody,
@@ -8,28 +7,24 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	Button,
 	IconButton,
-	Alert,
-	CircularProgress,
 } from '@mui/material';
-import {
-	Add as AddIcon,
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useProducts, useDeleteProduct } from '../hooks/ressources/useProducts';
 import ProductForm from '../components/ProductForm';
 import type { ProductDtoType } from '../../../shared/dtos/product.dto';
 import ResourceFormPopup from '../components/ResourceFormPopup';
+import ResourceHeader from '../components/ResourceHeader';
+import ResourceLoader from '../components/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
 
 export default function Products() {
-	const [openDialog, setOpenDialog] = useState(false);
+	const [openFormPopup, setOpenFormPopup] = useState(false);
+	const [openDeletePopup, setOpenDeletePopup] = useState(false);
 	const [selectedProduct, setSelectedProduct] = useState<ProductDtoType | null>(
 		null
 	);
 
-	// TanStack Query hooks
 	const {
 		data: products = [],
 		isLoading: productsLoading,
@@ -41,64 +36,43 @@ export default function Products() {
 	const isLoading = productsLoading;
 	const error = productsError;
 
-	const handleDelete = async (id: string) => {
-		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
-			await deleteProductMutation.mutateAsync(id);
+	const handleDelete = () => {
+		if (selectedProduct) {
+			deleteProductMutation.mutate(selectedProduct.id);
 		}
 	};
 
-	const handleEdit = (product: ProductDtoType) => {
+	const handleOpenDeletePopup = (product: ProductDtoType) => {
 		setSelectedProduct(product);
-		setOpenDialog(true);
+		setOpenDeletePopup(true);
 	};
 
-	const handleAdd = () => {
+	const handleOpenEditPopup = (product: ProductDtoType) => {
+		setSelectedProduct(product);
+		setOpenFormPopup(true);
+	};
+
+	const handleOpenAddPopup = () => {
 		setSelectedProduct(null);
-		setOpenDialog(true);
+		setOpenFormPopup(true);
 	};
 
-	const handleCloseDialog = () => {
-		setOpenDialog(false);
+	const handleCloseFormPopup = () => {
+		setOpenFormPopup(false);
 		setSelectedProduct(null);
 	};
 
 	if (isLoading) {
-		return (
-			<Box
-				display='flex'
-				justifyContent='center'
-				alignItems='center'
-				minHeight='400px'
-			>
-				<CircularProgress />
-			</Box>
-		);
+		return <ResourceLoader />;
 	}
 
 	return (
 		<Box>
-			<Box
-				display='flex'
-				justifyContent='space-between'
-				alignItems='center'
-				mb={3}
-			>
-				<Typography variant='h4'>Produits</Typography>
-				<Button
-					variant='contained'
-					startIcon={<AddIcon />}
-					onClick={handleAdd}
-					disableElevation
-				>
-					Ajouter un produit
-				</Button>
-			</Box>
-
-			{error && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					Erreur lors de la récupération des produits
-				</Alert>
-			)}
+			<ResourceHeader
+				title='Produits'
+				handleAdd={handleOpenAddPopup}
+				error={!!error}
+			/>
 
 			<TableContainer>
 				<Table size='small'>
@@ -107,7 +81,6 @@ export default function Products() {
 							<TableCell>Nom</TableCell>
 							<TableCell>Prix</TableCell>
 							<TableCell>Stock</TableCell>
-							<TableCell>Actions</TableCell>
 						</TableRow>
 					</TableHead>
 					<TableBody>
@@ -117,19 +90,17 @@ export default function Products() {
 								<TableCell>{product.price}</TableCell>
 								<TableCell>{product.inventory}</TableCell>
 								<TableCell align='right'>
-									<IconButton onClick={() => handleEdit(product)} size='small'>
+									<IconButton
+										onClick={() => handleOpenEditPopup(product)}
+										size='small'
+									>
 										<EditIcon />
 									</IconButton>
 									<IconButton
-										onClick={() => handleDelete(product.id)}
+										onClick={() => handleOpenDeletePopup(product)}
 										size='small'
-										disabled={deleteProductMutation.isPending}
 									>
-										{deleteProductMutation.isPending ? (
-											<CircularProgress size={20} />
-										) : (
-											<DeleteIcon />
-										)}
+										<DeleteIcon />
 									</IconButton>
 								</TableCell>
 							</TableRow>
@@ -138,13 +109,23 @@ export default function Products() {
 				</Table>
 			</TableContainer>
 
-			<ResourceFormPopup
-				open={openDialog}
-				onClose={handleCloseDialog}
-				title={selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
-			>
-				<ProductForm init={selectedProduct} onClose={handleCloseDialog} />
-			</ResourceFormPopup>
+			{openFormPopup && (
+				<ResourceFormPopup
+					onClose={handleCloseFormPopup}
+					title={selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
+				>
+					<ProductForm init={selectedProduct} onClose={handleCloseFormPopup} />
+				</ResourceFormPopup>
+			)}
+
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={() => setOpenDeletePopup(false)}
+					title='Supprimer le produit'
+					description='Voulez-vous vraiment supprimer ce produit ?'
+					onDelete={handleDelete}
+				/>
+			)}
 		</Box>
 	);
 }

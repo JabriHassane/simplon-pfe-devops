@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-	Typography,
 	Box,
 	Table,
 	TableBody,
@@ -8,89 +7,64 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	Button,
-	CircularProgress,
-	Alert,
 	IconButton,
 } from '@mui/material';
-import {
-	Add as AddIcon,
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAccounts, useDeleteAccount } from '../hooks/ressources/useAccounts';
 import AccountForm from '../components/AccountForm';
 import type { AccountDtoType } from '../../../shared/dtos/account.dto';
 import ResourceFormPopup from '../components/ResourceFormPopup';
+import ResourceHeader from '../components/ResourceHeader';
+import ResourceLoader from '../components/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
 
 export default function Accounts() {
-	const [openDialog, setOpenDialog] = useState(false);
+	const [openFormPopup, setOpenFormPopup] = useState(false);
+	const [openDeletePopup, setOpenDeletePopup] = useState(false);
 	const [selectedAccount, setSelectedAccount] = useState<AccountDtoType | null>(
 		null
 	);
 
-	// TanStack Query hooks
 	const { data: accounts = [], isLoading, error } = useAccounts();
 	const deleteAccountMutation = useDeleteAccount();
 
-	const handleDelete = async (id: string) => {
-		if (window.confirm('Êtes-vous sûr de vouloir supprimer ce compte?')) {
-			await deleteAccountMutation.mutateAsync(id);
+	const handleDelete = () => {
+		if (selectedAccount) {
+			deleteAccountMutation.mutate(selectedAccount.id);
 		}
 	};
 
-	const handleEdit = (account: AccountDtoType) => {
+	const handleOpenDeletePopup = (account: AccountDtoType) => {
 		setSelectedAccount(account);
-		setOpenDialog(true);
+		setOpenDeletePopup(true);
 	};
 
-	const handleAdd = () => {
+	const handleOpenEditPopup = (account: AccountDtoType) => {
+		setSelectedAccount(account);
+		setOpenFormPopup(true);
+	};
+
+	const handleOpenAddPopup = () => {
 		setSelectedAccount(null);
-		setOpenDialog(true);
+		setOpenFormPopup(true);
 	};
 
-	const handleCloseDialog = () => {
-		setOpenDialog(false);
+	const handleCloseFormPopup = () => {
+		setOpenFormPopup(false);
 		setSelectedAccount(null);
 	};
 
 	if (isLoading) {
-		return (
-			<Box
-				display='flex'
-				justifyContent='center'
-				alignItems='center'
-				minHeight='400px'
-			>
-				<CircularProgress />
-			</Box>
-		);
+		return <ResourceLoader />;
 	}
 
 	return (
 		<Box>
-			<Box
-				display='flex'
-				justifyContent='space-between'
-				alignItems='center'
-				mb={3}
-			>
-				<Typography variant='h4'>Comptes</Typography>
-				<Button
-					variant='contained'
-					startIcon={<AddIcon />}
-					onClick={handleAdd}
-					disableElevation
-				>
-					Ajouter un compte
-				</Button>
-			</Box>
-
-			{error && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					Erreur lors de la récupération des comptes
-				</Alert>
-			)}
+			<ResourceHeader
+				title='Comptes'
+				handleAdd={handleOpenAddPopup}
+				error={!!error}
+			/>
 
 			<TableContainer>
 				<Table size='small'>
@@ -108,19 +82,17 @@ export default function Accounts() {
 								<TableCell>{account.ref}</TableCell>
 								<TableCell>{account.balance}</TableCell>
 								<TableCell align='right'>
-									<IconButton onClick={() => handleEdit(account)} size='small'>
+									<IconButton
+										onClick={() => handleOpenEditPopup(account)}
+										size='small'
+									>
 										<EditIcon />
 									</IconButton>
 									<IconButton
-										onClick={() => handleDelete(account.id)}
+										onClick={() => handleOpenDeletePopup(account)}
 										size='small'
-										disabled={deleteAccountMutation.isPending}
 									>
-										{deleteAccountMutation.isPending ? (
-											<CircularProgress size={20} />
-										) : (
-											<DeleteIcon />
-										)}
+										<DeleteIcon />
 									</IconButton>
 								</TableCell>
 							</TableRow>
@@ -129,13 +101,23 @@ export default function Accounts() {
 				</Table>
 			</TableContainer>
 
-			<ResourceFormPopup
-				open={openDialog}
-				onClose={handleCloseDialog}
-				title={selectedAccount ? 'Modifier le compte' : 'Ajouter un compte'}
-			>
-				<AccountForm init={selectedAccount} onClose={handleCloseDialog} />
-			</ResourceFormPopup>
+			{openFormPopup && (
+				<ResourceFormPopup
+					onClose={handleCloseFormPopup}
+					title={selectedAccount ? 'Modifier le compte' : 'Ajouter un compte'}
+				>
+					<AccountForm init={selectedAccount} onClose={handleCloseFormPopup} />
+				</ResourceFormPopup>
+			)}
+
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={() => setOpenDeletePopup(false)}
+					title='Supprimer le compte'
+					description='Voulez-vous vraiment supprimer ce compte ?'
+					onDelete={handleDelete}
+				/>
+			)}
 		</Box>
 	);
 }
