@@ -60,7 +60,7 @@ export const useOrder = (id: string) => {
 };
 
 // Create order mutation
-export const useCreateOrder = () => {
+export const useCreateOrder = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -71,6 +71,7 @@ export const useCreateOrder = () => {
 				queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
 
 				showSuccess('Commande créée');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création de la commande');
@@ -110,7 +111,7 @@ export const useUpdateOrder = (callback: () => void) => {
 };
 
 // Delete order mutation
-export const useDeleteOrder = () => {
+export const useDeleteOrder = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -123,6 +124,7 @@ export const useDeleteOrder = () => {
 				queryClient.removeQueries({ queryKey: orderKeys.detail(id) });
 
 				showSuccess('Commande supprimée');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression de la commande');

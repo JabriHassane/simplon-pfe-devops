@@ -11,12 +11,12 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useProducts, useDeleteProduct } from '../hooks/ressources/useProducts';
-import ProductForm from '../components/ProductForm';
+import ProductForm from '../components/forms/ProductForm';
 import type { ProductDtoType } from '../../../shared/dtos/product.dto';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceHeader from '../components/ResourceHeader';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceHeader from '../components/shared/ResourceHeader';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 
 export default function Products() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -31,7 +31,7 @@ export default function Products() {
 		error: productsError,
 	} = useProducts();
 
-	const deleteProductMutation = useDeleteProduct();
+	const deleteProductMutation = useDeleteProduct(() => setOpenDeletePopup(false));
 
 	const isLoading = productsLoading;
 	const error = productsError;

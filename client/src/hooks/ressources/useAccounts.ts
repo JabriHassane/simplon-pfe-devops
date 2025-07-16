@@ -104,7 +104,7 @@ export const useUpdateAccount = (callback: () => void) => {
 };
 
 // Delete account mutation
-export const useDeleteAccount = () => {
+export const useDeleteAccount = (callback: () => void) => {
 	const queryClient = useQueryClient();
 	const { showSuccess, showError } = useSnackbar();
 
@@ -117,6 +117,7 @@ export const useDeleteAccount = () => {
 				queryClient.removeQueries({ queryKey: accountKeys.detail(id) });
 
 				showSuccess('Compte supprimé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression du compte');

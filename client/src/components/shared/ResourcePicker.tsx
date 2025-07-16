@@ -23,11 +23,11 @@ import {
 	Close as CloseIcon,
 	Check as CheckIcon,
 } from '@mui/icons-material';
-import { useClients } from '../hooks/ressources/useClients';
-import { useUsers } from '../hooks/ressources/useUsers';
-import { useSuppliers } from '../hooks/ressources/useSuppliers';
-import { useProducts } from '../hooks/ressources/useProducts';
-import { useAccounts } from '../hooks/ressources/useAccounts';
+import { useClients } from '../../hooks/ressources/useClients';
+import { useUsers } from '../../hooks/ressources/useUsers';
+import { useSuppliers } from '../../hooks/ressources/useSuppliers';
+import { useProducts } from '../../hooks/ressources/useProducts';
+import { useAccounts } from '../../hooks/ressources/useAccounts';
 import type { UseQueryResult } from '@tanstack/react-query';
 
 export type ResourceType =

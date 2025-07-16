@@ -11,12 +11,12 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAccounts, useDeleteAccount } from '../hooks/ressources/useAccounts';
-import AccountForm from '../components/AccountForm';
+import AccountForm from '../components/forms/AccountForm';
 import type { AccountDtoType } from '../../../shared/dtos/account.dto';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceHeader from '../components/ResourceHeader';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceHeader from '../components/shared/ResourceHeader';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 
 export default function Accounts() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -26,7 +26,7 @@ export default function Accounts() {
 	);
 
 	const { data: accounts = [], isLoading, error } = useAccounts();
-	const deleteAccountMutation = useDeleteAccount();
+	const deleteAccountMutation = useDeleteAccount(() => setOpenDeletePopup(false));
 
 	const handleDelete = () => {
 		if (selectedAccount) {

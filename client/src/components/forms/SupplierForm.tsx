@@ -2,44 +2,44 @@ import { Box, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-	CreateClientDto,
-	type CreateClientDtoType,
-	type ClientDtoType,
-} from '../../../shared/dtos/client.dto';
+	CreateSupplierDto,
+	type CreateSupplierDtoType,
+	type SupplierDtoType,
+} from '../../../../shared/dtos/supplier.dto';
 import ResourceForm from './ResourceForm';
 import {
-	useCreateClient,
-	useUpdateClient,
-} from '../hooks/ressources/useClients';
+	useCreateSupplier,
+	useUpdateSupplier,
+} from '../../hooks/ressources/useSuppliers';
 
-interface ClientFormProps {
-	init: ClientDtoType | null;
+interface SupplierFormProps {
+	init: SupplierDtoType | null;
 	onClose: () => void;
 }
 
-export default function ClientForm({ init, onClose }: ClientFormProps) {
+export default function SupplierForm({ init, onClose }: SupplierFormProps) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateClientDto),
+		resolver: zodResolver(CreateSupplierDto),
 		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
 
-	const createClientMutation = useCreateClient(onClose);
-	const updateClientMutation = useUpdateClient(onClose);
+	const createSupplierMutation = useCreateSupplier(onClose);
+	const updateSupplierMutation = useUpdateSupplier(onClose);
 
-	const onSubmit = async (data: CreateClientDtoType) => {
+	const onSubmit = async (data: CreateSupplierDtoType) => {
 		if (init) {
-			await updateClientMutation.mutateAsync({
+			await updateSupplierMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createClientMutation.mutateAsync(data);
+			await createSupplierMutation.mutateAsync(data);
 		}
 	};
 
@@ -48,12 +48,12 @@ export default function ClientForm({ init, onClose }: ClientFormProps) {
 			onSubmit={handleSubmit(onSubmit)}
 			isValid={isValid}
 			isLoading={
-				createClientMutation.isPending || updateClientMutation.isPending
+				createSupplierMutation.isPending || updateSupplierMutation.isPending
 			}
 		>
 			<TextField
 				fullWidth
-				label='Nom du client'
+				label='Nom du fournisseur'
 				{...register('name')}
 				margin='normal'
 				variant='outlined'
@@ -83,6 +83,7 @@ export default function ClientForm({ init, onClose }: ClientFormProps) {
 				rows={3}
 				error={!!errors.address}
 				helperText={errors.address?.message as string}
+				required
 			/>
 		</ResourceForm>
 	);

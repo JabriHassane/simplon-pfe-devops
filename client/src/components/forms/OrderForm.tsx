@@ -12,24 +12,28 @@ import {
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ResourcePickerField from './ResourcePickerField';
-import { CreateOrderDto, type OrderDtoType } from '../../../shared/dtos/order.dto';
+import ResourcePickerField from '../shared/ResourcePickerField';
+import {
+	CreateOrderDto,
+	type CreateOrderDtoType,
+	type OrderDtoType,
+} from '../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useProducts } from '../hooks/ressources/useProducts';
-import { useClients } from '../hooks/ressources/useClients';
+import { useProducts } from '../../hooks/ressources/useProducts';
+import { useClients } from '../../hooks/ressources/useClients';
+import ResourceForm from './ResourceForm';
+import {
+	useCreateOrder,
+	useUpdateOrder,
+} from '../../hooks/ressources/useOrders';
 
 interface OrderFormProps {
-	onSubmit: (data: any) => void;
 	init: OrderDtoType | null;
-	isLoading?: boolean;
+	onClose: () => void;
 }
 
-export default function OrderForm({
-	onSubmit,
-	init,
-	isLoading = false,
-}: OrderFormProps) {
+export default function OrderForm({ init, onClose }: OrderFormProps) {
 	const { data: clients = [], isLoading: clientsLoading } = useClients();
 	const { data: products = [], isLoading: productsLoading } = useProducts();
 
@@ -71,8 +75,26 @@ export default function OrderForm({
 		name: 'items',
 	});
 
+	const createOrderMutation = useCreateOrder(onClose);
+	const updateOrderMutation = useUpdateOrder(onClose);
+
+	const onSubmit = async (data: CreateOrderDtoType) => {
+		if (init) {
+			await updateOrderMutation.mutateAsync({
+				id: init.id,
+				data,
+			});
+		} else {
+			await createOrderMutation.mutateAsync(data);
+		}
+	};
+
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+		<ResourceForm
+			onSubmit={handleSubmit(onSubmit)}
+			isValid={isValid}
+			isLoading={createOrderMutation.isPending || updateOrderMutation.isPending}
+		>
 			<Controller
 				name='date'
 				control={control}
@@ -258,16 +280,6 @@ export default function OrderForm({
 				error={!!errors.note}
 				helperText={errors.note?.message as string}
 			/>
-
-			<Button
-				type='submit'
-				variant='contained'
-				disabled={isLoading || !isValid}
-				fullWidth
-				size='large'
-			>
-				{isLoading ? 'Enregistrement...' : init ? 'Mettre à jour' : 'Créer'}
-			</Button>
-		</Box>
+		</ResourceForm>
 	);
 }

@@ -1,6 +1,7 @@
 import { z } from 'zod';
-import { CreateOrderDto, OrderDto } from './order.dto';
+import { CreateOrderDto, OrderItemDto } from './order.dto';
 import { SupplierDto } from './supplier.dto';
+import { UserDto } from './user.dto';
 
 export const CreatePurchaseDto = z.object({
 	...CreateOrderDto.omit({
@@ -12,10 +13,12 @@ export const CreatePurchaseDto = z.object({
 export const UpdatePurchaseDto = CreatePurchaseDto;
 
 export const PurchaseDto = z.object({
-	...OrderDto.omit({
-		client: true,
-	}).shape,
+	id: z.string(),
+	ref: z.string(),
+	...CreatePurchaseDto.shape,
+	agent: UserDto,
 	supplier: SupplierDto,
+	items: z.array(OrderItemDto),
 });
 
 export type CreatePurchaseDtoType = z.infer<typeof CreatePurchaseDto>;

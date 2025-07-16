@@ -11,12 +11,12 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useClients, useDeleteClient } from '../hooks/ressources/useClients';
-import ClientForm from '../components/ClientForm';
+import ClientForm from '../components/forms/ClientForm';
 import type { ClientDtoType } from '../../../shared/dtos/client.dto';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceHeader from '../components/ResourceHeader';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceHeader from '../components/shared/ResourceHeader';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 
 export default function Clients() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -26,7 +26,7 @@ export default function Clients() {
 	);
 	const { data: clients = [], isLoading, error } = useClients();
 
-	const deleteClientMutation = useDeleteClient();
+	const deleteClientMutation = useDeleteClient(() => setOpenDeletePopup(false));
 
 	const handleDelete = () => {
 		if (selectedClient) {

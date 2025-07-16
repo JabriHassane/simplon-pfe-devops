@@ -50,7 +50,7 @@ export const usePurchase = (id: string) => {
 };
 
 // Create purchase mutation
-export const useCreatePurchase = () => {
+export const useCreatePurchase = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -61,6 +61,7 @@ export const useCreatePurchase = () => {
 				queryClient.invalidateQueries({ queryKey: purchaseKeys.lists() });
 
 				showSuccess('Achat créé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError("Erreur lors de la création de l'achat");
@@ -100,7 +101,7 @@ export const useUpdatePurchase = (callback: () => void) => {
 };
 
 // Delete purchase mutation
-export const useDeletePurchase = () => {
+export const useDeletePurchase = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -113,6 +114,7 @@ export const useDeletePurchase = () => {
 				queryClient.removeQueries({ queryKey: purchaseKeys.detail(id) });
 
 				showSuccess('Achat supprimé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError("Erreur lors de la suppression de l'achat");

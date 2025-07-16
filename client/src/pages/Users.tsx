@@ -11,12 +11,12 @@ import {
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useUsers, useDeleteUser } from '../hooks/ressources/useUsers';
-import UserForm from '../components/UserForm';
+import UserForm from '../components/forms/UserForm';
 import type { UserDtoType } from '../../../shared/dtos/user.dto';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceHeader from '../components/ResourceHeader';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceHeader from '../components/shared/ResourceHeader';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 
 export default function Users() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -24,7 +24,7 @@ export default function Users() {
 	const [selectedUser, setSelectedUser] = useState<UserDtoType | null>(null);
 
 	const { data: users = [], isLoading, error } = useUsers();
-	const deleteUserMutation = useDeleteUser();
+	const deleteUserMutation = useDeleteUser(() => setOpenDeletePopup(false));
 
 	const handleDelete = () => {
 		if (selectedUser) {

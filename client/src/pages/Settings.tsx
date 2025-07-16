@@ -94,7 +94,7 @@ export default function Settings() {
 				</Alert>
 			)}
 
-			<Paper sx={{ p: 3, mb: 3 }}>
+			<Paper sx={{ p: 3, mb: 3 }} variant='outlined'>
 				<Typography variant='h6' gutterBottom>
 					Paramètres généraux
 				</Typography>
@@ -161,7 +161,7 @@ export default function Settings() {
 				</Box>
 			</Paper>
 
-			<Paper sx={{ p: 3, mb: 3 }}>
+			<Paper sx={{ p: 3, mb: 3 }} variant='outlined'>
 				<Typography variant='h6' gutterBottom>
 					Notifications
 				</Typography>
@@ -196,7 +196,7 @@ export default function Settings() {
 				</Box>
 			</Paper>
 
-			<Paper sx={{ p: 3, mb: 3 }}>
+			<Paper sx={{ p: 3, mb: 3 }} variant='outlined'>
 				<Typography variant='h6' gutterBottom>
 					Security
 				</Typography>

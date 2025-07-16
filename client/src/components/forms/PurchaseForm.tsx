@@ -12,27 +12,26 @@ import {
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ResourcePickerField from './ResourcePickerField';
+import ResourcePickerField from '../shared/ResourcePickerField';
 import {
 	CreatePurchaseDto,
+	type CreatePurchaseDtoType,
 	type PurchaseDtoType,
-} from '../../../shared/dtos/purchase.dto';
+} from '../../../../shared/dtos/purchase.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useProducts } from '../hooks/ressources/useProducts';
-import { useSuppliers } from '../hooks/ressources/useSuppliers';
+import { useProducts } from '../../hooks/ressources/useProducts';
+import { useSuppliers } from '../../hooks/ressources/useSuppliers';
+import ResourceForm from './ResourceForm';
+import { useCreatePurchase } from '../../hooks/ressources/usePurchases';
+import { useUpdatePurchase } from '../../hooks/ressources/usePurchases';
 
 interface PurchaseFormProps {
-	onSubmit: (data: any) => void;
 	init: PurchaseDtoType | null;
-	isLoading?: boolean;
+	onClose: () => void;
 }
 
-export default function PurchaseForm({
-	onSubmit,
-	init,
-	isLoading = false,
-}: PurchaseFormProps) {
+export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 	const { data: suppliers = [], isLoading: suppliersLoading } = useSuppliers();
 	const { data: products = [], isLoading: productsLoading } = useProducts();
 
@@ -68,8 +67,28 @@ export default function PurchaseForm({
 		name: 'items',
 	});
 
+	const createPurchaseMutation = useCreatePurchase(onClose);
+	const updatePurchaseMutation = useUpdatePurchase(onClose);
+
+	const onSubmit = async (data: CreatePurchaseDtoType) => {
+		if (init) {
+			await updatePurchaseMutation.mutateAsync({
+				id: init.id,
+				data,
+			});
+		} else {
+			await createPurchaseMutation.mutateAsync(data);
+		}
+	};
+
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+		<ResourceForm
+			onSubmit={handleSubmit(onSubmit)}
+			isValid={isValid}
+			isLoading={
+				createPurchaseMutation.isPending || updatePurchaseMutation.isPending
+			}
+		>
 			<Controller
 				name='date'
 				control={control}
@@ -255,16 +274,6 @@ export default function PurchaseForm({
 				error={!!errors.note}
 				helperText={errors.note?.message as string}
 			/>
-
-			<Button
-				type='submit'
-				variant='contained'
-				disabled={isLoading || !isValid}
-				fullWidth
-				size='large'
-			>
-				{isLoading ? 'Enregistrement...' : init ? 'Mettre à jour' : 'Créer'}
-			</Button>
-		</Box>
+		</ResourceForm>
 	);
 }

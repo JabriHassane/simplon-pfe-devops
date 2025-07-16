@@ -1,3 +1,4 @@
+import { Save } from '@mui/icons-material';
 import { Box, Button, Divider } from '@mui/material';
 
 interface ResourceFormProps {
@@ -25,10 +26,11 @@ function ResourceForm({
 				<Button
 					type='submit'
 					variant='contained'
+					startIcon={<Save />}
 					disabled={isLoading || !isValid}
 					fullWidth
 					size='large'
-          disableElevation
+					disableElevation
 				>
 					{isLoading ? 'Enregistrement...' : 'Enregistrer'}
 				</Button>

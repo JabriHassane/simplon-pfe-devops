@@ -100,7 +100,7 @@ export const useUpdateSupplier = (callback: () => void) => {
 };
 
 // Delete supplier mutation
-export const useDeleteSupplier = () => {
+export const useDeleteSupplier = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -113,6 +113,7 @@ export const useDeleteSupplier = () => {
 				queryClient.removeQueries({ queryKey: supplierKeys.detail(id) });
 
 				showSuccess('Fournisseur supprimé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression du fournisseur');

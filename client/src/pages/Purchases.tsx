@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-	Typography,
 	Box,
 	Table,
 	TableBody,
@@ -8,28 +7,22 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	Button,
 	IconButton,
-	Alert,
 	CircularProgress,
 	Chip,
 } from '@mui/material';
-import {
-	Add as AddIcon,
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-} from '@mui/icons-material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
 	usePurchases,
 	useDeletePurchase,
 } from '../hooks/ressources/usePurchases';
-import PurchaseForm from '../components/PurchaseForm';
+import PurchaseForm from '../components/forms/PurchaseForm';
 import type { PurchaseDtoType } from '../../../shared/dtos/purchase.dto';
 import { formatDate } from '../utils/date.utils';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceHeader from '../components/ResourceHeader';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceHeader from '../components/shared/ResourceHeader';
 export default function Purchases() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
 	const [openDeletePopup, setOpenDeletePopup] = useState(false);
@@ -37,7 +30,7 @@ export default function Purchases() {
 		useState<PurchaseDtoType | null>(null);
 
 	const { data: purchases = [], isLoading, error } = usePurchases();
-	const deletePurchaseMutation = useDeletePurchase();
+	const deletePurchaseMutation = useDeletePurchase(() => setOpenDeletePopup(false));
 
 	const handleDelete = () => {
 		if (selectedPurchase) {
@@ -168,8 +161,7 @@ export default function Purchases() {
 				>
 					<PurchaseForm
 						init={selectedPurchase}
-						onSubmit={handleCloseFormPopup}
-						isLoading={false}
+						onClose={handleCloseFormPopup}
 					/>
 				</ResourceFormPopup>
 			)}

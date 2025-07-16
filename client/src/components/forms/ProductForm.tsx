@@ -12,13 +12,13 @@ import {
 	CreateProductDto,
 	type CreateProductDtoType,
 	type ProductDtoType,
-} from '../../../shared/dtos/product.dto';
-import { useProductCategories } from '../hooks/ressources/useProductCategories';
+} from '../../../../shared/dtos/product.dto';
+import { useProductCategories } from '../../hooks/ressources/useProductCategories';
 import ResourceForm from './ResourceForm';
 import {
 	useCreateProduct,
 	useUpdateProduct,
-} from '../hooks/ressources/useProducts';
+} from '../../hooks/ressources/useProducts';
 
 interface Props {
 	init: ProductDtoType | null;

@@ -14,12 +14,12 @@ import {
 	useSuppliers,
 	useDeleteSupplier,
 } from '../hooks/ressources/useSuppliers';
-import SupplierForm from '../components/SupplierForm';
+import SupplierForm from '../components/forms/SupplierForm';
 import type { SupplierDtoType } from '../../../shared/dtos/supplier.dto';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceHeader from '../components/ResourceHeader';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceHeader from '../components/shared/ResourceHeader';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 
 export default function Suppliers() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -28,7 +28,7 @@ export default function Suppliers() {
 		useState<SupplierDtoType | null>(null);
 
 	const { data: suppliers = [], isLoading, error } = useSuppliers();
-	const deleteSupplierMutation = useDeleteSupplier();
+	const deleteSupplierMutation = useDeleteSupplier(() => setOpenDeletePopup(false));
 
 	const handleDelete = () => {
 		if (selectedSupplier) {

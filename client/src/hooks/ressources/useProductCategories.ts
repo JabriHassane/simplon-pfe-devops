@@ -104,7 +104,7 @@ export const useUpdateProductCategory = (callback: () => void) => {
 };
 
 // Delete product category mutation
-export const useDeleteProductCategory = () => {
+export const useDeleteProductCategory = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -119,6 +119,7 @@ export const useDeleteProductCategory = () => {
 				queryClient.removeQueries({ queryKey: productCategoryKeys.detail(id) });
 
 				showSuccess('Catégorie supprimée');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression de la catégorie');

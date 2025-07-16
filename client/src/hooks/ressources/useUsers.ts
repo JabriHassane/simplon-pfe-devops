@@ -101,7 +101,7 @@ export const useUpdateUser = (callback: () => void) => {
 
 // Delete user mutation
 // TODO: add callback
-export const useDeleteUser = () => {
+export const useDeleteUser = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -114,6 +114,7 @@ export const useDeleteUser = () => {
 				queryClient.removeQueries({ queryKey: userKeys.detail(id) });
 
 				showSuccess('Utilisateur supprimé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError("Erreur lors de la suppression de l'utilisateur");

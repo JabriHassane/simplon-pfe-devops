@@ -1,25 +1,27 @@
 import { useState } from 'react';
 import {
-	Box, Table,
+	Box,
+	Table,
 	TableBody,
 	TableCell,
 	TableContainer,
 	TableHead,
-	TableRow, IconButton, CircularProgress
+	TableRow,
+	IconButton,
+	CircularProgress,
 } from '@mui/material';
+import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
-	Edit as EditIcon,
-	Delete as DeleteIcon
-} from '@mui/icons-material';
-import {
-	useTransactions, useDeleteTransaction
+	useTransactions,
+	useDeleteTransaction,
 } from '../hooks/ressources/useTransactions';
-import TransactionForm from '../components/TransactionForm';
+import TransactionForm from '../components/forms/TransactionForm';
 import type { TransactionDtoType } from '../../../shared/dtos/transaction.dto';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceHeader from '../components/ResourceHeader';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceHeader from '../components/shared/ResourceHeader';
+import { DICT } from '../i18n/fr';
 
 export default function Transactions() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -28,7 +30,9 @@ export default function Transactions() {
 		useState<TransactionDtoType | null>(null);
 
 	const { data: transactions = [], isLoading, error } = useTransactions();
-	const deleteTransactionMutation = useDeleteTransaction();
+	const deleteTransactionMutation = useDeleteTransaction(() =>
+		setOpenDeletePopup(false)
+	);
 
 	const handleDelete = () => {
 		if (selectedTransaction) {
@@ -57,9 +61,9 @@ export default function Transactions() {
 	};
 
 	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('en-US', {
+		return new Intl.NumberFormat('fr-FR', {
 			style: 'currency',
-			currency: 'USD',
+			currency: 'MAD',
 		}).format(amount);
 	};
 
@@ -78,11 +82,10 @@ export default function Transactions() {
 				<Table size='small'>
 					<TableHead>
 						<TableRow>
+							<TableCell>Reference</TableCell>
 							<TableCell>Date</TableCell>
 							<TableCell>Account</TableCell>
 							<TableCell>Type</TableCell>
-							<TableCell>Description</TableCell>
-							<TableCell>Reference</TableCell>
 							<TableCell>Amount</TableCell>
 						</TableRow>
 					</TableHead>
@@ -90,6 +93,7 @@ export default function Transactions() {
 					<TableBody>
 						{transactions.map((transaction) => (
 							<TableRow key={transaction.id}>
+								<TableCell>{transaction.ref}</TableCell>
 								<TableCell>
 									{new Date(transaction.date).toLocaleDateString()}
 								</TableCell>
@@ -104,18 +108,16 @@ export default function Transactions() {
 												transaction.type === 'purchase'
 													? 'success.light'
 													: 'error.light',
-											color:
-												transaction.type === 'purchase'
-													? 'success.dark'
-													: 'error.dark',
+											color: 'white',
 											display: 'inline-block',
+											fontWeight: 'bold',
 										}}
 									>
-										{transaction.type}
+										{DICT.transactionType[transaction.type]}
 									</Box>
 								</TableCell>
-								<TableCell>{transaction.ref}</TableCell>
 								<TableCell>{formatCurrency(transaction.amount)}</TableCell>
+
 								<TableCell align='right'>
 									<IconButton
 										onClick={() => handleOpenEditPopup(transaction)}
@@ -152,8 +154,7 @@ export default function Transactions() {
 				>
 					<TransactionForm
 						init={selectedTransaction}
-						onSubmit={handleCloseFormPopup}
-						isLoading={false}
+						onClose={handleCloseFormPopup}
 					/>
 				</ResourceFormPopup>
 			)}

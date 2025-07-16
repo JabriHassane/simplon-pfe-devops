@@ -2,44 +2,44 @@ import { Box, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-	CreateSupplierDto,
-	type CreateSupplierDtoType,
-	type SupplierDtoType,
-} from '../../../shared/dtos/supplier.dto';
+	CreateClientDto,
+	type CreateClientDtoType,
+	type ClientDtoType,
+} from '../../../../shared/dtos/client.dto';
 import ResourceForm from './ResourceForm';
 import {
-	useCreateSupplier,
-	useUpdateSupplier,
-} from '../hooks/ressources/useSuppliers';
+	useCreateClient,
+	useUpdateClient,
+} from '../../hooks/ressources/useClients';
 
-interface SupplierFormProps {
-	init: SupplierDtoType | null;
+interface ClientFormProps {
+	init: ClientDtoType | null;
 	onClose: () => void;
 }
 
-export default function SupplierForm({ init, onClose }: SupplierFormProps) {
+export default function ClientForm({ init, onClose }: ClientFormProps) {
 	const {
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateSupplierDto),
+		resolver: zodResolver(CreateClientDto),
 		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
 
-	const createSupplierMutation = useCreateSupplier(onClose);
-	const updateSupplierMutation = useUpdateSupplier(onClose);
+	const createClientMutation = useCreateClient(onClose);
+	const updateClientMutation = useUpdateClient(onClose);
 
-	const onSubmit = async (data: CreateSupplierDtoType) => {
+	const onSubmit = async (data: CreateClientDtoType) => {
 		if (init) {
-			await updateSupplierMutation.mutateAsync({
+			await updateClientMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createSupplierMutation.mutateAsync(data);
+			await createClientMutation.mutateAsync(data);
 		}
 	};
 
@@ -48,12 +48,12 @@ export default function SupplierForm({ init, onClose }: SupplierFormProps) {
 			onSubmit={handleSubmit(onSubmit)}
 			isValid={isValid}
 			isLoading={
-				createSupplierMutation.isPending || updateSupplierMutation.isPending
+				createClientMutation.isPending || updateClientMutation.isPending
 			}
 		>
 			<TextField
 				fullWidth
-				label='Nom du fournisseur'
+				label='Nom du client'
 				{...register('name')}
 				margin='normal'
 				variant='outlined'
@@ -83,7 +83,6 @@ export default function SupplierForm({ init, onClose }: SupplierFormProps) {
 				rows={3}
 				error={!!errors.address}
 				helperText={errors.address?.message as string}
-				required
 			/>
 		</ResourceForm>
 	);

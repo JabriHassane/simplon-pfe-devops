@@ -48,7 +48,7 @@ export const useTransaction = (id: string) => {
 	});
 };
 
-export const useCreateTransaction = () => {
+export const useCreateTransaction = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -60,6 +60,7 @@ export const useCreateTransaction = () => {
 				queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
 
 				showSuccess('Transaction créée');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création de la transaction');
@@ -96,7 +97,7 @@ export const useUpdateTransaction = (callback: () => void) => {
 	});
 };
 
-export const useDeleteTransaction = () => {
+export const useDeleteTransaction = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -109,6 +110,7 @@ export const useDeleteTransaction = () => {
 				queryClient.removeQueries({ queryKey: transactionKeys.detail(id) });
 
 				showSuccess('Transaction supprimée');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression de la transaction');

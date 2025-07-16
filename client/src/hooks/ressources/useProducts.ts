@@ -100,7 +100,7 @@ export const useUpdateProduct = (callback: () => void) => {
 };
 
 // Delete product mutation
-export const useDeleteProduct = () => {
+export const useDeleteProduct = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -113,7 +113,7 @@ export const useDeleteProduct = () => {
 				queryClient.removeQueries({ queryKey: productKeys.detail(id) });
 
 				showSuccess('Produit supprimé');
-				return id;
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression du produit');

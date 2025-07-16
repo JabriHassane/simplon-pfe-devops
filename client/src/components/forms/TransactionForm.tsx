@@ -12,18 +12,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateTransactionDto,
 	type CreateTransactionDtoType,
-} from '../../../shared/dtos/transaction.dto';
+	type TransactionDtoType,
+} from '../../../../shared/dtos/transaction.dto';
+import ResourceForm from './ResourceForm';
+import { useCreateTransaction } from '../../hooks/ressources/useTransactions';
+import { useUpdateTransaction } from '../../hooks/ressources/useTransactions';
 
 interface TransactionFormProps {
-	onSubmit: (data: any) => void;
-	init: CreateTransactionDtoType | null;
-	isLoading?: boolean;
+	init: TransactionDtoType | null;
+	onClose: () => void;
 }
 
 export default function TransactionForm({
-	onSubmit,
 	init,
-	isLoading = false,
+	onClose,
 }: TransactionFormProps) {
 	const {
 		register,
@@ -36,8 +38,29 @@ export default function TransactionForm({
 		reValidateMode: 'onChange',
 	});
 
+	const createTransactionMutation = useCreateTransaction(onClose);
+	const updateTransactionMutation = useUpdateTransaction(onClose);
+
+	const onSubmit = async (data: CreateTransactionDtoType) => {
+		if (init) {
+			await updateTransactionMutation.mutateAsync({
+				id: init.id,
+				data,
+			});
+		} else {
+			await createTransactionMutation.mutateAsync(data);
+		}
+	};
+
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)}>
+		<ResourceForm
+			onSubmit={handleSubmit(onSubmit)}
+			isValid={isValid}
+			isLoading={
+				createTransactionMutation.isPending ||
+				updateTransactionMutation.isPending
+			}
+		>
 			<TextField
 				fullWidth
 				label='Date'
@@ -88,16 +111,6 @@ export default function TransactionForm({
 					},
 				}}
 			/>
-
-			<Button
-				type='submit'
-				variant='contained'
-				disabled={isLoading || !isValid}
-				fullWidth
-				size='large'
-			>
-				{isLoading ? 'Enregistrement...' : init ? 'Modifier' : 'Créer'}
-			</Button>
-		</Box>
+		</ResourceForm>
 	);
 }

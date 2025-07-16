@@ -5,12 +5,12 @@ import {
 	CreateAccountDto,
 	type CreateAccountDtoType,
 	type AccountDtoType,
-} from '../../../shared/dtos/account.dto';
-import ResourceForm from './ResourceForm';
+} from '../../../../shared/dtos/account.dto';
 import {
 	useCreateAccount,
 	useUpdateAccount,
-} from '../hooks/ressources/useAccounts';
+} from '../../hooks/ressources/useAccounts';
+import ResourceForm from './ResourceForm';
 
 interface AccountFormProps {
 	init: AccountDtoType | null;
@@ -59,9 +59,6 @@ export default function AccountForm({ init, onClose }: AccountFormProps) {
 				error={!!errors.name}
 				helperText={errors.name?.message as string}
 				required
-				sx={{
-					marginTop: 0,
-				}}
 			/>
 		</ResourceForm>
 	);

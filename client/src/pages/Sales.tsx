@@ -12,14 +12,14 @@ import {
 	Chip,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
-import OrderForm from '../components/OrderForm';
+import OrderForm from '../components/forms/OrderForm';
 import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
 import type { OrderDtoType } from '../../../shared/dtos/order.dto';
 import { formatDate } from '../utils/date.utils';
-import ResourceDeleteConfirmation from '../components/ResourceDeleteConfirmation';
-import ResourceFormPopup from '../components/ResourceFormPopup';
-import ResourceLoader from '../components/ResourceLoader';
-import ResourceHeader from '../components/ResourceHeader';
+import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import ResourceFormPopup from '../components/shared/ResourceFormPopup';
+import ResourceLoader from '../components/shared/ResourceLoader';
+import ResourceHeader from '../components/shared/ResourceHeader';
 
 export default function Sales() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
@@ -27,7 +27,7 @@ export default function Sales() {
 	const [selectedOrder, setSelectedOrder] = useState<OrderDtoType | null>(null);
 
 	const { data: orders = [], isLoading, error } = useOrders();
-	const deleteOrderMutation = useDeleteOrder();
+	const deleteOrderMutation = useDeleteOrder(() => setOpenDeletePopup(false));
 
 	const handleDelete = () => {
 		if (selectedOrder) {
@@ -105,7 +105,7 @@ export default function Sales() {
 							<TableCell>Statut</TableCell>
 						</TableRow>
 					</TableHead>
-					
+
 					<TableBody>
 						{orders.map((order) => (
 							<TableRow key={order.id}>
@@ -159,11 +159,7 @@ export default function Sales() {
 					onClose={() => setOpenFormPopup(false)}
 					title={selectedOrder ? 'Modifier la vente' : 'Nouvelle vente'}
 				>
-					<OrderForm
-						init={selectedOrder}
-						onSubmit={handleCloseFormPopup}
-						isLoading={false}
-					/>
+					<OrderForm init={selectedOrder} onClose={handleCloseFormPopup} />
 				</ResourceFormPopup>
 			)}
 

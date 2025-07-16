@@ -12,9 +12,9 @@ import {
 	CreateUserDto,
 	type CreateUserDtoType,
 	type UserDtoType,
-} from '../../../shared/dtos/user.dto';
+} from '../../../../shared/dtos/user.dto';
 import ResourceForm from './ResourceForm';
-import { useCreateUser, useUpdateUser } from '../hooks/ressources/useUsers';
+import { useCreateUser, useUpdateUser } from '../../hooks/ressources/useUsers';
 
 interface UserFormProps {
 	init: UserDtoType | null;
@@ -73,6 +73,7 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 					helperText={errors.name?.message as string}
 					required
 				/>
+				
 				<Controller
 					name='role'
 					control={control}

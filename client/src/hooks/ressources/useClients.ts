@@ -101,7 +101,7 @@ export const useUpdateClient = (callback: () => void) => {
 };
 
 // Delete client mutation
-export const useDeleteClient = () => {
+export const useDeleteClient = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -114,6 +114,7 @@ export const useDeleteClient = () => {
 				queryClient.removeQueries({ queryKey: clientKeys.detail(id) });
 
 				showSuccess('Client supprimé');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la suppression du client');
