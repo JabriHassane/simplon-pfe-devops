@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -20,39 +19,25 @@ import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfi
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
+import useCrud from '../hooks/useCrud';
 
 export default function Sales() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedOrder, setSelectedOrder] = useState<OrderDtoType | null>(null);
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedOrder,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<OrderDtoType>();
 
-	const { data: orders = [], isLoading, error } = useOrders();
-	const deleteOrderMutation = useDeleteOrder(() => setOpenDeletePopup(false));
+	const { data: orders, isLoading, error } = useOrders();
+	const deleteOrderMutation = useDeleteOrder(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedOrder) {
 			deleteOrderMutation.mutate(selectedOrder.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (order: OrderDtoType) => {
-		setSelectedOrder(order);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (order: OrderDtoType) => {
-		setSelectedOrder(order);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedOrder(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedOrder(null);
 	};
 
 	const formatCurrency = (amount: number) => {
@@ -87,7 +72,7 @@ export default function Sales() {
 		<Box>
 			<ResourceHeader
 				title='Ventes'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -107,7 +92,7 @@ export default function Sales() {
 					</TableHead>
 
 					<TableBody>
-						{orders.map((order) => (
+						{orders?.data.map((order) => (
 							<TableRow key={order.id}>
 								<TableCell>{order.ref}</TableCell>
 								<TableCell>{formatDate(order.date)}</TableCell>
@@ -131,7 +116,7 @@ export default function Sales() {
 								</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(order)}
+										onClick={() => handleOpenFormPopup(order)}
 										size='small'
 									>
 										<EditIcon />
@@ -156,16 +141,16 @@ export default function Sales() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={() => setOpenFormPopup(false)}
+					onClose={handleClosePopup}
 					title={selectedOrder ? 'Modifier la vente' : 'Nouvelle vente'}
 				>
-					<OrderForm init={selectedOrder} onClose={handleCloseFormPopup} />
+					<OrderForm init={selectedOrder} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title='Supprimer la vente'
 					description='Voulez-vous vraiment supprimer cette vente ?'
 					onDelete={handleDelete}

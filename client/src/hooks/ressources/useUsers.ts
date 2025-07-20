@@ -5,22 +5,46 @@ import type {
 	UpdateUserDtoType,
 } from '../../../../shared/dtos/user.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const userKeys = {
 	lists: () => ['users'],
+	list: (params?: PaginationParams) => [...userKeys.lists(), params],
 	detail: (id: string) => [...userKeys.lists(), id],
 };
 
-// Get all users
-export const useUsers = () => {
+// Get paginated users
+export const useUsers = (params?: PaginationParams) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: userKeys.list(params),
+		queryFn: async () => {
+			try {
+				return await UserService.getPage(params);
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des utilisateurs');
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
+			}
+		},
+	});
+};
+
+// Get all users (for backward compatibility)
+export const useAllUsers = () => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
 		queryKey: userKeys.lists(),
 		queryFn: async () => {
 			try {
-				return await UserService.getAll();
+				const result = await UserService.getPage();
+				return result.data;
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des utilisateurs');

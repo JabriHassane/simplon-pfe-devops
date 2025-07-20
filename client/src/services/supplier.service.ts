@@ -1,11 +1,17 @@
 import type { SupplierDtoType } from '../../../shared/dtos/supplier.dto';
 import type { CreateSupplierDtoType } from '../../../shared/dtos/supplier.dto';
 import type { UpdateSupplierDtoType } from '../../../shared/dtos/supplier.dto';
-import { ApiService } from './api.service';
+import {
+	ApiService,
+	type PaginationParams,
+	type PaginatedResponse,
+} from './api.service';
 
 export const SupplierService = {
-	async getAll() {
-		return ApiService.get<SupplierDtoType[]>('/suppliers');
+	async getPage(
+		params?: PaginationParams
+	): Promise<PaginatedResponse<SupplierDtoType>> {
+		return ApiService.getPaginated<SupplierDtoType>('/suppliers', params);
 	},
 
 	async getById(id: string) {

@@ -2,18 +2,38 @@ import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { CreateUserDtoType } from '../../../shared/dtos/user.dto';
 import bcrypt from 'bcryptjs';
+import { getPaginationCondition } from '../utils/pagination';
 
 export class UserController {
-	static async getAll(req: Request, res: Response) {
+	static async getPage(req: Request, res: Response) {
 		try {
+			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+				'name',
+				'ref',
+			]);
+
+			// Get total count for pagination
+			const total = await prisma.user.count({ where: whereClause });
+
+			// Get paginated results
 			const users = await prisma.user.findMany({
-				where: { deletedAt: null },
+				where: whereClause,
 				orderBy: { createdAt: 'desc' },
+				skip,
+				take: limit,
 			});
 
-			res.json(users);
+			res.json({
+				data: users,
+				pagination: {
+					page,
+					limit,
+					total,
+					totalPages: Math.ceil(total / limit),
+				},
+			});
 		} catch (error) {
-			console.error('Error in UserController.getAll', error);
+			console.error('Error in UserController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	}
@@ -65,11 +85,7 @@ export class UserController {
 
 					role: body.role,
 					ref: `USER-${Date.now()}`,
-					createdBy: {
-						connect: {
-							id: userId,
-						},
-					},
+					createdById: userId,
 				},
 			});
 

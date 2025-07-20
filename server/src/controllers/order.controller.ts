@@ -3,34 +3,57 @@ import { prisma } from '../index';
 import {
 	CreateOrderDtoType,
 	UpdateOrderDtoType,
-	OrderIdDtoType,
 } from '../../../shared/dtos/order.dto';
+import { getPaginationCondition } from '../utils/pagination';
 
 type OrderItemInput = { productId: string; price: number; quantity: number };
 
 export class OrderController {
 	static async getAll(req: Request, res: Response) {
 		try {
-			const orders = await prisma.order.findMany({
-				where: { deletedAt: null },
-				include: {
-					client: true,
-					items: {
-						include: {
-							product: true,
-						},
-					},
-					agent: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-				},
-				orderBy: { date: 'desc' },
-			});
+			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+				'ref',
+				'receiptNumber',
+				'invoiceNumber',
+			]);
 
-			res.json(orders);
+			const [orders, total] = await Promise.all([
+				prisma.order.findMany({
+					where: whereClause,
+					include: {
+						client: true,
+						items: {
+							include: {
+								product: true,
+							},
+						},
+						agent: {
+							select: {
+								id: true,
+								name: true,
+							},
+						},
+					},
+					orderBy: { date: 'desc' },
+					skip,
+					take: limit,
+				}),
+				prisma.order.count({
+					where: whereClause,
+				}),
+			]);
+
+			const totalPages = Math.ceil(total / limit);
+
+			res.json({
+				data: orders,
+				pagination: {
+					page,
+					limit,
+					total,
+					totalPages,
+				},
+			});
 		} catch (error) {
 			console.error('Error in OrderController.getAll', error);
 			res.status(500).json({ message: 'Internal server error' });
@@ -39,7 +62,7 @@ export class OrderController {
 
 	static async getById(req: Request, res: Response) {
 		try {
-			const { id } = req.params as OrderIdDtoType['params'];
+			const { id } = req.params;
 
 			const order = await prisma.order.findUnique({
 				where: { id },
@@ -72,21 +95,12 @@ export class OrderController {
 
 	static async create(req: Request, res: Response) {
 		try {
-			const {
-				date,
-				clientId,
-				receiptNumber,
-				invoiceNumber,
-				items,
-				status = 'pending',
-				discountAmount = 0,
-				discountType = 'fixed',
-				note,
-			} = req.body.body as CreateOrderDtoType;
+			const { userId } = req.user!;
+			const body = req.body as CreateOrderDtoType;
 
 			// Check if client exists
 			const client = await prisma.client.findUnique({
-				where: { id: clientId },
+				where: { id: body.clientId },
 			});
 
 			if (!client) {
@@ -94,7 +108,7 @@ export class OrderController {
 			}
 
 			// Validate all products exist and have sufficient inventory
-			for (const item of items) {
+			for (const item of body.items) {
 				const product = await prisma.product.findUnique({
 					where: { id: item.productId },
 				});
@@ -113,40 +127,40 @@ export class OrderController {
 			}
 
 			// Calculate totals
-			const subtotal = items.reduce(
+			const subtotal = body.items.reduce(
 				(sum: number, item: { price: number; quantity: number }) =>
 					sum + item.price * item.quantity,
 				0
 			);
 			const discount =
-				discountType === 'percentage'
-					? (subtotal * discountAmount) / 100
-					: discountAmount;
+				body.discountType === 'percentage'
+					? (subtotal * body.discountAmount) / 100
+					: body.discountAmount;
 			const totalPrice = subtotal - discount;
 
 			const order = await prisma.order.create({
 				data: {
-					date,
-					clientId,
-					receiptNumber,
-					invoiceNumber,
+					date: body.date,
+					clientId: body.clientId,
+					receiptNumber: body.receiptNumber,
+					invoiceNumber: body.invoiceNumber,
 					totalPrice,
 					totalPaid: 0,
 					totalDue: totalPrice,
-					status,
-					discountAmount,
-					discountType,
-					note: note || '',
-					agentId: req.user?.userId,
+					status: body.status,
+					discountAmount: body.discountAmount,
+					discountType: body.discountType,
+					note: body.note || '',
+					agentId: userId,
 					ref: `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-					createdBy: req.user?.userId,
+					createdById: userId,
 					items: {
-						create: items.map((item: OrderItemInput) => ({
+						create: body.items.map((item: OrderItemInput) => ({
 							productId: item.productId,
 							price: item.price,
 							quantity: item.quantity,
 							ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-							createdBy: req.user?.userId,
+							createdById: userId,
 						})),
 					},
 				},
@@ -167,7 +181,7 @@ export class OrderController {
 			});
 
 			// Update product inventory
-			for (const item of items) {
+			for (const item of body.items) {
 				await prisma.product.update({
 					where: { id: item.productId },
 					data: {
@@ -187,11 +201,13 @@ export class OrderController {
 
 	static async update(req: Request, res: Response) {
 		try {
-			const { params, body } = req.body as UpdateOrderDtoType;
+			const { id } = req.params;
+			const { userId } = req.user!;
+			const body = req.body as UpdateOrderDtoType;
 
 			// Check if order exists
 			const existingOrder = await prisma.order.findUnique({
-				where: { id: params.id },
+				where: { id },
 				include: {
 					items: true,
 				},
@@ -268,27 +284,17 @@ export class OrderController {
 			}
 
 			// Update order
+			const { items, ...updateData } = body;
 			const order = await prisma.order.update({
-				where: { id: params.id },
+				where: { id },
 				data: {
+					...updateData,
 					...(totalPrice !== existingOrder.totalPrice && {
 						totalPrice,
 						totalDue: totalPrice - existingOrder.totalPaid,
 					}),
 					updatedAt: new Date(),
-					updatedBy: req.user?.userId,
-
-					items: body.items
-						? {
-								deleteMany: {},
-								createMany: {
-									data: body.items.map((item) => ({
-										...item,
-										createdBy: req.user?.userId,
-									})),
-								},
-						  }
-						: undefined,
+					updatedById: userId,
 				},
 				include: {
 					client: true,
@@ -308,6 +314,23 @@ export class OrderController {
 
 			// Update items if provided
 			if (body.items) {
+				// Delete existing items
+				await prisma.orderItem.deleteMany({
+					where: { orderId: id },
+				});
+
+				// Create new items
+				await prisma.orderItem.createMany({
+					data: body.items.map((item) => ({
+						orderId: id,
+						productId: item.productId,
+						price: item.price,
+						quantity: item.quantity,
+						ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+						createdById: userId,
+					})),
+				});
+
 				// Update product inventory
 				for (const item of body.items) {
 					const currentOrderItem = existingOrder.items.find(
@@ -340,7 +363,8 @@ export class OrderController {
 
 	static async delete(req: Request, res: Response) {
 		try {
-			const { id } = req.params as OrderIdDtoType['params'];
+			const { id } = req.params;
+			const { userId } = req.user!;
 
 			// Check if order exists
 			const existingOrder = await prisma.order.findUnique({
@@ -382,7 +406,7 @@ export class OrderController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: req.user?.userId,
+					deletedById: userId,
 				},
 			});
 

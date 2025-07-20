@@ -34,7 +34,6 @@ import {
 	Accounts,
 	Reports,
 	Users,
-	Settings,
 } from './pages';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -117,7 +116,6 @@ function AppContent() {
 							<Route path='/accounts' element={<Accounts />} />
 							<Route path='/reports' element={<Reports />} />
 							<Route path='/users' element={<Users />} />
-							<Route path='/settings' element={<Settings />} />
 						</Routes>
 					</Box>
 				</Box>

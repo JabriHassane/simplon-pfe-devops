@@ -1,19 +1,39 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
+import { getPaginationCondition } from '../utils/pagination';
 
-export const getAllProducts = async (req: Request, res: Response) => {
+export const getPageProducts = async (req: Request, res: Response) => {
 	try {
+		const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+			'name',
+			'ref',
+		]);
+
+		// Get total count for pagination
+		const total = await prisma.product.count({ where: whereClause });
+
+		// Get paginated results
 		const products = await prisma.product.findMany({
-			where: { deletedAt: null },
+			where: whereClause,
 			include: {
 				category: true,
 			},
 			orderBy: { createdAt: 'desc' },
+			skip,
+			take: limit,
 		});
 
-		res.json(products);
+		res.json({
+			data: products,
+			pagination: {
+				page,
+				limit,
+				total,
+				totalPages: Math.ceil(total / limit),
+			},
+		});
 	} catch (error) {
-		console.error('Get all products error:', error);
+		console.error('Get page products error:', error);
 		res.status(500).json({ message: 'Internal server error' });
 	}
 };
@@ -42,6 +62,7 @@ export const getProductById = async (req: Request, res: Response) => {
 
 export const createProduct = async (req: Request, res: Response) => {
 	try {
+		const { userId } = req.user!;
 		const { name, image, categoryId, price, inventory } = req.body;
 
 		// Check if category exists
@@ -78,7 +99,7 @@ export const createProduct = async (req: Request, res: Response) => {
 				price: parseFloat(price),
 				inventory: parseInt(inventory),
 				ref: `PROD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-				createdBy: req.user?.userId,
+				createdById: userId,
 			},
 			include: {
 				category: true,
@@ -95,6 +116,7 @@ export const createProduct = async (req: Request, res: Response) => {
 export const updateProduct = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
+		const { userId } = req.user!;
 		const { name, image, categoryId, price, inventory } = req.body;
 
 		// Check if product exists
@@ -146,7 +168,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 				...(price !== undefined && { price: parseFloat(price) }),
 				...(inventory !== undefined && { inventory: parseInt(inventory) }),
 				updatedAt: new Date(),
-				updatedBy: req.user?.userId,
+				updatedById: userId,
 			},
 			include: {
 				category: true,
@@ -163,6 +185,7 @@ export const updateProduct = async (req: Request, res: Response) => {
 export const deleteProduct = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
+		const { userId } = req.user!;
 
 		// Check if product exists
 		const existingProduct = await prisma.product.findUnique({
@@ -189,7 +212,7 @@ export const deleteProduct = async (req: Request, res: Response) => {
 			where: { id },
 			data: {
 				deletedAt: new Date(),
-				deletedBy: req.user?.userId,
+				deletedById: userId,
 			},
 		});
 

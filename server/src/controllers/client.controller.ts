@@ -3,27 +3,47 @@ import { prisma } from '../index';
 import {
 	CreateClientDtoType,
 	UpdateClientDtoType,
-	ClientIdDtoType,
 } from '../../../shared/dtos/client.dto';
+import { getPaginationCondition } from '../utils/pagination';
 
 export class ClientController {
-	static async getAll(req: Request, res: Response) {
+	static async getPage(req: Request, res: Response) {
 		try {
+			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+				'name',
+				'ref',
+				'phone',
+			]);
+
+			// Get total count for pagination
+			const total = await prisma.client.count({ where: whereClause });
+
+			// Get paginated results
 			const clients = await prisma.client.findMany({
-				where: { deletedAt: null },
+				where: whereClause,
 				orderBy: { createdAt: 'desc' },
+				skip,
+				take: limit,
 			});
 
-			res.json(clients);
+			res.json({
+				data: clients,
+				pagination: {
+					page,
+					limit,
+					total,
+					totalPages: Math.ceil(total / limit),
+				},
+			});
 		} catch (error) {
-			console.error('Error in ClientController.getAll', error);
+			console.error('Error in ClientController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	}
 
 	static async getById(req: Request, res: Response) {
 		try {
-			const { id } = req.params as ClientIdDtoType['params'];
+			const { id } = req.params;
 
 			const client = await prisma.client.findUnique({
 				where: { id },
@@ -42,6 +62,7 @@ export class ClientController {
 
 	static async create(req: Request, res: Response) {
 		try {
+			const { userId } = req.user!;
 			const { name, phone, address } = req.body.body as CreateClientDtoType;
 
 			// Check if client with same phone already exists
@@ -64,7 +85,7 @@ export class ClientController {
 					phone,
 					address,
 					ref: `CLI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-					createdBy: req.user?.userId,
+					createdById: userId,
 				},
 			});
 
@@ -77,7 +98,8 @@ export class ClientController {
 
 	static async update(req: Request, res: Response) {
 		try {
-			const { id } = req.params as ClientIdDtoType['params'];
+			const { id } = req.params;
+			const { userId } = req.user!;
 			const body = req.body.body;
 
 			// Check if client exists
@@ -113,7 +135,7 @@ export class ClientController {
 					...(body?.phone && { phone: body.phone }),
 					...(body?.address && { address: body.address }),
 					updatedAt: new Date(),
-					updatedBy: req.user?.userId,
+					updatedBy: userId,
 				},
 			});
 
@@ -126,7 +148,8 @@ export class ClientController {
 
 	static async delete(req: Request, res: Response) {
 		try {
-			const { id } = req.params as ClientIdDtoType['params'];
+			const { id } = req.params;
+			const { userId } = req.user!;
 
 			// Check if client exists
 			const existingClient = await prisma.client.findUnique({
@@ -153,7 +176,7 @@ export class ClientController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: req.user?.userId,
+					deletedById: userId,
 				},
 			});
 

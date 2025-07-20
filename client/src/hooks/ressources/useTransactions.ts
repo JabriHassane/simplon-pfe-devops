@@ -5,6 +5,7 @@ import type {
 	CreateTransactionDtoType,
 	UpdateTransactionDtoType,
 } from '../../../../shared/dtos/transaction.dto';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const transactionKeys = {
@@ -12,19 +13,22 @@ export const transactionKeys = {
 	detail: (id: string) => [...transactionKeys.lists(), id],
 };
 
-// Hooks
-export const useTransactions = () => {
+// Get all transactions
+export const useTransactions = (params?: PaginationParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
-		queryKey: transactionKeys.lists(),
+		queryKey: [...transactionKeys.lists(), params],
 		queryFn: async () => {
 			try {
-				return await TransactionService.getAll();
+				return await TransactionService.getPage(params);
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des transactions');
-				return [];
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
 			}
 		},
 	});

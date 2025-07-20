@@ -11,7 +11,7 @@ router.use(authenticate);
 router.use(requireAgent);
 
 // CRUD operations
-router.get('/', UserController.getAll);
+router.get('/', UserController.getPage);
 router.get('/:id', UserController.getById);
 router.post('/', validate(CreateUserDto), UserController.create);
 router.put('/:id', validate(UpdateUserDto), UserController.update);

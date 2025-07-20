@@ -6,12 +6,10 @@ import {
 	SyncAltOutlined,
 	TimelineOutlined,
 	LocalShippingOutlined,
-	AccountBalanceWalletOutlined,
-	SettingsOutlined,
-	PeopleAltOutlined,
+	AccountBalanceWalletOutlined, PeopleAltOutlined,
 	PersonOutline,
 	WorkOutline,
-	Dashboard as DashboardIcon,
+	Dashboard as DashboardIcon
 } from '@mui/icons-material';
 
 export const navigationItems = [
@@ -31,6 +29,5 @@ export const navigationItems = [
 	{ name: 'Rapports', icon: <TimelineOutlined />, path: '/reports' },
 	null,
 	{ name: 'Utilisateurs', icon: <PeopleAltOutlined />, path: '/users' },
-	{ name: 'Paramètres', icon: <SettingsOutlined />, path: '/settings' },
 	{ name: 'Déconnexion', icon: <LogoutOutlined />, path: '/logout' },
 ];

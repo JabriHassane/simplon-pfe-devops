@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../index';
-import { generateToken, generateRefreshToken } from '../utils/jwt';
+import { generateToken, generateRefreshToken } from '../utils/jwt.utils';
 import ms from 'ms';
 
 export const login = async (req: Request, res: Response) => {
@@ -133,8 +133,9 @@ export const logout = async (req: Request, res: Response) => {
 
 export const getConnectedUser = async (req: Request, res: Response) => {
 	try {
+		const { userId } = req.user!;
 		const user = await prisma.user.findUnique({
-			where: { id: req.user?.userId },
+			where: { id: userId },
 		});
 
 		if (!user) {

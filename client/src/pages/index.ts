@@ -9,4 +9,3 @@ export { default as Transactions } from './Transactions';
 export { default as Accounts } from './Accounts';
 export { default as Reports } from './Reports';
 export { default as Users } from './Users';
-export { default as Settings } from './Settings';

@@ -4,10 +4,14 @@ import type {
 	UpdateProductCategoryDtoType,
 } from '../../../shared/dtos/product-category.dto';
 import { ApiService } from './api.service';
+import type { PaginationParams } from './api.service';
 
 export const ProductCategoryService = {
-	async getAll() {
-		return ApiService.get<ProductCategoryDtoType[]>('/product-categories');
+	async getPage(params?: PaginationParams) {
+		return ApiService.getPaginated<ProductCategoryDtoType>(
+			'/product-categories',
+			params
+		);
 	},
 
 	async getById(id: string) {

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -17,39 +16,25 @@ import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import useCrud from '../hooks/useCrud';
 
 export default function Users() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedUser, setSelectedUser] = useState<UserDtoType | null>(null);
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedUser,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<UserDtoType>();
 
-	const { data: users = [], isLoading, error } = useUsers();
-	const deleteUserMutation = useDeleteUser(() => setOpenDeletePopup(false));
+	const { data: users, isLoading, error } = useUsers();
+	const deleteUserMutation = useDeleteUser(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedUser) {
 			deleteUserMutation.mutate(selectedUser.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (user: UserDtoType) => {
-		setSelectedUser(user);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (user: UserDtoType) => {
-		setSelectedUser(user);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedUser(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedUser(null);
 	};
 
 	if (isLoading) {
@@ -60,7 +45,7 @@ export default function Users() {
 		<Box>
 			<ResourceHeader
 				title='Utilisateurs'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -73,13 +58,13 @@ export default function Users() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{users.map((user) => (
+						{users?.data.map((user) => (
 							<TableRow key={user.id}>
 								<TableCell>{user.name}</TableCell>
 								<TableCell>{user.role}</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(user)}
+										onClick={() => handleOpenFormPopup(user)}
 										size='small'
 									>
 										<EditIcon />
@@ -99,18 +84,18 @@ export default function Users() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={handleCloseFormPopup}
+					onClose={handleClosePopup}
 					title={
 						selectedUser ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'
 					}
 				>
-					<UserForm init={selectedUser} onClose={handleCloseFormPopup} />
+					<UserForm init={selectedUser} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title="Supprimer l'utilisateur"
 					description='Voulez-vous vraiment supprimer cet utilisateur ?'
 					onDelete={handleDelete}

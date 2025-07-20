@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -17,41 +16,25 @@ import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import useCrud from '../hooks/useCrud';
 
 export default function Clients() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedClient, setSelectedClient] = useState<ClientDtoType | null>(
-		null
-	);
-	const { data: clients = [], isLoading, error } = useClients();
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedClient,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<ClientDtoType>();
 
-	const deleteClientMutation = useDeleteClient(() => setOpenDeletePopup(false));
+	const { data: clients, isLoading, error } = useClients();
+	const deleteClientMutation = useDeleteClient(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedClient) {
 			deleteClientMutation.mutate(selectedClient.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (client: ClientDtoType) => {
-		setSelectedClient(client);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (client: ClientDtoType) => {
-		setSelectedClient(client);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedClient(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedClient(null);
 	};
 
 	if (isLoading) {
@@ -62,7 +45,7 @@ export default function Clients() {
 		<Box>
 			<ResourceHeader
 				title='Clients'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -77,14 +60,14 @@ export default function Clients() {
 					</TableHead>
 
 					<TableBody>
-						{clients.map((client) => (
+						{clients?.data.map((client) => (
 							<TableRow key={client.id}>
 								<TableCell>{client.name}</TableCell>
 								<TableCell>{client.phone}</TableCell>
 								<TableCell>{client.address}</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(client)}
+										onClick={() => handleOpenFormPopup(client)}
 										size='small'
 									>
 										<EditIcon />
@@ -104,16 +87,16 @@ export default function Clients() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={handleCloseFormPopup}
+					onClose={handleClosePopup}
 					title={selectedClient ? 'Modifier le client' : 'Ajouter un client'}
 				>
-					<ClientForm init={selectedClient} onClose={handleCloseFormPopup} />
+					<ClientForm init={selectedClient} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title='Supprimer le client'
 					description='Voulez-vous vraiment supprimer ce client ?'
 					onDelete={handleDelete}

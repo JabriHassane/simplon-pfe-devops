@@ -5,22 +5,46 @@ import type {
 	UpdateProductDtoType,
 } from '../../../../shared/dtos/product.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const productKeys = {
 	lists: () => ['products'],
+	list: (params?: PaginationParams) => [...productKeys.lists(), params],
 	detail: (id: string) => [...productKeys.lists(), id],
 };
 
-// Get all products
-export const useProducts = () => {
+// Get paginated products
+export const useProducts = (params?: PaginationParams) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: productKeys.list(params),
+		queryFn: async () => {
+			try {
+				return await ProductService.getPage(params);
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des produits');
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
+			}
+		},
+	});
+};
+
+// Get all products (for backward compatibility)
+export const useAllProducts = () => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
 		queryKey: productKeys.lists(),
 		queryFn: async () => {
 			try {
-				return await ProductService.getAll();
+				const result = await ProductService.getPage();
+				return result.data;
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des produits');

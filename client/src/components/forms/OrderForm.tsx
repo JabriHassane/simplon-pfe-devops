@@ -10,7 +10,6 @@ import {
 	IconButton,
 } from '@mui/material';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../shared/ResourcePickerField';
 import {
@@ -20,8 +19,6 @@ import {
 } from '../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useProducts } from '../../hooks/ressources/useProducts';
-import { useClients } from '../../hooks/ressources/useClients';
 import ResourceForm from './ResourceForm';
 import {
 	useCreateOrder,
@@ -34,22 +31,6 @@ interface OrderFormProps {
 }
 
 export default function OrderForm({ init, onClose }: OrderFormProps) {
-	const { data: clients = [], isLoading: clientsLoading } = useClients();
-	const { data: products = [], isLoading: productsLoading } = useProducts();
-
-	const [selectedClient, setSelectedClient] = useState<
-		| {
-				id: string;
-				name: string;
-				email?: string;
-		  }
-		| undefined
-	>(undefined);
-
-	const [selectedProducts, setSelectedProducts] = useState<{
-		[key: number]: { id: string; name: string; price: number };
-	}>({});
-
 	const {
 		register,
 		handleSubmit,
@@ -118,15 +99,11 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 				value={watch('clientId') || ''}
 				onChange={(value) => {
 					setValue('clientId', value);
-					const client = clients.find((c) => c.id === value);
-					setSelectedClient(client || undefined);
 				}}
 				resourceType='client'
 				error={!!errors.clientId}
 				helperText={errors.clientId?.message as string}
 				required
-				selectedResource={selectedClient}
-				disabled={clientsLoading}
 			/>
 
 			<TextField
@@ -181,23 +158,11 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 							value={watch(`items.${index}.productId`) || ''}
 							onChange={(value) => {
 								setValue(`items.${index}.productId`, value);
-								const product = products.find((p) => p.id === value);
-								if (product) {
-									setSelectedProducts((prev) => ({
-										...prev,
-										[index]: product,
-									}));
-									setValue(`items.${index}.price`, product.price);
-								}
 							}}
 							resourceType='product'
-							error={!!(errors.items as any)?.[index]?.productId}
-							helperText={
-								(errors.items as any)?.[index]?.productId?.message as string
-							}
+							error={!!errors.items?.[index]?.productId}
+							helperText={errors.items?.[index]?.productId?.message}
 							required
-							selectedResource={selectedProducts[index]}
-							disabled={productsLoading}
 						/>
 					</Box>
 
@@ -207,10 +172,8 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 						{...register(`items.${index}.quantity`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
 						inputProps={{ min: 1 }}
-						error={!!(errors.items as any)?.[index]?.quantity}
-						helperText={
-							(errors.items as any)?.[index]?.quantity?.message as string
-						}
+						error={!!errors.items?.[index]?.quantity}
+						helperText={errors.items?.[index]?.quantity?.message}
 						required
 					/>
 
@@ -220,10 +183,8 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 						{...register(`items.${index}.price`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
 						inputProps={{ min: 0, step: 0.01 }}
-						error={!!(errors.items as any)?.[index]?.price}
-						helperText={
-							(errors.items as any)?.[index]?.price?.message as string
-						}
+						error={!!errors.items?.[index]?.price}
+						helperText={errors.items?.[index]?.price?.message}
 						required
 					/>
 

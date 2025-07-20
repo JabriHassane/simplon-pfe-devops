@@ -4,10 +4,11 @@ import type {
 	TransactionDtoType,
 	UpdateTransactionDtoType,
 } from '../../../shared/dtos/transaction.dto';
+import type { PaginationParams } from './api.service';
 
 export const TransactionService = {
-	async getAll() {
-		return ApiService.get<TransactionDtoType[]>('/transactions');
+	async getPage(params?: PaginationParams) {
+		return ApiService.getPaginated<TransactionDtoType>('/transactions', params);
 	},
 
 	async getById(id: string) {

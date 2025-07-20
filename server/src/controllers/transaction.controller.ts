@@ -4,27 +4,49 @@ import {
 	CreateTransactionDtoType,
 	UpdateTransactionDtoType,
 } from '../../../shared/dtos/transaction.dto';
+import { getPaginationCondition } from '../utils/pagination';
 
 export const getAllTransactions = async (req: Request, res: Response) => {
 	try {
-		const transactions = await prisma.transaction.findMany({
-			where: { deletedAt: null },
-			include: {
-				purchase: true,
-				order: true,
-				from: true,
-				to: true,
-				agent: {
-					select: {
-						id: true,
-						name: true,
+		const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+			'ref',
+		]);
+
+		const [transactions, total] = await Promise.all([
+			prisma.transaction.findMany({
+				where: whereClause,
+				include: {
+					purchase: true,
+					order: true,
+					from: true,
+					to: true,
+					agent: {
+						select: {
+							id: true,
+							name: true,
+						},
 					},
 				},
-			},
-			orderBy: { date: 'desc' },
-		});
+				orderBy: { date: 'desc' },
+				skip,
+				take: limit,
+			}),
+			prisma.transaction.count({
+				where: whereClause,
+			}),
+		]);
 
-		res.json(transactions);
+		const totalPages = Math.ceil(total / limit);
+
+		res.json({
+			data: transactions,
+			pagination: {
+				page,
+				limit,
+				total,
+				totalPages,
+			},
+		});
 	} catch (error) {
 		console.error('Get all transactions error:', error);
 		res.status(500).json({ message: 'Internal server error' });

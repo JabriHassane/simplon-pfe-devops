@@ -5,22 +5,46 @@ import type {
 	UpdateClientDtoType,
 } from '../../../../shared/dtos/client.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const clientKeys = {
 	lists: () => ['clients'],
+	list: (params?: PaginationParams) => [...clientKeys.lists(), params],
 	detail: (id: string) => [...clientKeys.lists(), id],
 };
 
-// Get all clients
-export const useClients = () => {
+// Get paginated clients
+export const useClients = (params?: PaginationParams) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: clientKeys.list(params),
+		queryFn: async () => {
+			try {
+				return await ClientService.getPage(params);
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des clients');
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
+			}
+		},
+	});
+};
+
+// Get all clients (for backward compatibility)
+export const useAllClients = () => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
 		queryKey: clientKeys.lists(),
 		queryFn: async () => {
 			try {
-				return await ClientService.getAll();
+				const result = await ClientService.getPage();
+				return result.data;
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des clients');
@@ -58,7 +82,7 @@ export const useCreateClient = (callback: () => void) => {
 		mutationFn: async (data: CreateClientDtoType) => {
 			try {
 				await ClientService.create(data);
-				
+
 				queryClient.invalidateQueries({ queryKey: clientKeys.lists() });
 
 				showSuccess('Client créé');

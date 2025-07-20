@@ -3,11 +3,17 @@ import type {
 	CreateAccountDtoType,
 } from '../../../shared/dtos/account.dto';
 import type { UpdateAccountDtoType } from '../../../shared/dtos/account.dto';
-import { ApiService } from './api.service';
+import {
+	ApiService,
+	type PaginationParams,
+	type PaginatedResponse,
+} from './api.service';
 
 export const AccountService = {
-	async getAll() {
-		return ApiService.get<AccountDtoType[]>('/accounts');
+	async getPage(
+		params?: PaginationParams
+	): Promise<PaginatedResponse<AccountDtoType>> {
+		return ApiService.getPaginated<AccountDtoType>('/accounts', params);
 	},
 
 	async getById(id: string) {

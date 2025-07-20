@@ -4,18 +4,38 @@ import {
 	CreateAccountDtoType,
 	UpdateAccountDtoType,
 } from '../../../shared/dtos/account.dto';
+import { getPaginationCondition } from '../utils/pagination';
 
 export class AccountController {
-	static async getAll(req: Request, res: Response) {
+	static async getPage(req: Request, res: Response) {
 		try {
+			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+				'name',
+				'ref',
+			]);
+
+			// Get total count for pagination
+			const total = await prisma.account.count({ where: whereClause });
+
+			// Get paginated results
 			const accounts = await prisma.account.findMany({
-				where: { deletedAt: null },
+				where: whereClause,
 				orderBy: { createdAt: 'desc' },
+				skip,
+				take: limit,
 			});
 
-			res.json(accounts);
+			res.json({
+				data: accounts,
+				pagination: {
+					page,
+					limit,
+					total,
+					totalPages: Math.ceil(total / limit),
+				},
+			});
 		} catch (error) {
-			console.error('Error in AccountController.getAll', error);
+			console.error('Error in AccountController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	}
@@ -62,11 +82,7 @@ export class AccountController {
 					...body,
 					balance: 0,
 					ref: `ACC-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-					createdBy: {
-						connect: {
-							id: userId,
-						},
-					},
+					createdById: userId,
 				},
 			});
 
@@ -114,11 +130,7 @@ export class AccountController {
 				data: {
 					...body,
 					updatedAt: new Date(),
-					updatedBy: {
-						connect: {
-							id: userId,
-						},
-					},
+					updatedById: userId,
 				},
 			});
 
@@ -161,11 +173,7 @@ export class AccountController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedBy: {
-						connect: {
-							id: userId,
-						},
-					},
+					deletedById: userId,
 				},
 			});
 

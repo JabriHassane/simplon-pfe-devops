@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -22,49 +21,26 @@ import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfi
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import { DICT } from '../i18n/fr';
+import { formatPrice } from '../utils/price.utils';
+import useCrud from '../hooks/useCrud';
 
 export default function Transactions() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedTransaction, setSelectedTransaction] =
-		useState<TransactionDtoType | null>(null);
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedTransaction,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<TransactionDtoType>();
 
-	const { data: transactions = [], isLoading, error } = useTransactions();
-	const deleteTransactionMutation = useDeleteTransaction(() =>
-		setOpenDeletePopup(false)
-	);
+	const { data: transactions, isLoading, error } = useTransactions();
+	const deleteTransactionMutation = useDeleteTransaction(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedTransaction) {
 			deleteTransactionMutation.mutate(selectedTransaction.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (transaction: TransactionDtoType) => {
-		setSelectedTransaction(transaction);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (transaction: TransactionDtoType) => {
-		setSelectedTransaction(transaction);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedTransaction(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedTransaction(null);
-	};
-
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('fr-FR', {
-			style: 'currency',
-			currency: 'MAD',
-		}).format(amount);
 	};
 
 	if (isLoading) {
@@ -75,7 +51,7 @@ export default function Transactions() {
 		<Box>
 			<ResourceHeader
 				title='Transactions'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 			<TableContainer>
@@ -91,7 +67,7 @@ export default function Transactions() {
 					</TableHead>
 
 					<TableBody>
-						{transactions.map((transaction) => (
+						{transactions?.data.map((transaction) => (
 							<TableRow key={transaction.id}>
 								<TableCell>{transaction.ref}</TableCell>
 								<TableCell>
@@ -116,11 +92,11 @@ export default function Transactions() {
 										{DICT.transactionType[transaction.type]}
 									</Box>
 								</TableCell>
-								<TableCell>{formatCurrency(transaction.amount)}</TableCell>
+								<TableCell>{formatPrice(transaction.amount)}</TableCell>
 
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(transaction)}
+										onClick={() => handleOpenFormPopup(transaction)}
 										size='small'
 									>
 										<EditIcon />
@@ -145,7 +121,7 @@ export default function Transactions() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={() => setOpenFormPopup(false)}
+					onClose={handleClosePopup}
 					title={
 						selectedTransaction
 							? 'Modifier la transaction'
@@ -154,14 +130,14 @@ export default function Transactions() {
 				>
 					<TransactionForm
 						init={selectedTransaction}
-						onClose={handleCloseFormPopup}
+						onClose={handleClosePopup}
 					/>
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title='Supprimer la transaction'
 					description='Voulez-vous vraiment supprimer cette transaction ?'
 					onDelete={handleDelete}

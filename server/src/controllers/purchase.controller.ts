@@ -1,30 +1,55 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
+import { getPaginationCondition } from '../utils/pagination';
+import { UpdatePurchaseDtoType } from '../../../shared/dtos/purchase.dto';
 
 type PurchaseItemInput = { productId: string; price: number; quantity: number };
 
 export const getAllPurchases = async (req: Request, res: Response) => {
 	try {
-		const purchases = await prisma.purchase.findMany({
-			where: { deletedAt: null },
-			include: {
-				supplier: true,
-				items: {
-					include: {
-						product: true,
-					},
-				},
-				agent: {
-					select: {
-						id: true,
-						name: true,
-					},
-				},
-			},
-			orderBy: { date: 'desc' },
-		});
+		const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+			'ref',
+			'receiptNumber',
+			'invoiceNumber',
+		]);
 
-		res.json(purchases);
+		const [purchases, total] = await Promise.all([
+			prisma.purchase.findMany({
+				where: whereClause,
+				include: {
+					supplier: true,
+					items: {
+						include: {
+							product: true,
+						},
+					},
+					agent: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+				orderBy: { date: 'desc' },
+				skip,
+				take: limit,
+			}),
+			prisma.purchase.count({
+				where: whereClause,
+			}),
+		]);
+
+		const totalPages = Math.ceil(total / limit);
+
+		res.json({
+			data: purchases,
+			pagination: {
+				page,
+				limit,
+				total,
+				totalPages,
+			},
+		});
 	} catch (error) {
 		console.error('Get all purchases error:', error);
 		res.status(500).json({ message: 'Internal server error' });
@@ -66,6 +91,7 @@ export const getPurchaseById = async (req: Request, res: Response) => {
 
 export const createPurchase = async (req: Request, res: Response) => {
 	try {
+		const { userId } = req.user!;
 		const {
 			date,
 			supplierId,
@@ -125,16 +151,16 @@ export const createPurchase = async (req: Request, res: Response) => {
 				discountAmount,
 				discountType,
 				note: note || '',
-				agentId: req.user?.userId,
+				agentId: userId,
 				ref: `PUR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-				createdBy: req.user?.userId,
+				createdById: userId,
 				items: {
 					create: items.map((item: PurchaseItemInput) => ({
 						productId: item.productId,
 						price: item.price,
 						quantity: item.quantity,
 						ref: `PI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-						createdBy: req.user?.userId,
+						createdById: userId,
 					})),
 				},
 			},
@@ -176,17 +202,8 @@ export const createPurchase = async (req: Request, res: Response) => {
 export const updatePurchase = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
-		const {
-			date,
-			supplierId,
-			receiptNumber,
-			invoiceNumber,
-			items,
-			status,
-			discountAmount,
-			discountType,
-			note,
-		} = req.body;
+		const { userId } = req.user!;
+		const body = req.body as UpdatePurchaseDtoType;
 
 		// Check if purchase exists
 		const existingPurchase = await prisma.purchase.findUnique({
@@ -201,9 +218,9 @@ export const updatePurchase = async (req: Request, res: Response) => {
 		}
 
 		// Check if supplier exists (if supplierId is being updated)
-		if (supplierId) {
+		if (body.supplierId) {
 			const supplier = await prisma.supplier.findUnique({
-				where: { id: supplierId },
+				where: { id: body.supplierId },
 			});
 
 			if (!supplier) {
@@ -212,8 +229,8 @@ export const updatePurchase = async (req: Request, res: Response) => {
 		}
 
 		// If items are being updated, validate them
-		if (items) {
-			for (const item of items) {
+		if (body.items) {
+			for (const item of body.items) {
 				const product = await prisma.product.findUnique({
 					where: { id: item.productId },
 				});
@@ -228,11 +245,16 @@ export const updatePurchase = async (req: Request, res: Response) => {
 
 		// Calculate new totals if items or discount changed
 		let totalPrice = existingPurchase.totalPrice;
-		if (items || discountAmount !== undefined || discountType !== undefined) {
-			const currentItems = items || existingPurchase.items;
+		if (
+			body.items ||
+			body.discountAmount !== undefined ||
+			body.discountType !== undefined
+		) {
+			const currentItems = body.items || existingPurchase.items;
 			const currentDiscountAmount =
-				discountAmount ?? existingPurchase.discountAmount;
-			const currentDiscountType = discountType ?? existingPurchase.discountType;
+				body.discountAmount ?? existingPurchase.discountAmount;
+			const currentDiscountType =
+				body.discountType ?? existingPurchase.discountType;
 
 			const subtotal = currentItems.reduce(
 				(sum: number, item: { price: number; quantity: number }) =>
@@ -247,23 +269,17 @@ export const updatePurchase = async (req: Request, res: Response) => {
 		}
 
 		// Update purchase
+		const { items, ...updateData } = body;
 		const purchase = await prisma.purchase.update({
 			where: { id },
 			data: {
-				...(date && { date }),
-				...(supplierId && { supplierId }),
-				...(receiptNumber && { receiptNumber }),
-				...(invoiceNumber && { invoiceNumber }),
-				...(status && { status }),
-				...(discountAmount !== undefined && { discountAmount }),
-				...(discountType && { discountType }),
-				...(note !== undefined && { note }),
-				...(totalPrice !== existingPurchase.totalPrice && {
-					totalPrice,
+				...updateData,
+				...(totalPrice !== existingPurchase.totalPrice && { totalPrice }),
+				...(totalPrice !== existingPurchase.totalPaid && {
 					totalDue: totalPrice - existingPurchase.totalPaid,
 				}),
 				updatedAt: new Date(),
-				updatedBy: req.user?.userId,
+				updatedById: userId,
 			},
 			include: {
 				supplier: true,
@@ -282,7 +298,7 @@ export const updatePurchase = async (req: Request, res: Response) => {
 		});
 
 		// Update items if provided
-		if (items) {
+		if (body.items) {
 			// Delete existing items
 			await prisma.purchaseItem.deleteMany({
 				where: { purchaseId: id },
@@ -290,22 +306,18 @@ export const updatePurchase = async (req: Request, res: Response) => {
 
 			// Create new items
 			await prisma.purchaseItem.createMany({
-				data: (
-					items as { productId: string; price: number; quantity: number }[]
-				).map(
-					(item: { productId: string; price: number; quantity: number }) => ({
-						purchaseId: id,
-						productId: item.productId,
-						price: item.price,
-						quantity: item.quantity,
-						ref: `PI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-						createdBy: req.user?.userId,
-					})
-				),
+				data: body.items.map((item) => ({
+					purchaseId: id,
+					productId: item.productId,
+					price: item.price,
+					quantity: item.quantity,
+					ref: `PI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+					createdById: userId,
+				})),
 			});
 
 			// Update product inventory
-			for (const item of items) {
+			for (const item of body.items) {
 				const currentPurchaseItem = existingPurchase.items.find(
 					(pi) => pi.productId === item.productId
 				);
@@ -337,6 +349,7 @@ export const updatePurchase = async (req: Request, res: Response) => {
 export const deletePurchase = async (req: Request, res: Response) => {
 	try {
 		const { id } = req.params;
+		const { userId } = req.user!;
 
 		// Check if purchase exists
 		const existingPurchase = await prisma.purchase.findUnique({
@@ -378,7 +391,7 @@ export const deletePurchase = async (req: Request, res: Response) => {
 			where: { id },
 			data: {
 				deletedAt: new Date(),
-				deletedBy: req.user?.userId,
+				deletedById: userId,
 			},
 		});
 

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -20,40 +19,25 @@ import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import useCrud from '../hooks/useCrud';
 
 export default function Suppliers() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedSupplier, setSelectedSupplier] =
-		useState<SupplierDtoType | null>(null);
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedSupplier,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<SupplierDtoType>();
 
-	const { data: suppliers = [], isLoading, error } = useSuppliers();
-	const deleteSupplierMutation = useDeleteSupplier(() => setOpenDeletePopup(false));
+	const { data: suppliers, isLoading, error } = useSuppliers();
+	const deleteSupplierMutation = useDeleteSupplier(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedSupplier) {
 			deleteSupplierMutation.mutate(selectedSupplier.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (supplier: SupplierDtoType) => {
-		setSelectedSupplier(supplier);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (supplier: SupplierDtoType) => {
-		setSelectedSupplier(supplier);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedSupplier(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedSupplier(null);
 	};
 
 	if (isLoading) {
@@ -64,7 +48,7 @@ export default function Suppliers() {
 		<Box>
 			<ResourceHeader
 				title='Fournisseurs'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -78,14 +62,14 @@ export default function Suppliers() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{suppliers.map((supplier) => (
+						{suppliers?.data.map((supplier) => (
 							<TableRow key={supplier.id}>
 								<TableCell>{supplier.name}</TableCell>
 								<TableCell>{supplier.phone}</TableCell>
 								<TableCell>{supplier.address}</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(supplier)}
+										onClick={() => handleOpenFormPopup(supplier)}
 										size='small'
 									>
 										<EditIcon />
@@ -105,23 +89,20 @@ export default function Suppliers() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={handleCloseFormPopup}
+					onClose={handleClosePopup}
 					title={
 						selectedSupplier
 							? 'Modifier le fournisseur'
 							: 'Ajouter un fournisseur'
 					}
 				>
-					<SupplierForm
-						init={selectedSupplier}
-						onClose={handleCloseFormPopup}
-					/>
+					<SupplierForm init={selectedSupplier} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title='Supprimer le fournisseur'
 					description='Voulez-vous vraiment supprimer ce fournisseur ?'
 					onDelete={handleDelete}

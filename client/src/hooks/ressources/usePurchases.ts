@@ -5,6 +5,7 @@ import type {
 	UpdatePurchaseDtoType,
 } from '../../../../shared/dtos/purchase.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const purchaseKeys = {
@@ -13,18 +14,21 @@ export const purchaseKeys = {
 };
 
 // Get all purchases
-export const usePurchases = () => {
+export const usePurchases = (params?: PaginationParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
-		queryKey: purchaseKeys.lists(),
+		queryKey: [...purchaseKeys.lists(), params],
 		queryFn: async () => {
 			try {
-				return await PurchaseService.getAll();
+				return await PurchaseService.getPage(params);
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des achats');
-				return [];
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
 			}
 		},
 	});

@@ -1,4 +1,8 @@
-import { ApiService } from './api.service';
+import {
+	ApiService,
+	type PaginationParams,
+	type PaginatedResponse,
+} from './api.service';
 import type {
 	CreateUserDtoType,
 	UserDtoType,
@@ -6,8 +10,10 @@ import type {
 import type { UpdateUserDtoType } from '../../../shared/dtos/user.dto';
 
 export const UserService = {
-	async getAll() {
-		return ApiService.get<UserDtoType[]>('/users');
+	async getPage(
+		params?: PaginationParams
+	): Promise<PaginatedResponse<UserDtoType>> {
+		return ApiService.getPaginated<UserDtoType>('/users', params);
 	},
 
 	async getById(id: string) {

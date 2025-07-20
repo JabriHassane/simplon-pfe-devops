@@ -3,11 +3,17 @@ import type {
 	UpdateClientDtoType,
 } from '../../../shared/dtos/client.dto';
 import type { ClientDtoType } from '../../../shared/dtos/client.dto';
-import { ApiService } from './api.service';
+import {
+	ApiService,
+	type PaginationParams,
+	type PaginatedResponse,
+} from './api.service';
 
 export const ClientService = {
-	async getAll() {
-		return ApiService.get<ClientDtoType[]>('/clients');
+	async getPage(
+		params?: PaginationParams
+	): Promise<PaginatedResponse<ClientDtoType>> {
+		return ApiService.getPaginated<ClientDtoType>('/clients', params);
 	},
 
 	async getById(id: string) {

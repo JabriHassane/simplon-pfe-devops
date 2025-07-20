@@ -1,29 +1,50 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AccountService } from '../../services/account.service';
-import { useSnackbar } from './useSnackbar';
 import type {
 	CreateAccountDtoType,
 	UpdateAccountDtoType,
 } from '../../../../shared/dtos/account.dto';
+import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const accountKeys = {
-	all: ['accounts'] as const,
-	lists: () => [...accountKeys.all, 'list'] as const,
-	list: (filters: string) => [...accountKeys.lists(), { filters }] as const,
-	details: () => [...accountKeys.all, 'detail'] as const,
-	detail: (id: string) => [...accountKeys.details(), id] as const,
+	lists: () => ['accounts'],
+	list: (params?: PaginationParams) => [...accountKeys.lists(), params],
+	detail: (id: string) => [...accountKeys.lists(), id],
 };
 
-// Get all accounts
-export const useAccounts = () => {
+// Get paginated accounts
+export const useAccounts = (params?: PaginationParams) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: accountKeys.list(params),
+		queryFn: async () => {
+			try {
+				return await AccountService.getPage(params);
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des comptes');
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
+			}
+		},
+	});
+};
+
+// Get all accounts (for backward compatibility)
+export const useAllAccounts = () => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
 		queryKey: accountKeys.lists(),
 		queryFn: async () => {
 			try {
-				return await AccountService.getAll();
+				const result = await AccountService.getPage();
+				return result.data;
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des comptes');

@@ -1,16 +1,37 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
+import { getPaginationCondition } from '../utils/pagination';
 
-export const getAllSuppliers = async (req: Request, res: Response) => {
+export const getPageSuppliers = async (req: Request, res: Response) => {
 	try {
+		const { page, limit, skip, whereClause } = getPaginationCondition(req, [
+			'name',
+			'ref',
+			'phone',
+		]);
+
+		// Get total count for pagination
+		const total = await prisma.supplier.count({ where: whereClause });
+
+		// Get paginated results
 		const suppliers = await prisma.supplier.findMany({
-			where: { deletedAt: null },
+			where: whereClause,
 			orderBy: { createdAt: 'desc' },
+			skip,
+			take: limit,
 		});
 
-		res.json(suppliers);
+		res.json({
+			data: suppliers,
+			pagination: {
+				page,
+				limit,
+				total,
+				totalPages: Math.ceil(total / limit),
+			},
+		});
 	} catch (error) {
-		console.error('Get all suppliers error:', error);
+		console.error('Get page suppliers error:', error);
 		res.status(500).json({ message: 'Internal server error' });
 	}
 };

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -17,49 +16,25 @@ import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import useCrud from '../hooks/useCrud';
 
 export default function Products() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedProduct, setSelectedProduct] = useState<ProductDtoType | null>(
-		null
-	);
-
 	const {
-		data: products = [],
-		isLoading: productsLoading,
-		error: productsError,
-	} = useProducts();
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedProduct,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<ProductDtoType>();
 
-	const deleteProductMutation = useDeleteProduct(() => setOpenDeletePopup(false));
-
-	const isLoading = productsLoading;
-	const error = productsError;
+	const { data: products, isLoading, error } = useProducts();
+	const deleteProductMutation = useDeleteProduct(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedProduct) {
 			deleteProductMutation.mutate(selectedProduct.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (product: ProductDtoType) => {
-		setSelectedProduct(product);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (product: ProductDtoType) => {
-		setSelectedProduct(product);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedProduct(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedProduct(null);
 	};
 
 	if (isLoading) {
@@ -70,7 +45,7 @@ export default function Products() {
 		<Box>
 			<ResourceHeader
 				title='Produits'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -84,14 +59,14 @@ export default function Products() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{products.map((product) => (
+						{products?.data.map((product) => (
 							<TableRow key={product.id}>
 								<TableCell>{product.name}</TableCell>
 								<TableCell>{product.price}</TableCell>
 								<TableCell>{product.inventory}</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(product)}
+										onClick={() => handleOpenFormPopup(product)}
 										size='small'
 									>
 										<EditIcon />
@@ -111,16 +86,16 @@ export default function Products() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={handleCloseFormPopup}
+					onClose={handleClosePopup}
 					title={selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
 				>
-					<ProductForm init={selectedProduct} onClose={handleCloseFormPopup} />
+					<ProductForm init={selectedProduct} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title='Supprimer le produit'
 					description='Voulez-vous vraiment supprimer ce produit ?'
 					onDelete={handleDelete}

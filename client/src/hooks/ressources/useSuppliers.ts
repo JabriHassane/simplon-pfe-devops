@@ -5,22 +5,46 @@ import type {
 	UpdateSupplierDtoType,
 } from '../../../../shared/dtos/supplier.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const supplierKeys = {
 	lists: () => ['suppliers'],
+	list: (params?: PaginationParams) => [...supplierKeys.lists(), params],
 	detail: (id: string) => [...supplierKeys.lists(), id],
 };
 
-// Get all suppliers
-export const useSuppliers = () => {
+// Get paginated suppliers
+export const useSuppliers = (params?: PaginationParams) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: supplierKeys.list(params),
+		queryFn: async () => {
+			try {
+				return await SupplierService.getPage(params);
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des fournisseurs');
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
+			}
+		},
+	});
+};
+
+// Get all suppliers (for backward compatibility)
+export const useAllSuppliers = () => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
 		queryKey: supplierKeys.lists(),
 		queryFn: async () => {
 			try {
-				return await SupplierService.getAll();
+				const result = await SupplierService.getPage();
+				return result.data;
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des fournisseurs');

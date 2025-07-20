@@ -5,6 +5,7 @@ import type {
 	UpdateOrderDtoType,
 } from '../../../../shared/dtos/order.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 export interface OrderItem {
 	id: string;
@@ -23,18 +24,21 @@ export const orderKeys = {
 };
 
 // Get all orders
-export const useOrders = () => {
+export const useOrders = (params?: PaginationParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
-		queryKey: orderKeys.lists(),
+		queryKey: [...orderKeys.lists(), params],
 		queryFn: async () => {
 			try {
-				return await OrderService.getAll();
+				return await OrderService.getPage(params);
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération des commandes');
-				return [];
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
 			}
 		},
 	});

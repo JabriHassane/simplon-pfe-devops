@@ -4,10 +4,11 @@ import type {
 	PurchaseDtoType,
 } from '../../../shared/dtos/purchase.dto';
 import { ApiService } from './api.service';
+import type { PaginationParams } from './api.service';
 
 export const PurchaseService = {
-	async getAll() {
-		return ApiService.get<PurchaseDtoType[]>('/purchases');
+	async getPage(params?: PaginationParams) {
+		return ApiService.getPaginated<PurchaseDtoType>('/purchases', params);
 	},
 
 	async getById(id: string) {

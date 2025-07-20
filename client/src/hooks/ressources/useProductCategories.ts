@@ -5,6 +5,7 @@ import type {
 	UpdateProductCategoryDtoType,
 } from '../../../../shared/dtos/product-category.dto';
 import { useSnackbar } from './useSnackbar';
+import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
 export const productCategoryKeys = {
@@ -13,18 +14,21 @@ export const productCategoryKeys = {
 };
 
 // Get all product categories
-export const useProductCategories = () => {
+export const useProductCategories = (params?: PaginationParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
-		queryKey: productCategoryKeys.lists(),
+		queryKey: [...productCategoryKeys.lists(), params],
 		queryFn: async () => {
 			try {
-				return await ProductCategoryService.getAll();
+				return await ProductCategoryService.getPage(params);
 			} catch (error) {
 				console.error(error);
-				showError('Erreur lors de la récupération des catégories');
-				return [];
+				showError('Erreur lors de la récupération des catégories de produits');
+				return {
+					data: [],
+					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+				};
 			}
 		},
 	});

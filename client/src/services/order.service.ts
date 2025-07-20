@@ -4,10 +4,11 @@ import type {
 } from '../../../shared/dtos/order.dto';
 import type { OrderDtoType } from '../../../shared/dtos/order.dto';
 import { ApiService } from './api.service';
+import type { PaginationParams } from './api.service';
 
 export const OrderService = {
-	async getAll() {
-		return ApiService.get<OrderDtoType[]>('/orders');
+	async getPage(params?: PaginationParams) {
+		return ApiService.getPaginated<OrderDtoType>('/orders', params);
 	},
 
 	async getById(id: string) {

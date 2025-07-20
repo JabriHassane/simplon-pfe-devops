@@ -3,11 +3,17 @@ import type {
 	ProductDtoType,
 	UpdateProductDtoType,
 } from '../../../shared/dtos/product.dto';
-import { ApiService } from './api.service';
+import {
+	ApiService,
+	type PaginationParams,
+	type PaginatedResponse,
+} from './api.service';
 
 export const ProductService = {
-	async getAll() {
-		return ApiService.get<ProductDtoType[]>('/products');
+	async getPage(
+		params?: PaginationParams
+	): Promise<PaginatedResponse<ProductDtoType>> {
+		return ApiService.getPaginated<ProductDtoType>('/products', params);
 	},
 
 	async getById(id: string) {

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
 import {
-	getAllSuppliers,
+	getPageSuppliers,
 	getSupplierById,
 	createSupplier,
 	updateSupplier,
@@ -20,7 +20,7 @@ router.use(authenticate);
 router.use(requireAgent);
 
 // CRUD operations
-router.get('/', getAllSuppliers);
+router.get('/', getPageSuppliers);
 router.get('/:id', getSupplierById);
 router.post('/', validate(CreateSupplierDto), createSupplier);
 router.put('/:id', validate(UpdateSupplierDto), updateSupplier);

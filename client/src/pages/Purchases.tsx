@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
 	Box,
 	Table,
@@ -23,39 +22,25 @@ import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
-export default function Purchases() {
-	const [openFormPopup, setOpenFormPopup] = useState(false);
-	const [openDeletePopup, setOpenDeletePopup] = useState(false);
-	const [selectedPurchase, setSelectedPurchase] =
-		useState<PurchaseDtoType | null>(null);
+import useCrud from '../hooks/useCrud';
 
-	const { data: purchases = [], isLoading, error } = usePurchases();
-	const deletePurchaseMutation = useDeletePurchase(() => setOpenDeletePopup(false));
+export default function Purchases() {
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedPurchase,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<PurchaseDtoType>();
+
+	const { data: purchases, isLoading, error } = usePurchases();
+	const deletePurchaseMutation = useDeletePurchase(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedPurchase) {
 			deletePurchaseMutation.mutate(selectedPurchase.id);
 		}
-	};
-
-	const handleOpenDeletePopup = (purchase: PurchaseDtoType) => {
-		setSelectedPurchase(purchase);
-		setOpenDeletePopup(true);
-	};
-
-	const handleOpenEditPopup = (purchase: PurchaseDtoType) => {
-		setSelectedPurchase(purchase);
-		setOpenFormPopup(true);
-	};
-
-	const handleOpenAddPopup = () => {
-		setSelectedPurchase(null);
-		setOpenFormPopup(true);
-	};
-
-	const handleCloseFormPopup = () => {
-		setOpenFormPopup(false);
-		setSelectedPurchase(null);
 	};
 
 	const formatCurrency = (amount: number) => {
@@ -88,7 +73,7 @@ export default function Purchases() {
 		<Box>
 			<ResourceHeader
 				title='Achats'
-				handleAdd={handleOpenAddPopup}
+				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -106,7 +91,7 @@ export default function Purchases() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{purchases.map((purchase) => (
+						{purchases?.data.map((purchase) => (
 							<TableRow key={purchase.id}>
 								<TableCell>{purchase.ref}</TableCell>
 								<TableCell>{formatDate(purchase.date)}</TableCell>
@@ -130,7 +115,7 @@ export default function Purchases() {
 								</TableCell>
 								<TableCell align='right'>
 									<IconButton
-										onClick={() => handleOpenEditPopup(purchase)}
+										onClick={() => handleOpenFormPopup(purchase)}
 										size='small'
 									>
 										<EditIcon />
@@ -156,19 +141,16 @@ export default function Purchases() {
 
 			{openFormPopup && (
 				<ResourceFormPopup
-					onClose={() => setOpenFormPopup(false)}
+					onClose={handleClosePopup}
 					title={selectedPurchase ? "Modifier l'achat" : 'Nouvel achat'}
 				>
-					<PurchaseForm
-						init={selectedPurchase}
-						onClose={handleCloseFormPopup}
-					/>
+					<PurchaseForm init={selectedPurchase} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
-					onClose={() => setOpenDeletePopup(false)}
+					onClose={handleClosePopup}
 					title="Supprimer l'achat"
 					description='Voulez-vous vraiment supprimer cet achat ?'
 					onDelete={handleDelete}
