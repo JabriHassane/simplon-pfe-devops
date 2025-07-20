@@ -32,8 +32,8 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import type { PaginationParams } from '../../services/api.service';
 
 export type ResourceType =
+	| 'user'
 	| 'client'
-	| 'employee'
 	| 'supplier'
 	| 'product'
 	| 'account';
@@ -58,7 +58,7 @@ const useResource = (
 	switch (resourceType) {
 		case 'client':
 			return useClients(params);
-		case 'employee':
+		case 'user':
 			return useUsers(params);
 		case 'supplier':
 			return useSuppliers(params);

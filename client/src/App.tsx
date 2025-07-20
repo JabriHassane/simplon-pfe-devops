@@ -25,7 +25,6 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import {
 	Dashboard,
 	Clients,
-	Employees,
 	Suppliers,
 	Products,
 	Sales,
@@ -107,7 +106,6 @@ function AppContent() {
 						<Routes>
 							<Route path='/' element={<Dashboard />} />
 							<Route path='/clients' element={<Clients />} />
-							<Route path='/employees' element={<Employees />} />
 							<Route path='/suppliers' element={<Suppliers />} />
 							<Route path='/products' element={<Products />} />
 							<Route path='/sales' element={<Sales />} />

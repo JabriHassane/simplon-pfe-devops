@@ -26,7 +26,7 @@ const useResource = (
 	switch (resourceType) {
 		case 'client':
 			return useClients();
-		case 'employee':
+		case 'user':
 			return useUsers();
 		case 'supplier':
 			return useSuppliers();

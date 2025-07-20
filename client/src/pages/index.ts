@@ -1,6 +1,5 @@
 export { default as Dashboard } from './Dashboard';
 export { default as Clients } from './Clients';
-export { default as Employees } from './Employees';
 export { default as Suppliers } from './Suppliers';
 export { default as Products } from './Products';
 export { default as Sales } from './Sales';

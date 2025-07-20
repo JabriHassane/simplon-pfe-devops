@@ -15,7 +15,6 @@ import {
 export const navigationItems = [
 	{ name: 'Tableau de bord', icon: <DashboardIcon />, path: '/' },
 	{ name: 'Clients', icon: <PersonOutline />, path: '/clients' },
-	{ name: 'Employés', icon: <WorkOutline />, path: '/employees' },
 	{ name: 'Fournisseurs', icon: <StoreOutlined />, path: '/suppliers' },
 	{ name: 'Produits', icon: <SellOutlined />, path: '/products' },
 	{ name: 'Ventes', icon: <ShoppingBagOutlined />, path: '/sales' },
