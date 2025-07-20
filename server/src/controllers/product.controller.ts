@@ -74,23 +74,6 @@ export const createProduct = async (req: Request, res: Response) => {
 			return res.status(400).json({ message: 'Invalid category' });
 		}
 
-		// Check if product with same name already exists
-		const existingProduct = await prisma.product.findFirst({
-			where: {
-				name: {
-					equals: name,
-					mode: 'insensitive',
-				},
-				deletedAt: null,
-			},
-		});
-
-		if (existingProduct) {
-			return res
-				.status(400)
-				.json({ message: 'Product with this name already exists' });
-		}
-
 		const product = await prisma.product.create({
 			data: {
 				name,
@@ -98,7 +81,7 @@ export const createProduct = async (req: Request, res: Response) => {
 				categoryId,
 				price: parseFloat(price),
 				inventory: parseInt(inventory),
-				ref: `PROD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+				ref: `PROD-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 				createdById: userId,
 			},
 			include: {
@@ -107,7 +90,9 @@ export const createProduct = async (req: Request, res: Response) => {
 		});
 
 		res.status(201).json(product);
+		console.log('error');
 	} catch (error) {
+		console.log(error);
 		console.error('Create product error:', error);
 		res.status(500).json({ message: 'Internal server error' });
 	}
@@ -136,26 +121,6 @@ export const updateProduct = async (req: Request, res: Response) => {
 
 			if (!category) {
 				return res.status(400).json({ message: 'Invalid category' });
-			}
-		}
-
-		// Check if name already exists (if name is being updated)
-		if (name && name !== existingProduct.name) {
-			const duplicateProduct = await prisma.product.findFirst({
-				where: {
-					name: {
-						equals: name,
-						mode: 'insensitive',
-					},
-					deletedAt: null,
-					NOT: { id },
-				},
-			});
-
-			if (duplicateProduct) {
-				return res
-					.status(400)
-					.json({ message: 'Product with this name already exists' });
 			}
 		}
 

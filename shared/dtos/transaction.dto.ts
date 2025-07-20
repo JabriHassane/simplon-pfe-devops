@@ -6,7 +6,7 @@ import { PurchaseDto } from './purchase.dto';
 import { OrderDto } from './order.dto';
 
 const CreateTransactionUnrefinedDto = z.object({
-	date: z.date(),
+	date: z.string(),
 	type: z.enum(TRANSACTION_TYPES),
 	agentId: z.string(),
 	purchaseId: z.string().optional(),

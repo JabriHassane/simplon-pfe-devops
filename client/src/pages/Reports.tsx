@@ -30,41 +30,42 @@ import { useClients } from '../hooks/ressources/useClients';
 import { useSuppliers } from '../hooks/ressources/useSuppliers';
 import { useOrders } from '../hooks/ressources/useOrders';
 import { usePurchases } from '../hooks/ressources/usePurchases';
+import { formatDate, formatDateTime } from '../utils/date.utils';
 
 export default function Reports() {
 	// TanStack Query hooks
 	const {
-		data: accounts = [],
+		data: accounts,
 		isLoading: accountsLoading,
 		error: accountsError,
 	} = useAccounts();
 	const {
-		data: transactions = [],
+		data: transactions,
 		isLoading: transactionsLoading,
 		error: transactionsError,
 	} = useTransactions();
 	const {
-		data: products = [],
+		data: products,
 		isLoading: productsLoading,
 		error: productsError,
 	} = useProducts();
 	const {
-		data: clients = [],
+		data: clients,
 		isLoading: clientsLoading,
 		error: clientsError,
 	} = useClients();
 	const {
-		data: suppliers = [],
+		data: suppliers,
 		isLoading: suppliersLoading,
 		error: suppliersError,
 	} = useSuppliers();
 	const {
-		data: orders = [],
+		data: orders,
 		isLoading: ordersLoading,
 		error: ordersError,
 	} = useOrders();
 	const {
-		data: purchases = [],
+		data: purchases,
 		isLoading: purchasesLoading,
 		error: purchasesError,
 	} = usePurchases();
@@ -87,41 +88,34 @@ export default function Reports() {
 		purchasesError;
 
 	// Calculate basic stats
-	const totalRevenue = transactions
-		.filter((t) => t.type === 'INCOME')
-		.reduce((sum, t) => sum + t.amount, 0);
+	const totalRevenue =
+		transactions?.data
+			.filter((t) => t.type === 'order')
+			.reduce((sum, t) => sum + t.amount, 0) || 0;
 
-	const totalExpenses = transactions
-		.filter((t) => t.type === 'EXPENSE')
-		.reduce((sum, t) => sum + t.amount, 0);
+	const totalExpenses =
+		transactions?.data
+			.filter((t) => t.type === 'purchase')
+			.reduce((sum, t) => sum + t.amount, 0) || 0;
 
-	const totalSales = orders.reduce((sum, order) => sum + order.totalPrice, 0);
-	const totalPurchases = purchases.reduce(
-		(sum, purchase) => sum + purchase.totalPrice,
-		0
-	);
+	const totalSales =
+		orders?.data.reduce((sum, order) => sum + order.totalPrice, 0) || 0;
 
-	const activeProducts = products.filter((p) => p.status === 'ACTIVE').length;
-	const activeClients = clients.filter((c) => c.status === 'ACTIVE').length;
-	const activeSuppliers = suppliers.filter((s) => s.status === 'ACTIVE').length;
+	const totalPurchases =
+		purchases?.data.reduce((sum, purchase) => sum + purchase.totalPrice, 0) ||
+		0;
 
-	const recentTransactions = transactions.slice(0, 5).map((t) => ({
-		id: t.id,
-		type: t.type,
-		amount: t.amount,
-		description: t.description,
-		date: t.date,
-	}));
+	const activeProducts = products?.data.length || 0;
+	const activeClients = clients?.data.length || 0;
+	const activeSuppliers = suppliers?.data.length || 0;
+
+	const recentTransactions = transactions?.data || [];
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat('en-US', {
 			style: 'currency',
 			currency: 'USD',
 		}).format(amount);
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString();
 	};
 
 	if (isLoading) {
@@ -162,7 +156,7 @@ export default function Reports() {
 					mb: 4,
 				}}
 			>
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -182,7 +176,7 @@ export default function Reports() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -202,7 +196,7 @@ export default function Reports() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -222,7 +216,7 @@ export default function Reports() {
 					</CardContent>
 				</Card>
 
-				<Card>
+				<Card variant='outlined'>
 					<CardContent>
 						<Box
 							display='flex'
@@ -246,7 +240,7 @@ export default function Reports() {
 			{/* Additional Stats */}
 			<Grid container spacing={3} sx={{ mb: 4 }}>
 				<Grid>
-					<Card>
+					<Card variant='outlined'>
 						<CardContent>
 							<Box
 								display='flex'
@@ -268,7 +262,7 @@ export default function Reports() {
 				</Grid>
 
 				<Grid>
-					<Card>
+					<Card variant='outlined'>
 						<CardContent>
 							<Box
 								display='flex'
@@ -290,7 +284,7 @@ export default function Reports() {
 				</Grid>
 
 				<Grid>
-					<Card>
+					<Card variant='outlined'>
 						<CardContent>
 							<Box
 								display='flex'
@@ -323,7 +317,6 @@ export default function Reports() {
 						<TableRow>
 							<TableCell>Date</TableCell>
 							<TableCell>Type</TableCell>
-							<TableCell>Description</TableCell>
 							<TableCell align='right'>Amount</TableCell>
 						</TableRow>
 					</TableHead>
@@ -338,11 +331,11 @@ export default function Reports() {
 											py: 0.5,
 											borderRadius: 1,
 											backgroundColor:
-												transaction.type === 'INCOME'
+												transaction.type === 'order'
 													? 'success.light'
 													: 'error.light',
 											color:
-												transaction.type === 'INCOME'
+												transaction.type === 'order'
 													? 'success.dark'
 													: 'error.dark',
 											display: 'inline-block',
@@ -351,17 +344,16 @@ export default function Reports() {
 										{transaction.type}
 									</Box>
 								</TableCell>
-								<TableCell>{transaction.description}</TableCell>
 								<TableCell align='right'>
 									<Typography
 										color={
-											transaction.type === 'INCOME'
+											transaction.type === 'order'
 												? 'success.main'
 												: 'error.main'
 										}
 										fontWeight='bold'
 									>
-										{transaction.type === 'INCOME' ? '+' : '-'}
+										{transaction.type === 'order' ? '+' : '-'}
 										{formatCurrency(transaction.amount)}
 									</Typography>
 								</TableCell>

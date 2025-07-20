@@ -23,6 +23,7 @@ import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfi
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import useCrud from '../hooks/useCrud';
+import { DICT } from '../i18n/fr';
 
 export default function Purchases() {
 	const {
@@ -108,9 +109,10 @@ export default function Purchases() {
 								</TableCell>
 								<TableCell>
 									<Chip
-										label={purchase.status}
-										color={getStatusColor(purchase.status) as any}
+										label={DICT.orderStatus[purchase.status]}
+										color={getStatusColor(purchase.status)}
 										size='small'
+										sx={{ px: 0.5 }}
 									/>
 								</TableCell>
 								<TableCell align='right'>
@@ -123,14 +125,8 @@ export default function Purchases() {
 									<IconButton
 										onClick={() => handleOpenDeletePopup(purchase)}
 										size='small'
-										color='error'
-										disabled={deletePurchaseMutation.isPending}
 									>
-										{deletePurchaseMutation.isPending ? (
-											<CircularProgress size={20} />
-										) : (
-											<DeleteIcon />
-										)}
+										<DeleteIcon />
 									</IconButton>
 								</TableCell>
 							</TableRow>

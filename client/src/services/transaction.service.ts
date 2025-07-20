@@ -15,6 +15,10 @@ export const TransactionService = {
 		return ApiService.get<TransactionDtoType>(`/transactions/${id}`);
 	},
 
+	async getByOrderId(orderId: string) {
+		return ApiService.get<TransactionDtoType[]>(`/transactions/order/${orderId}`);
+	},
+
 	async create(data: CreateTransactionDtoType) {
 		return ApiService.post<TransactionDtoType>('/transactions', data);
 	},

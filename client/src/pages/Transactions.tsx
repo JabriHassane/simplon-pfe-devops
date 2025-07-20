@@ -8,6 +8,7 @@ import {
 	TableRow,
 	IconButton,
 	CircularProgress,
+	Chip,
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
@@ -23,6 +24,7 @@ import ResourceHeader from '../components/shared/ResourceHeader';
 import { DICT } from '../i18n/fr';
 import { formatPrice } from '../utils/price.utils';
 import useCrud from '../hooks/useCrud';
+import type { TransactionType } from '../../../shared/constants';
 
 export default function Transactions() {
 	const {
@@ -40,6 +42,18 @@ export default function Transactions() {
 	const handleDelete = () => {
 		if (selectedTransaction) {
 			deleteTransactionMutation.mutate(selectedTransaction.id);
+		}
+	};
+
+	const getTypeColor = (type: TransactionType) => {
+		if (type === 'order') {
+			return 'success';
+		}
+		if (type === 'purchase') {
+			return 'warning';
+		}
+		if (type === 'transfer') {
+			return 'info';
 		}
 	};
 
@@ -75,22 +89,12 @@ export default function Transactions() {
 								</TableCell>
 								<TableCell>{transaction.fromId || 'N/A'}</TableCell>
 								<TableCell>
-									<Box
-										sx={{
-											px: 1,
-											py: 0.5,
-											borderRadius: 1,
-											backgroundColor:
-												transaction.type === 'purchase'
-													? 'success.light'
-													: 'error.light',
-											color: 'white',
-											display: 'inline-block',
-											fontWeight: 'bold',
-										}}
-									>
-										{DICT.transactionType[transaction.type]}
-									</Box>
+									<Chip
+										label={DICT.transactionType[transaction.type]}
+										color={getTypeColor(transaction.type)}
+										size='small'
+										sx={{ px: 0.5 }}
+									/>
 								</TableCell>
 								<TableCell>{formatPrice(transaction.amount)}</TableCell>
 

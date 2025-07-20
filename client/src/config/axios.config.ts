@@ -1,4 +1,4 @@
-import axios, { type AxiosResponse, type AxiosRequestConfig } from 'axios';
+import axios, { AxiosError } from 'axios';
 import { AuthService } from '../services/auth.service';
 
 // Extend AxiosRequestConfig to include _retry property
@@ -20,12 +20,9 @@ export const Axios = axios.create({
 
 // Add response interceptor to handle token refresh
 Axios.interceptors.response.use(
-	(response: AxiosResponse) => {
-		return response;
-	},
-	async (error) => {
-		const originalRequest = error.config;
-
+	(response) => response,
+	async (error: AxiosError) => {
+		const originalRequest = error.config!;
 		// If the error is 401 and we haven't already tried to refresh
 		// Don't retry if it's already a refresh request to avoid infinite loop
 		if (
@@ -49,8 +46,10 @@ Axios.interceptors.response.use(
 		}
 
 		console.error('API request error:', error);
-		if (error.response?.data?.message) {
-			throw new Error(error.response.data.message);
+		
+		const errorMessage = (error.response?.data as any).message as string;
+		if (errorMessage) {
+			throw new Error(errorMessage);
 		}
 		throw new Error('API request failed');
 	}

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
 	Typography,
 	Box,
@@ -18,8 +17,6 @@ import {
 import {
 	TrendingUp as TrendingUpIcon,
 	TrendingDown as TrendingDownIcon,
-	AccountBalance as AccountBalanceIcon,
-	ShoppingCart as ShoppingCartIcon,
 	Inventory as InventoryIcon,
 	People as PeopleIcon,
 	Add as AddIcon,
@@ -37,27 +34,27 @@ export default function Dashboard() {
 
 	// TanStack Query hooks
 	const {
-		data: accounts = [],
+		data: accounts,
 		isLoading: accountsLoading,
 		error: accountsError,
 	} = useAccounts();
 	const {
-		data: transactions = [],
+		data: transactions,
 		isLoading: transactionsLoading,
 		error: transactionsError,
 	} = useTransactions();
 	const {
-		data: products = [],
+		data: products,
 		isLoading: productsLoading,
 		error: productsError,
 	} = useProducts();
 	const {
-		data: clients = [],
+		data: clients,
 		isLoading: clientsLoading,
 		error: clientsError,
 	} = useClients();
 	const {
-		data: suppliers = [],
+		data: suppliers,
 		isLoading: suppliersLoading,
 		error: suppliersError,
 	} = useSuppliers();
@@ -76,15 +73,15 @@ export default function Dashboard() {
 		suppliersError;
 
 	// Calculate dashboard stats
-	const totalRevenue = transactions
+	const totalRevenue = transactions!.data
 		.filter((t) => t.type === 'order')
 		.reduce((sum, t) => sum + t.amount, 0);
 
-	const totalExpenses = transactions
+	const totalExpenses = transactions!.data
 		.filter((t) => t.type === 'purchase')
 		.reduce((sum, t) => sum + t.amount, 0);
 
-	const recentTransactions = transactions.slice(0, 5).map((t) => ({
+	const recentTransactions = transactions?.data.slice(0, 5).map((t) => ({
 		id: t.id,
 		type: t.type,
 		amount: t.amount,
@@ -243,7 +240,7 @@ export default function Dashboard() {
 									Active Products
 								</Typography>
 								<Typography variant='h4' color='primary.main'>
-									{products.length}
+									{products?.data.length}
 								</Typography>
 							</Box>
 							<InventoryIcon color='primary' sx={{ fontSize: 40 }} />
@@ -263,7 +260,7 @@ export default function Dashboard() {
 									Active Clients
 								</Typography>
 								<Typography variant='h4' color='info.main'>
-									{clients.length}
+									{clients?.data.length}
 								</Typography>
 							</Box>
 							<PeopleIcon color='info' sx={{ fontSize: 40 }} />
@@ -298,7 +295,7 @@ export default function Dashboard() {
 						</TableRow>
 					</TableHead>
 					<TableBody>
-						{recentTransactions.map((transaction) => (
+						{recentTransactions?.map((transaction) => (
 							<TableRow key={transaction.id}>
 								<TableCell>{formatDate(transaction.date.toString())}</TableCell>
 								<TableCell align='right'>

@@ -62,23 +62,6 @@ export const createProductCategory = async (req: Request, res: Response) => {
 		const { userId } = req.user!;
 		const { name } = req.body;
 
-		// Check if category with same name already exists
-		const existingCategory = await prisma.productCategory.findFirst({
-			where: {
-				name: {
-					equals: name,
-					mode: 'insensitive',
-				},
-				deletedAt: null,
-			},
-		});
-
-		if (existingCategory) {
-			return res
-				.status(400)
-				.json({ message: 'Product category with this name already exists' });
-		}
-
 		const category = await prisma.productCategory.create({
 			data: {
 				name,
@@ -107,26 +90,6 @@ export const updateProductCategory = async (req: Request, res: Response) => {
 
 		if (!existingCategory) {
 			return res.status(404).json({ message: 'Product category not found' });
-		}
-
-		// Check if name already exists (if name is being updated)
-		if (name && name !== existingCategory.name) {
-			const duplicateCategory = await prisma.productCategory.findFirst({
-				where: {
-					name: {
-						equals: name,
-						mode: 'insensitive',
-					},
-					deletedAt: null,
-					NOT: { id },
-				},
-			});
-
-			if (duplicateCategory) {
-				return res
-					.status(400)
-					.json({ message: 'Product category with this name already exists' });
-			}
 		}
 
 		const category = await prisma.productCategory.update({

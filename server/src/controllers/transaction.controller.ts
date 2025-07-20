@@ -8,6 +8,7 @@ import { getPaginationCondition } from '../utils/pagination';
 
 export const getAllTransactions = async (req: Request, res: Response) => {
 	try {
+		console.log(2)
 		const { page, limit, skip, whereClause } = getPaginationCondition(req, [
 			'ref',
 		]);

@@ -22,24 +22,22 @@ import { AuthProvider } from './contexts/AuthContext';
 import logo from './assets/logo.png';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
-import {
-	Dashboard,
-	Clients,
-	Suppliers,
-	Products,
-	Sales,
-	Purchases,
-	Transactions,
-	Accounts,
-	Reports,
-	Users,
-} from './pages';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { theme } from './theme';
 import { navigationItems } from './config/navigation';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useLogout } from './hooks/ressources/useAuth';
+import Dashboard from './pages/Dashboard';
+import Clients from './pages/Clients';
+import Suppliers from './pages/Suppliers';
+import Products from './pages/Products';
+import Sales from './pages/Sales';
+import Purchases from './pages/Purchases';
+import Transactions from './pages/Transactions';
+import Accounts from './pages/Accounts';
+import Reports from './pages/Reports';
+import Users from './pages/Users';
 
 const drawerWidth = 240;
 
@@ -123,16 +121,7 @@ function AppContent() {
 }
 
 // Create a client
-const queryClient = new QueryClient({
-	defaultOptions: {
-		queries: {
-			staleTime: 5 * 60 * 1000, // 5 minutes
-			gcTime: 10 * 60 * 1000, // 10 minutes
-			retry: 1,
-			refetchOnWindowFocus: false,
-		},
-	},
-});
+const queryClient = new QueryClient();
 
 export default function App() {
 	return (

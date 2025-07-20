@@ -21,6 +21,7 @@ export const useTransactions = (params?: PaginationParams) => {
 		queryKey: [...transactionKeys.lists(), params],
 		queryFn: async () => {
 			try {
+				console.log('dfadfd')
 				return await TransactionService.getPage(params);
 			} catch (error) {
 				console.error(error);
@@ -120,5 +121,24 @@ export const useDeleteTransaction = (callback: () => void) => {
 				showError('Erreur lors de la suppression de la transaction');
 			}
 		},
+	});
+};
+
+// Get transactions by order ID
+export const useTransactionsByOrderId = (orderId: string) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: [...transactionKeys.lists(), 'byOrderId', orderId],
+		queryFn: async () => {
+			try {
+				return await TransactionService.getByOrderId(orderId);
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des transactions');
+				return [];
+			}
+		},
+		enabled: !!orderId,
 	});
 };

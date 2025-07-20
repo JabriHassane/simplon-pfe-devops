@@ -4,8 +4,9 @@ import ms from 'ms';
 import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-here';
-const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '15m') as ms.StringValue;
-const REFRESH_TOKEN_EXPIRES_IN = (process.env.REFRESH_TOKEN_EXPIRES_IN || '7D') as ms.StringValue;
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7D') as ms.StringValue;
+const REFRESH_TOKEN_EXPIRES_IN = (process.env.REFRESH_TOKEN_EXPIRES_IN ||
+	'7D') as ms.StringValue;
 
 export interface JWTPayload {
 	userId: string;
