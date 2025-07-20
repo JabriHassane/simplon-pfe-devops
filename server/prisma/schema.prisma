@@ -16,7 +16,7 @@ enum Role {
   agent
 }
 
-enum OrderStatus {
+enum SaleStatus {
   pending
   partially_paid
   paid
@@ -32,7 +32,7 @@ enum PaymentMethod {
 
 enum TransactionType {
   purchase
-  order
+  sale
   transfer
 }
 
@@ -53,13 +53,13 @@ model User {
   role     Role
 
   // Relations
-  agentOrders       Order[]       @relation("OrderAgent")
+  agentSales        Sale[]        @relation("SaleAgent")
   agentPurchases    Purchase[]    @relation("PurchaseAgent")
   agentTransactions Transaction[] @relation("TransactionAgent")
 
-  createdOrders Order[] @relation("OrderCreatedBy")
-  updatedOrders Order[] @relation("OrderUpdatedBy")
-  deletedOrders Order[] @relation("OrderDeletedBy")
+  createdSales Sale[] @relation("SaleCreatedBy")
+  updatedSales Sale[] @relation("SaleUpdatedBy")
+  deletedSales Sale[] @relation("SaleDeletedBy")
 
   createdPurchases Purchase[] @relation("PurchaseCreatedBy")
   updatedPurchases Purchase[] @relation("PurchaseUpdatedBy")
@@ -89,9 +89,9 @@ model User {
   updatedProducts Product[] @relation("ProductUpdatedBy")
   deletedProducts Product[] @relation("ProductDeletedBy")
 
-  createdOrderItems OrderItem[] @relation("OrderItemCreatedBy")
-  updatedOrderItems OrderItem[] @relation("OrderItemUpdatedBy")
-  deletedOrderItems OrderItem[] @relation("OrderItemDeletedBy")
+  createdSaleItems SaleItem[] @relation("SaleItemCreatedBy")
+  updatedSaleItems SaleItem[] @relation("SaleItemUpdatedBy")
+  deletedSaleItems SaleItem[] @relation("SaleItemDeletedBy")
 
   createdPurchaseItems PurchaseItem[] @relation("PurchaseItemCreatedBy")
   updatedPurchaseItems PurchaseItem[] @relation("PurchaseItemUpdatedBy")
@@ -114,12 +114,12 @@ model User {
 }
 
 model RefreshToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
+  id        String    @id @default(cuid())
+  token     String    @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
   revokedAt DateTime?
 
   @@map("refresh_tokens")
@@ -137,7 +137,7 @@ model Client {
   address String? @default("")
 
   // Relations
-  orders Order[]
+  sales Sale[]
 
   createdById String?
   createdBy   User?   @relation("ClientCreatedBy", fields: [createdById], references: [id])
@@ -210,7 +210,7 @@ model Product {
   // Relations
   categoryId    String
   category      ProductCategory @relation(fields: [categoryId], references: [id])
-  orderItems    OrderItem[]
+  saleItems     SaleItem[]
   purchaseItems PurchaseItem[]
 
   createdById String?
@@ -223,7 +223,7 @@ model Product {
   @@map("products")
 }
 
-model Order {
+model Sale {
   id        String    @id @default(cuid())
   ref       String    @unique
   createdAt DateTime  @default(now())
@@ -239,7 +239,7 @@ model Order {
   totalPaid  Float
   totalDue   Float
 
-  status OrderStatus
+  status SaleStatus
   note   String
 
   discountAmount Float        @default(0)
@@ -247,25 +247,25 @@ model Order {
 
   // Relations
   agentId String
-  agent   User   @relation("OrderAgent", fields: [agentId], references: [id])
+  agent   User   @relation("SaleAgent", fields: [agentId], references: [id])
 
   clientId String
   client   Client @relation(fields: [clientId], references: [id])
 
-  items    OrderItem[]
+  items    SaleItem[]
   payments Transaction[]
 
   createdById String?
-  createdBy   User?   @relation("OrderCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?   @relation("SaleCreatedBy", fields: [createdById], references: [id])
   updatedById String?
-  updatedBy   User?   @relation("OrderUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?   @relation("SaleUpdatedBy", fields: [updatedById], references: [id])
   deletedById String?
-  deletedBy   User?   @relation("OrderDeletedBy", fields: [deletedById], references: [id])
+  deletedBy   User?   @relation("SaleDeletedBy", fields: [deletedById], references: [id])
 
-  @@map("orders")
+  @@map("sales")
 }
 
-model OrderItem {
+model SaleItem {
   id        String    @id @default(cuid())
   createdAt DateTime  @default(now())
   updatedAt DateTime?
@@ -275,20 +275,20 @@ model OrderItem {
   quantity Int
 
   // Relations
-  orderId String
-  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
   productId String
   product   Product @relation(fields: [productId], references: [id])
 
   createdById String?
-  createdBy   User?   @relation("OrderItemCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?   @relation("SaleItemCreatedBy", fields: [createdById], references: [id])
   updatedById String?
-  updatedBy   User?   @relation("OrderItemUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?   @relation("SaleItemUpdatedBy", fields: [updatedById], references: [id])
   deletedById String?
-  deletedBy   User?   @relation("OrderItemDeletedBy", fields: [deletedById], references: [id])
+  deletedBy   User?   @relation("SaleItemDeletedBy", fields: [deletedById], references: [id])
 
-  @@map("order_items")
+  @@map("sale_items")
 }
 
 model Purchase {
@@ -307,7 +307,7 @@ model Purchase {
   totalPaid  Float
   totalDue   Float
 
-  status OrderStatus
+  status SaleStatus
   note   String
 
   discountAmount Float        @default(0)
@@ -399,8 +399,8 @@ model Transaction {
   agentId String
   agent   User   @relation("TransactionAgent", fields: [agentId], references: [id])
 
-  orderId String?
-  order   Order?  @relation(fields: [orderId], references: [id])
+  saleId String?
+  sale   Sale?   @relation(fields: [saleId], references: [id])
 
   purchaseId String?
   purchase   Purchase? @relation(fields: [purchaseId], references: [id])

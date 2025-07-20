@@ -63,7 +63,7 @@ export default function Login() {
 						p: 4,
 						width: '100%',
 						maxWidth: 400,
-						borderRadius: 3,
+						bsaleRadius: 3,
 						background: 'rgba(255, 255, 255, 0.95)',
 						backdropFilter: 'blur(10px)',
 					}}
@@ -104,12 +104,12 @@ export default function Login() {
 							}}
 							sx={{
 								'& .MuiOutlinedInput-root': {
-									borderRadius: 2,
+									bsaleRadius: 2,
 									'&:hover fieldset': {
-										borderColor: '#166C6B',
+										bsaleColor: '#166C6B',
 									},
 									'&.Mui-focused fieldset': {
-										borderColor: '#166C6B',
+										bsaleColor: '#166C6B',
 									},
 								},
 							}}
@@ -146,12 +146,12 @@ export default function Login() {
 							}}
 							sx={{
 								'& .MuiOutlinedInput-root': {
-									borderRadius: 2,
+									bsaleRadius: 2,
 									'&:hover fieldset': {
-										borderColor: '#166C6B',
+										bsaleColor: '#166C6B',
 									},
 									'&.Mui-focused fieldset': {
-										borderColor: '#166C6B',
+										bsaleColor: '#166C6B',
 									},
 								},
 							}}
@@ -167,7 +167,7 @@ export default function Login() {
 							sx={{
 								mt: 3,
 								py: 1.5,
-								borderRadius: 2,
+								bsaleRadius: 2,
 								background: 'linear-gradient(135deg, #166C6B 0%, #0f4c4b 100%)',
 								'&:hover': {
 									background:
@@ -189,7 +189,7 @@ export default function Login() {
 						</Button>
 
 						{/* Demo Credentials */}
-						{/* <Box mt={3} p={2} bgcolor='grey.50' borderRadius={2}>
+						{/* <Box mt={3} p={2} bgcolor='grey.50' bsaleRadius={2}>
 							<Typography variant='body2' color='text.secondary' gutterBottom>
 								<strong>Identifiants de démonstration:</strong>
 							</Typography>

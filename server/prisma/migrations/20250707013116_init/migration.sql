@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('super_admin', 'admin', 'agent');
 
 -- CreateEnum
-CREATE TYPE "OrderStatus" AS ENUM ('pending', 'partially_paid', 'paid', 'cancelled');
+CREATE TYPE "SaleStatus" AS ENUM ('pending', 'partially_paid', 'paid', 'cancelled');
 
 -- CreateEnum
 CREATE TYPE "PaymentMethod" AS ENUM ('cash', 'check', 'tpe', 'bankTransfer');
@@ -115,7 +115,7 @@ CREATE TABLE "orders" (
     "totalPrice" DOUBLE PRECISION NOT NULL,
     "totalPaid" DOUBLE PRECISION NOT NULL,
     "totalDue" DOUBLE PRECISION NOT NULL,
-    "status" "OrderStatus" NOT NULL,
+    "status" "SaleStatus" NOT NULL,
     "note" TEXT NOT NULL,
     "agentId" TEXT NOT NULL,
     "clientId" TEXT NOT NULL,
@@ -157,7 +157,7 @@ CREATE TABLE "purchases" (
     "totalPrice" DOUBLE PRECISION NOT NULL,
     "totalPaid" DOUBLE PRECISION NOT NULL,
     "totalDue" DOUBLE PRECISION NOT NULL,
-    "status" "OrderStatus" NOT NULL,
+    "status" "SaleStatus" NOT NULL,
     "note" TEXT NOT NULL,
     "agentId" TEXT NOT NULL,
     "supplierId" TEXT NOT NULL,

@@ -66,7 +66,7 @@ function AppContent() {
 							flexShrink: 0,
 							'& .MuiDrawer-paper': {
 								width: drawerWidth,
-								boxSizing: 'border-box',
+								boxSizing: 'bsale-box',
 							},
 						}}
 						variant='permanent'

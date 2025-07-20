@@ -3,14 +3,14 @@ import { TRANSACTION_TYPES, PAYMENT_METHODS } from '../constants';
 import { AccountDto } from './account.dto';
 import { UserDto } from './user.dto';
 import { PurchaseDto } from './purchase.dto';
-import { OrderDto } from './order.dto';
+import { SaleDto } from './sale.dto';
 
 const CreateTransactionUnrefinedDto = z.object({
 	date: z.string(),
 	type: z.enum(TRANSACTION_TYPES),
 	agentId: z.string(),
 	purchaseId: z.string().optional(),
-	orderId: z.string().optional(),
+	saleId: z.string().optional(),
 	paymentMethod: z.enum(PAYMENT_METHODS).optional(),
 	fromId: z.string().optional(),
 	toId: z.string().optional(),
@@ -19,18 +19,18 @@ const CreateTransactionUnrefinedDto = z.object({
 
 export const CreateTransactionDto = CreateTransactionUnrefinedDto.refine(
 	(data) => {
-		// Validate that either purchaseId or orderId is provided for purchase/order types
+		// Validate that either purchaseId or saleId is provided for purchase/sale types
 		if (data.type === 'purchase' && !data.purchaseId) {
 			return false;
 		}
-		if (data.type === 'order' && !data.orderId) {
+		if (data.type === 'sale' && !data.saleId) {
 			return false;
 		}
 		return true;
 	},
 	{
-		message: 'Purchase ID ou Order ID requis selon le type de transaction',
-		path: ['purchaseId', 'orderId'],
+		message: 'Purchase ID ou Sale ID requis selon le type de transaction',
+		path: ['purchaseId', 'saleId'],
 	}
 ).refine(
 	(data) => {
@@ -54,7 +54,7 @@ export const TransactionDto = z.object({
 	...CreateTransactionUnrefinedDto.shape,
 	agent: UserDto,
 	purchase: PurchaseDto,
-	order: OrderDto,
+	sale: SaleDto,
 	from: AccountDto,
 	to: AccountDto,
 });

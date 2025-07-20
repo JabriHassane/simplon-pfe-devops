@@ -5,6 +5,7 @@ import type {
 } from '../../../shared/dtos/purchase.dto';
 import { ApiService } from './api.service';
 import type { PaginationParams } from './api.service';
+import type { TransactionDtoType } from '../../../shared/dtos/transaction.dto';
 
 export const PurchaseService = {
 	async getPage(params?: PaginationParams) {
@@ -13,6 +14,12 @@ export const PurchaseService = {
 
 	async getById(id: string) {
 		return ApiService.get<PurchaseDtoType>(`/purchases/${id}`);
+	},
+
+	async getTransactions(id: string) {
+		return ApiService.get<TransactionDtoType[]>(
+			`/purchases/${id}/transactions`
+		);
 	},
 
 	async create(data: CreatePurchaseDtoType) {

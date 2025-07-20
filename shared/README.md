@@ -10,7 +10,7 @@ shared/
 │   ├── auth.dto.ts
 │   ├── user.dto.ts
 │   ├── client.dto.ts
-│   ├── order.dto.ts
+│   ├── sale.dto.ts
 │   ├── product.dto.ts
 │   ├── product-category.dto.ts
 │   ├── purchase.dto.ts
@@ -20,7 +20,7 @@ shared/
 └── types/          # TypeScript type definitions
     ├── client.types.ts
     ├── user.types.ts
-    ├── order.types.ts
+    ├── sale.types.ts
     ├── product.types.ts
     ├── purchase.types.ts
     ├── supplier.types.ts
@@ -123,11 +123,11 @@ const { values, errors, isValid, setValue, validate, reset } =
 - `UpdateUserDto` - Update user validation
 - `UserIdDto` - User ID parameter validation
 
-### Order DTOs
+### Sale DTOs
 
-- `CreateOrderDto` - Create order validation
-- `UpdateOrderDto` - Update order validation
-- `OrderIdDto` - Order ID parameter validation
+- `CreateSaleDto` - Create sale validation
+- `UpdateSaleDto` - Update sale validation
+- `SaleIdDto` - Sale ID parameter validation
 
 ### Product DTOs
 

@@ -17,9 +17,9 @@ import {
 	ArrowDropDown,
 	ArrowDropUp,
 } from '@mui/icons-material';
-import OrderForm from '../components/forms/OrderForm';
-import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
-import type { OrderDtoType } from '../../../shared/dtos/order.dto';
+import SaleForm from '../components/forms/SaleForm';
+import { useDeleteSale, useSales } from '../hooks/ressources/useSales';
+import type { SaleDtoType } from '../../../shared/dtos/sale.dto';
 import { formatDate } from '../utils/date.utils';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
@@ -29,26 +29,26 @@ import useCrud from '../hooks/useCrud';
 import { DICT } from '../i18n/fr';
 import { useTransactions } from '../hooks/ressources/useTransactions';
 import { useState } from 'react';
-import type { TransactionType } from '../../../shared/constants';
+import type { SaleStatus, TransactionType } from '../../../shared/constants';
 import { formatPrice } from '../utils/price.utils';
 
 export default function Sales() {
 	const {
 		openFormPopup,
 		openDeletePopup,
-		selectedResource: selectedOrder,
+		selectedResource: selectedSale,
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = useCrud<OrderDtoType>();
+	} = useCrud<SaleDtoType>();
 
-	const { data: orders, isLoading, error } = useOrders();
+	const { data: sales, isLoading, error } = useSales();
 
-	const deleteOrderMutation = useDeleteOrder(handleClosePopup);
+	const deleteSaleMutation = useDeleteSale(handleClosePopup);
 
 	const handleDelete = () => {
-		if (selectedOrder) {
-			deleteOrderMutation.mutate(selectedOrder.id);
+		if (selectedSale) {
+			deleteSaleMutation.mutate(selectedSale.id);
 		}
 	};
 
@@ -80,10 +80,10 @@ export default function Sales() {
 					</TableHead>
 
 					<TableBody>
-						{orders?.data.map((order) => (
+						{sales?.data.map((sale) => (
 							<Row
-								key={order.id}
-								order={order}
+								key={sale.id}
+								sale={sale}
 								onOpenDeletePopup={handleOpenDeletePopup}
 								onOpenFormPopup={handleOpenFormPopup}
 							/>
@@ -95,9 +95,9 @@ export default function Sales() {
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={selectedOrder ? 'Modifier la vente' : 'Nouvelle vente'}
+					title={selectedSale ? 'Modifier la vente' : 'Nouvelle vente'}
 				>
-					<OrderForm init={selectedOrder} onClose={handleClosePopup} />
+					<SaleForm init={selectedSale} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
@@ -114,48 +114,43 @@ export default function Sales() {
 }
 
 interface RowProps {
-	order: OrderDtoType;
+	sale: SaleDtoType;
 	onOpenFormPopup: any;
 	onOpenDeletePopup: any;
 }
 
-function Row({ order, onOpenFormPopup, onOpenDeletePopup }: RowProps) {
+function Row({ sale, onOpenFormPopup, onOpenDeletePopup }: RowProps) {
 	const [open, setOpen] = useState(false);
 
 	const { data: transactions, isLoading, error } = useTransactions();
 
 	const getTypeColor = (type: TransactionType) => {
-		if (type === 'order') {
-			return 'success';
-		}
-		if (type === 'purchase') {
-			return 'warning';
-		}
-		if (type === 'transfer') {
-			return 'info';
+		switch (type) {
+			case 'sale':
+				return 'success';
+			case 'purchase':
+				return 'warning';
+			case 'transfer':
+				return 'info';
 		}
 	};
 
-	const getStatusColor = (status: string) => {
+	const getStatusColor = (status: SaleStatus) => {
 		switch (status) {
-			case 'PENDING':
-				return 'warning';
-			case 'CONFIRMED':
+			case 'pending':
+				return 'secondary';
+			case 'partially_paid':
 				return 'info';
-			case 'SHIPPED':
+			case 'paid':
 				return 'primary';
-			case 'DELIVERED':
-				return 'success';
-			case 'CANCELLED':
+			case 'cancelled':
 				return 'error';
-			default:
-				return 'default';
 		}
 	};
 
 	return (
 		<>
-			<TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+			<TableRow>
 				<TableCell>
 					<IconButton
 						aria-label='expand row'
@@ -165,32 +160,32 @@ function Row({ order, onOpenFormPopup, onOpenDeletePopup }: RowProps) {
 						{open ? <ArrowDropUp /> : <ArrowDropDown />}
 					</IconButton>
 				</TableCell>
-				<TableCell>{order.ref}</TableCell>
-				<TableCell>{formatDate(order.date)}</TableCell>
-				<TableCell>{order.agent?.name || 'N/A'}</TableCell>
-				<TableCell>{order.client?.name || 'N/A'}</TableCell>
-				<TableCell>{order.items?.length || 0} items</TableCell>
-				<TableCell>{formatPrice(order.totalPrice)}</TableCell>
+				<TableCell>{sale.ref}</TableCell>
+				<TableCell>{formatDate(sale.date)}</TableCell>
+				<TableCell>{sale.agent?.name || 'N/A'}</TableCell>
+				<TableCell>{sale.client?.name || 'N/A'}</TableCell>
+				<TableCell>{sale.items?.length || 0} items</TableCell>
+				<TableCell>{formatPrice(sale.totalPrice)}</TableCell>
 				<TableCell>
-					{order.discountAmount > 0
-						? `${order.discountAmount}${
-								order.discountType === 'percentage' ? '%' : ''
+					{sale.discountAmount > 0
+						? `${sale.discountAmount}${
+								sale.discountType === 'percentage' ? '%' : ''
 						  }`
 						: 'None'}
 				</TableCell>
 				<TableCell>
 					<Chip
-						label={DICT.orderStatus[order.status]}
-						color={getStatusColor(order.status)}
+						label={DICT.saleStatus[sale.status]}
+						color={getStatusColor(sale.status)}
 						size='small'
 						sx={{ px: 0.5 }}
 					/>
 				</TableCell>
 				<TableCell align='right'>
-					<IconButton onClick={() => onOpenFormPopup(order)} size='small'>
+					<IconButton onClick={() => onOpenFormPopup(sale)} size='small'>
 						<EditIcon />
 					</IconButton>
-					<IconButton onClick={() => onOpenDeletePopup(order)} size='small'>
+					<IconButton onClick={() => onOpenDeletePopup(sale)} size='small'>
 						<DeleteIcon />
 					</IconButton>
 				</TableCell>

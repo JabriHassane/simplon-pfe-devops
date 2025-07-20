@@ -46,7 +46,7 @@ export default function Transactions() {
 	};
 
 	const getTypeColor = (type: TransactionType) => {
-		if (type === 'order') {
+		if (type === 'sale') {
 			return 'success';
 		}
 		if (type === 'purchase') {

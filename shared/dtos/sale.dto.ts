@@ -3,13 +3,13 @@ import { ORDER_STATUSES, DISCOUNT_TYPES } from '../constants';
 import { UserDto } from './user.dto';
 import { ClientDto } from './client.dto';
 
-export const OrderItemDto = z.object({
+export const SaleItemDto = z.object({
 	productId: z.string().min(1, 'Produit requis'),
 	price: z.number().min(0, 'Le prix doit être positif'),
 	quantity: z.number().int().min(1, 'La quantité doit être au moins 1'),
 });
 
-export const CreateOrderDto = z.object({
+export const CreateSaleDto = z.object({
 	date: z.string().min(1, 'Date requise'),
 
 	agentId: z.string().min(1, 'Agent requis'),
@@ -22,7 +22,7 @@ export const CreateOrderDto = z.object({
 	totalPaid: z.number(),
 	totalDue: z.number(),
 
-	items: z.array(OrderItemDto).min(1, 'Au moins un article requis'),
+	items: z.array(SaleItemDto).min(1, 'Au moins un article requis'),
 	status: z.enum(ORDER_STATUSES).optional().default('pending'),
 
 	discountAmount: z
@@ -35,17 +35,17 @@ export const CreateOrderDto = z.object({
 	note: z.string().optional(),
 });
 
-export const UpdateOrderDto = CreateOrderDto;
+export const UpdateSaleDto = CreateSaleDto;
 
-export const OrderDto = z.object({
+export const SaleDto = z.object({
 	id: z.string(),
 	ref: z.string(),
-	...CreateOrderDto.shape,
+	...CreateSaleDto.shape,
 	agent: UserDto,
 	client: ClientDto,
-	items: z.array(OrderItemDto),
+	items: z.array(SaleItemDto),
 });
 
-export type CreateOrderDtoType = z.infer<typeof CreateOrderDto>;
-export type UpdateOrderDtoType = z.infer<typeof UpdateOrderDto>;
-export type OrderDtoType = z.infer<typeof OrderDto>;
+export type CreateSaleDtoType = z.infer<typeof CreateSaleDto>;
+export type UpdateSaleDtoType = z.infer<typeof UpdateSaleDto>;
+export type SaleDtoType = z.infer<typeof SaleDto>;

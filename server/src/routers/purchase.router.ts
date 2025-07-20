@@ -1,14 +1,11 @@
 import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
-import {
-	getAllPurchases,
-	getPurchaseById,
-	createPurchase,
-	updatePurchase,
-	deletePurchase,
-} from '../controllers/purchase.controller';
+import { PurchaseController } from '../controllers/purchase.controller';
 import { validate } from '../middlewares/validation.middleware';
-import { CreatePurchaseDto, UpdatePurchaseDto } from '../../../shared/dtos/purchase.dto';
+import {
+	CreatePurchaseDto,
+	UpdatePurchaseDto,
+} from '../../../shared/dtos/purchase.dto';
 
 const router = Router();
 
@@ -17,10 +14,11 @@ router.use(authenticate);
 router.use(requireAgent);
 
 // CRUD operations
-router.get('/', getAllPurchases);
-router.get('/:id', getPurchaseById);
-router.post('/', validate(CreatePurchaseDto), createPurchase);
-router.put('/:id', validate(UpdatePurchaseDto), updatePurchase);
-router.delete('/:id', deletePurchase);
+router.get('/', PurchaseController.getPage);
+router.get('/:id', PurchaseController.getById);
+router.get('/:id/transactions', PurchaseController.getTransactions);
+router.post('/', validate(CreatePurchaseDto), PurchaseController.create);
+router.put('/:id', validate(UpdatePurchaseDto), PurchaseController.update);
+router.delete('/:id', PurchaseController.delete);
 
 export default router;

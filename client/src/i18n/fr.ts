@@ -1,12 +1,12 @@
 export const DICT = {
 	transactionType: {
 		purchase: 'Achat',
-		order: 'Vente',
+		sale: 'Vente',
 		transfer: 'Transfert',
 	},
-	orderStatus: {
+	saleStatus: {
 		pending: 'En attente',
-		partially_paid: 'Réglement',
+		partially_paid: 'Règlement',
 		paid: 'Payé',
 		cancelled: 'Annulé',
 	},

@@ -6,8 +6,8 @@ import {
 } from '../../../shared/dtos/account.dto';
 import { getPaginationCondition } from '../utils/pagination';
 
-export class AccountController {
-	static async getPage(req: Request, res: Response) {
+export const AccountController = {
+	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
 				'name',
@@ -38,9 +38,9 @@ export class AccountController {
 			console.error('Error in AccountController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async getById(req: Request, res: Response) {
+	async getById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 
@@ -57,9 +57,9 @@ export class AccountController {
 			console.error('Error in AccountController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async create(req: Request, res: Response) {
+	async create(req: Request, res: Response) {
 		try {
 			const body = req.body as CreateAccountDtoType;
 			const { userId } = req.user!;
@@ -91,9 +91,9 @@ export class AccountController {
 			console.error('Error in AccountController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async update(req: Request, res: Response) {
+	async update(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const body = req.body as UpdateAccountDtoType;
@@ -139,9 +139,9 @@ export class AccountController {
 			console.error('Error in AccountController.update', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async delete(req: Request, res: Response) {
+	async delete(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
@@ -182,9 +182,9 @@ export class AccountController {
 			console.error('Error in AccountController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async getBalance(req: Request, res: Response) {
+	async getBalance(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 
@@ -201,5 +201,5 @@ export class AccountController {
 			console.error('Error in AccountController.getBalance', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
-}
+	},
+};

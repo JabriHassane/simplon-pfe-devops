@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import {
-	CreateOrderDtoType,
-	UpdateOrderDtoType,
-} from '../../../shared/dtos/order.dto';
+	CreateSaleDtoType,
+	UpdateSaleDtoType,
+} from '../../../shared/dtos/sale.dto';
 import { getPaginationCondition } from '../utils/pagination';
 
-type OrderItemInput = { productId: string; price: number; quantity: number };
+type SaleItemInput = { productId: string; price: number; quantity: number };
 
-export class OrderController {
-	static async getAll(req: Request, res: Response) {
+export const SaleController = {
+	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
 				'ref',
@@ -17,36 +17,40 @@ export class OrderController {
 				'invoiceNumber',
 			]);
 
-			const [orders, total] = await Promise.all([
-				prisma.order.findMany({
-					where: whereClause,
-					include: {
-						client: true,
-						items: {
-							include: {
-								product: true,
-							},
-						},
-						agent: {
-							select: {
-								id: true,
-								name: true,
-							},
+			const salesPromise = prisma.sale.findMany({
+				where: whereClause,
+				include: {
+					client: true,
+					items: {
+						include: {
+							product: true,
 						},
 					},
-					orderBy: { date: 'desc' },
-					skip,
-					take: limit,
-				}),
-				prisma.order.count({
-					where: whereClause,
-				}),
+					agent: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+				orderBy: { date: 'desc' },
+				skip,
+				take: limit,
+			});
+
+			const salesCountPromise = prisma.sale.count({
+				where: whereClause,
+			});
+
+			const [sales, total] = await Promise.all([
+				salesPromise,
+				salesCountPromise,
 			]);
 
 			const totalPages = Math.ceil(total / limit);
 
 			res.json({
-				data: orders,
+				data: sales,
 				pagination: {
 					page,
 					limit,
@@ -55,16 +59,16 @@ export class OrderController {
 				},
 			});
 		} catch (error) {
-			console.error('Error in OrderController.getAll', error);
+			console.error('Error in SaleController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async getById(req: Request, res: Response) {
+	async getById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 
-			const order = await prisma.order.findUnique({
+			const sale = await prisma.sale.findUnique({
 				where: { id },
 				include: {
 					client: true,
@@ -82,21 +86,50 @@ export class OrderController {
 				},
 			});
 
-			if (!order) {
-				return res.status(404).json({ message: 'Order not found' });
+			if (!sale) {
+				return res.status(404).json({ message: 'Sale not found' });
 			}
 
-			res.json(order);
+			res.json(sale);
 		} catch (error) {
-			console.error('Error in OrderController.getById', error);
+			console.error('Error in SaleController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async create(req: Request, res: Response) {
+	async getTransactions(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+
+			const transactions = await prisma.transaction.findMany({
+				where: {
+					saleId: id,
+					deletedAt: null,
+				},
+				include: {
+					from: true,
+					to: true,
+					agent: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+				orderBy: { date: 'desc' },
+			});
+
+			res.json(transactions);
+		} catch (error) {
+			console.error('Error in SaleController.getTransactions', error);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
+
+	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const body = req.body as CreateOrderDtoType;
+			const body = req.body as CreateSaleDtoType;
 
 			// Check if client exists
 			const client = await prisma.client.findUnique({
@@ -138,7 +171,7 @@ export class OrderController {
 					: body.discountAmount;
 			const totalPrice = subtotal - discount;
 
-			const order = await prisma.order.create({
+			const sale = await prisma.sale.create({
 				data: {
 					date: body.date,
 					clientId: body.clientId,
@@ -155,7 +188,7 @@ export class OrderController {
 					ref: `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 					items: {
-						create: body.items.map((item: OrderItemInput) => ({
+						create: body.items.map((item: SaleItemInput) => ({
 							productId: item.productId,
 							price: item.price,
 							quantity: item.quantity,
@@ -192,29 +225,29 @@ export class OrderController {
 				});
 			}
 
-			res.status(201).json(order);
+			res.status(201).json(sale);
 		} catch (error) {
-			console.error('Error in OrderController.create', error);
+			console.error('Error in SaleController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async update(req: Request, res: Response) {
+	async update(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const body = req.body as UpdateOrderDtoType;
+			const body = req.body as UpdateSaleDtoType;
 
-			// Check if order exists
-			const existingOrder = await prisma.order.findUnique({
+			// Check if sale exists
+			const existingSale = await prisma.sale.findUnique({
 				where: { id },
 				include: {
 					items: true,
 				},
 			});
 
-			if (!existingOrder) {
-				return res.status(404).json({ message: 'Order not found' });
+			if (!existingSale) {
+				return res.status(404).json({ message: 'Sale not found' });
 			}
 
 			// Check if client exists (if clientId is being updated)
@@ -241,12 +274,12 @@ export class OrderController {
 							.json({ message: `Product ${item.productId} not found` });
 					}
 
-					// Check inventory (considering current order items)
-					const currentOrderItem = existingOrder.items.find(
-						(oi) => oi.productId === item.productId
+					// Check inventory (considering current sale items)
+					const currentSaleItem = existingSale.items.find(
+						(si) => si.productId === item.productId
 					);
-					const currentQuantity = currentOrderItem
-						? currentOrderItem.quantity
+					const currentQuantity = currentSaleItem
+						? currentSaleItem.quantity
 						: 0;
 					const availableInventory = product.inventory + currentQuantity;
 
@@ -259,17 +292,17 @@ export class OrderController {
 			}
 
 			// Calculate new totals if items or discount changed
-			let totalPrice = existingOrder.totalPrice;
+			let totalPrice = existingSale.totalPrice;
 			if (
 				body.items ||
 				body.discountAmount !== undefined ||
 				body.discountType !== undefined
 			) {
-				const currentItems = body.items || existingOrder.items;
+				const currentItems = body.items || existingSale.items;
 				const currentDiscountAmount =
-					body.discountAmount ?? existingOrder.discountAmount;
+					body.discountAmount ?? existingSale.discountAmount;
 				const currentDiscountType =
-					body.discountType ?? existingOrder.discountType;
+					body.discountType ?? existingSale.discountType;
 
 				const subtotal = currentItems.reduce(
 					(sum: number, item: { price: number; quantity: number }) =>
@@ -283,15 +316,15 @@ export class OrderController {
 				totalPrice = subtotal - discount;
 			}
 
-			// Update order
+			// Update sale
 			const { items, ...updateData } = body;
-			const order = await prisma.order.update({
+			const sale = await prisma.sale.update({
 				where: { id },
 				data: {
 					...updateData,
-					...(totalPrice !== existingOrder.totalPrice && {
+					...(totalPrice !== existingSale.totalPrice && {
 						totalPrice,
-						totalDue: totalPrice - existingOrder.totalPaid,
+						totalDue: totalPrice - existingSale.totalPaid,
 					}),
 					updatedAt: new Date(),
 					updatedById: userId,
@@ -315,14 +348,14 @@ export class OrderController {
 			// Update items if provided
 			if (body.items) {
 				// Delete existing items
-				await prisma.orderItem.deleteMany({
-					where: { orderId: id },
+				await prisma.saleItem.deleteMany({
+					where: { saleId: id },
 				});
 
 				// Create new items
-				await prisma.orderItem.createMany({
+				await prisma.saleItem.createMany({
 					data: body.items.map((item) => ({
-						orderId: id,
+						saleId: id,
 						productId: item.productId,
 						price: item.price,
 						quantity: item.quantity,
@@ -333,11 +366,11 @@ export class OrderController {
 
 				// Update product inventory
 				for (const item of body.items) {
-					const currentOrderItem = existingOrder.items.find(
-						(oi) => oi.productId === item.productId
+					const currentSaleItem = existingSale.items.find(
+						(si) => si.productId === item.productId
 					);
-					const currentQuantity = currentOrderItem
-						? currentOrderItem.quantity
+					const currentQuantity = currentSaleItem
+						? currentSaleItem.quantity
 						: 0;
 					const quantityDifference = item.quantity - currentQuantity;
 
@@ -354,43 +387,43 @@ export class OrderController {
 				}
 			}
 
-			res.json(order);
+			res.json(sale);
 		} catch (error) {
-			console.error('Error in OrderController.update', error);
+			console.error('Error in SaleController.update', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async delete(req: Request, res: Response) {
+	async delete(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
 
-			// Check if order exists
-			const existingOrder = await prisma.order.findUnique({
+			// Check if sale exists
+			const existingSale = await prisma.sale.findUnique({
 				where: { id },
 				include: {
 					items: true,
 				},
 			});
 
-			if (!existingOrder) {
-				return res.status(404).json({ message: 'Order not found' });
+			if (!existingSale) {
+				return res.status(404).json({ message: 'Sale not found' });
 			}
 
-			// Check if order has transactions
+			// Check if sale has transactions
 			const hasTransactions = await prisma.transaction.findFirst({
-				where: { orderId: id },
+				where: { saleId: id },
 			});
 
 			if (hasTransactions) {
 				return res.status(400).json({
-					message: 'Cannot delete order with existing transactions',
+					message: 'Cannot delete sale with existing transactions',
 				});
 			}
 
 			// Restore product inventory
-			for (const item of existingOrder.items) {
+			for (const item of existingSale.items) {
 				await prisma.product.update({
 					where: { id: item.productId },
 					data: {
@@ -402,7 +435,7 @@ export class OrderController {
 			}
 
 			// Soft delete
-			await prisma.order.update({
+			await prisma.sale.update({
 				where: { id },
 				data: {
 					deletedAt: new Date(),
@@ -410,10 +443,10 @@ export class OrderController {
 				},
 			});
 
-			res.json({ message: 'Order deleted successfully' });
+			res.json({ message: 'Sale deleted successfully' });
 		} catch (error) {
-			console.error('Error in OrderController.delete', error);
+			console.error('Error in SaleController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
-}
+	},
+};

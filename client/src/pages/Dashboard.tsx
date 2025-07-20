@@ -74,7 +74,7 @@ export default function Dashboard() {
 
 	// Calculate dashboard stats
 	const totalRevenue = transactions!.data
-		.filter((t) => t.type === 'order')
+		.filter((t) => t.type === 'sale')
 		.reduce((sum, t) => sum + t.amount, 0);
 
 	const totalExpenses = transactions!.data
@@ -299,7 +299,7 @@ export default function Dashboard() {
 							<TableRow key={transaction.id}>
 								<TableCell>{formatDate(transaction.date.toString())}</TableCell>
 								<TableCell align='right'>
-									{transaction.type === 'order'
+									{transaction.type === 'sale'
 										? 'Vente'
 										: transaction.type === 'purchase'
 										? 'Achat'

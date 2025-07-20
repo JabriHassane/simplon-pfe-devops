@@ -98,7 +98,7 @@ The following endpoints are protected and require authentication:
 - `GET /clients` - Get all clients
 - `GET /suppliers` - Get all suppliers
 - `GET /products` - Get all products
-- `GET /orders` - Get all orders
+- `GET /sales` - Get all sales
 - `GET /purchases` - Get all purchases
 - `GET /transactions` - Get all transactions
 - `GET /accounts` - Get all accounts

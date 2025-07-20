@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { CreateOrderDto, OrderItemDto } from './order.dto';
+import { CreateSaleDto, SaleItemDto } from './sale.dto';
 import { SupplierDto } from './supplier.dto';
 import { UserDto } from './user.dto';
 
 export const CreatePurchaseDto = z.object({
-	...CreateOrderDto.omit({
+	...CreateSaleDto.omit({
 		clientId: true,
 	}).shape,
 	supplierId: z.string().min(1, 'Fournisseur requis'),
@@ -18,7 +18,7 @@ export const PurchaseDto = z.object({
 	...CreatePurchaseDto.shape,
 	agent: UserDto,
 	supplier: SupplierDto,
-	items: z.array(OrderItemDto),
+	items: z.array(SaleItemDto),
 });
 
 export type CreatePurchaseDtoType = z.infer<typeof CreatePurchaseDto>;

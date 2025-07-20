@@ -28,7 +28,7 @@ import { useTransactions } from '../hooks/ressources/useTransactions';
 import { useProducts } from '../hooks/ressources/useProducts';
 import { useClients } from '../hooks/ressources/useClients';
 import { useSuppliers } from '../hooks/ressources/useSuppliers';
-import { useOrders } from '../hooks/ressources/useOrders';
+import { useSales } from '../hooks/ressources/useSales';
 import { usePurchases } from '../hooks/ressources/usePurchases';
 import { formatDate, formatDateTime } from '../utils/date.utils';
 
@@ -60,10 +60,10 @@ export default function Reports() {
 		error: suppliersError,
 	} = useSuppliers();
 	const {
-		data: orders,
-		isLoading: ordersLoading,
-		error: ordersError,
-	} = useOrders();
+		data: sales,
+		isLoading: salesLoading,
+		error: salesError,
+	} = useSales();
 	const {
 		data: purchases,
 		isLoading: purchasesLoading,
@@ -76,7 +76,7 @@ export default function Reports() {
 		productsLoading ||
 		clientsLoading ||
 		suppliersLoading ||
-		ordersLoading ||
+		salesLoading ||
 		purchasesLoading;
 	const error =
 		accountsError ||
@@ -84,13 +84,13 @@ export default function Reports() {
 		productsError ||
 		clientsError ||
 		suppliersError ||
-		ordersError ||
+		salesError ||
 		purchasesError;
 
 	// Calculate basic stats
 	const totalRevenue =
 		transactions?.data
-			.filter((t) => t.type === 'order')
+			.filter((t) => t.type === 'sale')
 			.reduce((sum, t) => sum + t.amount, 0) || 0;
 
 	const totalExpenses =
@@ -99,7 +99,7 @@ export default function Reports() {
 			.reduce((sum, t) => sum + t.amount, 0) || 0;
 
 	const totalSales =
-		orders?.data.reduce((sum, order) => sum + order.totalPrice, 0) || 0;
+		sales?.data.reduce((sum, sale) => sum + sale.totalPrice, 0) || 0;
 
 	const totalPurchases =
 		purchases?.data.reduce((sum, purchase) => sum + purchase.totalPrice, 0) ||
@@ -329,13 +329,13 @@ export default function Reports() {
 										sx={{
 											px: 1,
 											py: 0.5,
-											borderRadius: 1,
+											bsaleRadius: 1,
 											backgroundColor:
-												transaction.type === 'order'
+												transaction.type === 'sale'
 													? 'success.light'
 													: 'error.light',
 											color:
-												transaction.type === 'order'
+												transaction.type === 'sale'
 													? 'success.dark'
 													: 'error.dark',
 											display: 'inline-block',
@@ -347,13 +347,13 @@ export default function Reports() {
 								<TableCell align='right'>
 									<Typography
 										color={
-											transaction.type === 'order'
+											transaction.type === 'sale'
 												? 'success.main'
 												: 'error.main'
 										}
 										fontWeight='bold'
 									>
-										{transaction.type === 'order' ? '+' : '-'}
+										{transaction.type === 'sale' ? '+' : '-'}
 										{formatCurrency(transaction.amount)}
 									</Typography>
 								</TableCell>

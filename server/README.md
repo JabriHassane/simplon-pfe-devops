@@ -45,13 +45,13 @@ The Prisma schema includes the following models:
 - **Supplier** - Supplier information
 - **ProductCategory** - Product categories
 - **Product** - Products with inventory tracking
-- **Order** - Sales orders with items and payments
-- **OrderItem** - Individual items in orders
-- **Purchase** - Purchase orders from suppliers
+- **Sale** - Sales sales with items and payments
+- **SaleItem** - Individual items in sales
+- **Purchase** - Purchase sales from suppliers
 - **PurchaseItem** - Individual items in purchases
 - **Account** - Financial accounts (cash, bank, etc.)
 - **Transaction** - Financial transactions between accounts
-- **Discount** - Discounts applied to orders/purchases
+- **Discount** - Discounts applied to sales/purchases
 
 ## Available Scripts
 

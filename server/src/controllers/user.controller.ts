@@ -4,8 +4,8 @@ import { CreateUserDtoType } from '../../../shared/dtos/user.dto';
 import bcrypt from 'bcryptjs';
 import { getPaginationCondition } from '../utils/pagination';
 
-export class UserController {
-	static async getPage(req: Request, res: Response) {
+export const UserController = {
+	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
 				'name',
@@ -36,9 +36,9 @@ export class UserController {
 			console.error('Error in UserController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async getById(req: Request, res: Response) {
+	async getById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 
@@ -55,9 +55,9 @@ export class UserController {
 			console.error('Error in UserController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async create(req: Request, res: Response) {
+	async create(req: Request, res: Response) {
 		try {
 			const body = req.body as CreateUserDtoType;
 			const { userId } = req.user!;
@@ -94,11 +94,12 @@ export class UserController {
 			console.error('Error in UserController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async update(req: Request, res: Response) {
+	async update(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
+			const { userId } = req.user!;
 			const body = req.body as CreateUserDtoType;
 
 			// Check if user exists
@@ -115,7 +116,7 @@ export class UserController {
 				data: {
 					...body,
 					updatedAt: new Date(),
-					updatedById: req.user?.userId,
+					updatedById: userId,
 				},
 			});
 
@@ -124,11 +125,12 @@ export class UserController {
 			console.error('Error in UserController.update', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async delete(req: Request, res: Response) {
+	async delete(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
+			const { userId } = req.user!;
 
 			// Check if user exists
 			const isExist = await prisma.user.findUnique({
@@ -144,7 +146,7 @@ export class UserController {
 				where: { id },
 				data: {
 					deletedAt: new Date(),
-					deletedById: req.user?.userId,
+					deletedById: userId,
 				},
 			});
 
@@ -153,5 +155,5 @@ export class UserController {
 			console.error('Error in UserController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
-}
+	},
+};

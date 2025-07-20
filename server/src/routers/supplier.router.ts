@@ -1,12 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
-import {
-	getPageSuppliers,
-	getSupplierById,
-	createSupplier,
-	updateSupplier,
-	deleteSupplier,
-} from '../controllers/supplier.controller';
+import { SupplierController } from '../controllers/supplier.controller';
 import { validate } from '../middlewares/validation.middleware';
 import {
 	CreateSupplierDto,
@@ -20,10 +14,10 @@ router.use(authenticate);
 router.use(requireAgent);
 
 // CRUD operations
-router.get('/', getPageSuppliers);
-router.get('/:id', getSupplierById);
-router.post('/', validate(CreateSupplierDto), createSupplier);
-router.put('/:id', validate(UpdateSupplierDto), updateSupplier);
-router.delete('/:id', deleteSupplier);
+router.get('/', SupplierController.getPage);
+router.get('/:id', SupplierController.getById);
+router.post('/', validate(CreateSupplierDto), SupplierController.create);
+router.put('/:id', validate(UpdateSupplierDto), SupplierController.update);
+router.delete('/:id', SupplierController.delete);
 
 export default router;

@@ -7,12 +7,12 @@ export const ORDER_STATUSES = [
 	'paid',
 	'cancelled',
 ] as const;
-export type OrderStatus = (typeof ORDER_STATUSES)[number];
+export type SaleStatus = (typeof ORDER_STATUSES)[number];
 
 export const DISCOUNT_TYPES = ['percentage', 'fixed'] as const;
 export type DiscountType = (typeof DISCOUNT_TYPES)[number];
 
-export const TRANSACTION_TYPES = ['purchase', 'order', 'transfer'] as const;
+export const TRANSACTION_TYPES = ['purchase', 'sale', 'transfer'] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
 export const PAYMENT_METHODS = [

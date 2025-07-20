@@ -1,12 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
-import {
-	getPageProducts,
-	getProductById,
-	createProduct,
-	updateProduct,
-	deleteProduct,
-} from '../controllers/product.controller';
+import { ProductController } from '../controllers/product.controller';
 import { validate } from '../middlewares/validation.middleware';
 import {
 	CreateProductDto,
@@ -20,10 +14,10 @@ router.use(authenticate);
 router.use(requireAgent);
 
 // CRUD operations
-router.get('/', getPageProducts);
-router.get('/:id', getProductById);
-router.post('/', validate(CreateProductDto), createProduct);
-router.put('/:id', validate(UpdateProductDto), updateProduct);
-router.delete('/:id', deleteProduct);
+router.get('/', ProductController.getPage);
+router.get('/:id', ProductController.getById);
+router.post('/', validate(CreateProductDto), ProductController.create);
+router.put('/:id', validate(UpdateProductDto), ProductController.update);
+router.delete('/:id', ProductController.delete);
 
 export default router;

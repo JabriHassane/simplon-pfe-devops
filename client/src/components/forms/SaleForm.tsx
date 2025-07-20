@@ -13,24 +13,22 @@ import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../shared/ResourcePickerField';
 import {
-	CreateOrderDto,
-	type CreateOrderDtoType,
-	type OrderDtoType,
-} from '../../../../shared/dtos/order.dto';
+	CreateSaleDto,
+	type CreateSaleDtoType,
+	type SaleDtoType,
+} from '../../../../shared/dtos/sale.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import ResourceForm from './ResourceForm';
-import {
-	useCreateOrder,
-	useUpdateOrder,
-} from '../../hooks/ressources/useOrders';
+import { useCreateSale, useUpdateSale } from '../../hooks/ressources/useSales';
+import { Add } from '@mui/icons-material';
 
-interface OrderFormProps {
-	init: OrderDtoType | null;
+interface SaleFormProps {
+	init: SaleDtoType | null;
 	onClose: () => void;
 }
 
-export default function OrderForm({ init, onClose }: OrderFormProps) {
+export default function SaleForm({ init, onClose }: SaleFormProps) {
 	const {
 		register,
 		handleSubmit,
@@ -39,7 +37,7 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 		setValue,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateOrderDto),
+		resolver: zodResolver(CreateSaleDto),
 		defaultValues: init || {
 			clientId: '',
 			items: [{ productId: '', quantity: 1, price: 0 }],
@@ -56,17 +54,17 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 		name: 'items',
 	});
 
-	const createOrderMutation = useCreateOrder(onClose);
-	const updateOrderMutation = useUpdateOrder(onClose);
+	const createSaleMutation = useCreateSale(onClose);
+	const updateSaleMutation = useUpdateSale(onClose);
 
-	const onSubmit = async (data: CreateOrderDtoType) => {
+	const onSubmit = async (data: CreateSaleDtoType) => {
 		if (init) {
-			await updateOrderMutation.mutateAsync({
+			await updateSaleMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createOrderMutation.mutateAsync(data);
+			await createSaleMutation.mutateAsync(data);
 		}
 	};
 
@@ -74,59 +72,62 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 		<ResourceForm
 			onSubmit={handleSubmit(onSubmit)}
 			isValid={isValid}
-			isLoading={createOrderMutation.isPending || updateOrderMutation.isPending}
+			isLoading={createSaleMutation.isPending || updateSaleMutation.isPending}
 		>
-			<Controller
-				name='date'
-				control={control}
-				render={({ field }) => (
-					<DatePicker
-						label='Date'
-						value={dayjs(field.value)}
-						onChange={(date) => field.onChange(date?.toISOString())}
-						slotProps={{
-							textField: {
-								error: !!errors.date,
-								helperText: errors.date?.message as string,
-							},
-						}}
-					/>
-				)}
-			/>
+			<Box display='flex' gap={2} alignItems='center'>
+				<Controller
+					name='date'
+					control={control}
+					render={({ field }) => (
+						<DatePicker
+							label='Date'
+							value={dayjs(field.value)}
+							onChange={(date) => field.onChange(date?.toISOString())}
+							slotProps={{
+								textField: {
+									error: !!errors.date,
+									helperText: errors.date?.message as string,
+								},
+							}}
+						/>
+					)}
+				/>
 
-			<ResourcePickerField
-				label='Client'
-				value={watch('clientId') || ''}
-				onChange={(value) => {
-					setValue('clientId', value);
-				}}
-				resourceType='client'
-				error={!!errors.clientId}
-				helperText={errors.clientId?.message as string}
-				required
-			/>
+				<ResourcePickerField
+					label='Client'
+					value={watch('clientId') || ''}
+					onChange={(value) => {
+						setValue('clientId', value);
+					}}
+					resourceType='client'
+					error={!!errors.clientId}
+					helperText={errors.clientId?.message as string}
+					required
+				/>
+			</Box>
 
-			<TextField
-				fullWidth
-				label='Numéro de reçu'
-				{...register('receiptNumber')}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.receiptNumber}
-				helperText={errors.receiptNumber?.message as string}
-				required
-			/>
-
-			<TextField
-				fullWidth
-				label='Numéro de facture'
-				{...register('invoiceNumber')}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.invoiceNumber}
-				helperText={errors.invoiceNumber?.message as string}
-				required
-			/>
+			<Box display='flex' gap={2} alignItems='center'>
+				<TextField
+					fullWidth
+					margin='normal'
+					label='Numéro de reçu'
+					{...register('receiptNumber')}
+					variant='outlined'
+					error={!!errors.receiptNumber}
+					helperText={errors.receiptNumber?.message as string}
+					required
+				/>
+				<TextField
+					fullWidth
+					margin='normal'
+					label='Numéro de facture'
+					{...register('invoiceNumber')}
+					variant='outlined'
+					error={!!errors.invoiceNumber}
+					helperText={errors.invoiceNumber?.message as string}
+					required
+				/>
+			</Box>
 
 			<FormControl fullWidth margin='normal'>
 				<InputLabel>Statut</InputLabel>
@@ -137,15 +138,31 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 					required
 				>
 					<MenuItem value='pending'>En attente</MenuItem>
-					<MenuItem value='partially-paid'>Partiellement payé</MenuItem>
+					<MenuItem value='partially_paid'>Règlement</MenuItem>
 					<MenuItem value='paid'>Payé</MenuItem>
 					<MenuItem value='cancelled'>Annulé</MenuItem>
 				</Select>
 			</FormControl>
 
-			<Typography variant='h6' sx={{ mt: 3, mb: 2 }}>
-				Articles
-			</Typography>
+			<Box
+				display='flex'
+				gap={2}
+				alignItems='center'
+				justifyContent='space-between'
+				mt={2}
+				mb={4}
+			>
+				<Typography variant='h6'>Articles</Typography>
+
+				<Button
+					onClick={() => append({ productId: '', quantity: 1, price: 0 })}
+					variant='contained'
+					disableElevation
+					startIcon={<Add />}
+				>
+					Ajouter
+				</Button>
+			</Box>
 
 			{fields.map((item, index) => (
 				<Box
@@ -190,21 +207,12 @@ export default function OrderForm({ init, onClose }: OrderFormProps) {
 
 					<IconButton
 						onClick={() => remove(index)}
-						color='error'
 						disabled={fields.length === 1}
 					>
 						×
 					</IconButton>
 				</Box>
 			))}
-
-			<Button
-				onClick={() => append({ productId: '', quantity: 1, price: 0 })}
-				variant='outlined'
-				sx={{ mb: 2 }}
-			>
-				Ajouter un article
-			</Button>
 
 			<Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
 				<TextField

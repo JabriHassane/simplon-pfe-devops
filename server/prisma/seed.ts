@@ -6,11 +6,11 @@ const prisma = new PrismaClient();
 async function main() {
 	console.log('🌱 Starting database seed...');
 
-	// Clear existing data (in correct order due to foreign key constraints)
+	// Clear existing data (in correct sale due to foreign key constraints)
 	await prisma.transaction.deleteMany();
-	await prisma.orderItem.deleteMany();
+	await prisma.saleItem.deleteMany();
 	await prisma.purchaseItem.deleteMany();
-	await prisma.order.deleteMany();
+	await prisma.sale.deleteMany();
 	await prisma.purchase.deleteMany();
 	await prisma.product.deleteMany();
 	await prisma.productCategory.deleteMany();
@@ -266,9 +266,9 @@ async function main() {
 
 	console.log('🏢 Created suppliers');
 
-	// Create some orders
-	const orders = await Promise.all([
-		prisma.order.create({
+	// Create some sales
+	const sales = await Promise.all([
+		prisma.sale.create({
 			data: {
 				ref: 'ORD-001',
 				date: '2024-01-15T00:00:00.000Z',
@@ -284,7 +284,7 @@ async function main() {
 				createdById: agent1.id,
 			},
 		}),
-		prisma.order.create({
+		prisma.sale.create({
 			data: {
 				ref: 'ORD-002',
 				date: '2024-01-20T00:00:00.000Z',
@@ -300,7 +300,7 @@ async function main() {
 				createdById: agent2.id,
 			},
 		}),
-		prisma.order.create({
+		prisma.sale.create({
 			data: {
 				ref: 'ORD-003',
 				date: '2024-01-25T00:00:00.000Z',
@@ -318,58 +318,58 @@ async function main() {
 		}),
 	]);
 
-	console.log('📋 Created orders');
+	console.log('📋 Created sales');
 
-	// Create order items
+	// Create sale items
 	await Promise.all([
-		prisma.orderItem.create({
+		prisma.saleItem.create({
 			data: {
 				price: 899.99,
 				quantity: 1,
-				orderId: orders[0].id,
+				saleId: sales[0].id,
 				productId: products[0].id,
 				createdById: agent1.id,
 			},
 		}),
-		prisma.orderItem.create({
+		prisma.saleItem.create({
 			data: {
 				price: 29.99,
 				quantity: 1,
-				orderId: orders[0].id,
+				saleId: sales[0].id,
 				productId: products[2].id,
 				createdById: agent1.id,
 			},
 		}),
-		prisma.orderItem.create({
+		prisma.saleItem.create({
 			data: {
 				price: 89.99,
 				quantity: 2,
-				orderId: orders[1].id,
+				saleId: sales[1].id,
 				productId: products[3].id,
 				createdById: agent2.id,
 			},
 		}),
-		prisma.orderItem.create({
+		prisma.saleItem.create({
 			data: {
 				price: 1299.99,
 				quantity: 1,
-				orderId: orders[2].id,
+				saleId: sales[2].id,
 				productId: products[1].id,
 				createdById: agent1.id,
 			},
 		}),
-		prisma.orderItem.create({
+		prisma.saleItem.create({
 			data: {
 				price: 49.99,
 				quantity: 1,
-				orderId: orders[2].id,
+				saleId: sales[2].id,
 				productId: products[5].id,
 				createdById: agent1.id,
 			},
 		}),
 	]);
 
-	console.log('📦 Created order items');
+	console.log('📦 Created sale items');
 
 	// Create purchases
 	const purchases = await Promise.all([
@@ -448,11 +448,11 @@ async function main() {
 			data: {
 				ref: 'TXN-001',
 				date: '2024-01-15T00:00:00.000Z',
-				type: 'order',
+				type: 'sale',
 				paymentMethod: 'cash',
 				amount: 929.98,
 				agentId: agent1.id,
-				orderId: orders[0].id,
+				saleId: sales[0].id,
 				toId: accounts[0].id,
 				createdById: agent1.id,
 			},
@@ -461,11 +461,11 @@ async function main() {
 			data: {
 				ref: 'TXN-002',
 				date: '2024-01-20T00:00:00.000Z',
-				type: 'order',
+				type: 'sale',
 				paymentMethod: 'check',
 				amount: 100,
 				agentId: agent2.id,
-				orderId: orders[1].id,
+				saleId: sales[1].id,
 				toId: accounts[1].id,
 				createdById: agent2.id,
 			},
@@ -520,7 +520,7 @@ async function main() {
 	console.log(`- Products: 6`);
 	console.log(`- Clients: 4`);
 	console.log(`- Suppliers: 3`);
-	console.log(`- Orders: 3`);
+	console.log(`- Sales: 3`);
 	console.log(`- Purchases: 2`);
 	console.log(`- Transactions: 5`);
 }

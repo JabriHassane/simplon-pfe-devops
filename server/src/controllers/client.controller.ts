@@ -6,8 +6,8 @@ import {
 } from '../../../shared/dtos/client.dto';
 import { getPaginationCondition } from '../utils/pagination';
 
-export class ClientController {
-	static async getPage(req: Request, res: Response) {
+export const ClientController = {
+	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
 				'name',
@@ -39,9 +39,9 @@ export class ClientController {
 			console.error('Error in ClientController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async getById(req: Request, res: Response) {
+	async getById(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 
@@ -58,9 +58,9 @@ export class ClientController {
 			console.error('Error in ClientController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async create(req: Request, res: Response) {
+	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
 			const body = req.body as CreateClientDtoType;
@@ -94,9 +94,9 @@ export class ClientController {
 			console.error('Error in ClientController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async update(req: Request, res: Response) {
+	async update(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
@@ -144,9 +144,9 @@ export class ClientController {
 			console.error('Error in ClientController.update', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
+	},
 
-	static async delete(req: Request, res: Response) {
+	async delete(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
@@ -160,14 +160,14 @@ export class ClientController {
 				return res.status(404).json({ message: 'Client not found' });
 			}
 
-			// Check if client has orders
-			const hasOrders = await prisma.order.findFirst({
+			// Check if client has sales
+			const hasSales = await prisma.sale.findFirst({
 				where: { clientId: id },
 			});
 
-			if (hasOrders) {
+			if (hasSales) {
 				return res.status(400).json({
-					message: 'Cannot delete client with existing orders',
+					message: 'Cannot delete client with existing sales',
 				});
 			}
 
@@ -185,5 +185,5 @@ export class ClientController {
 			console.error('Error in ClientController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
-	}
-}
+	},
+};

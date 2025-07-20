@@ -53,6 +53,24 @@ export const usePurchase = (id: string) => {
 	});
 };
 
+export const usePurchaseTransactions = (id: string) => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: [...purchaseKeys.lists(), 'transactions', id],
+		queryFn: async () => {
+			try {
+				return await PurchaseService.getTransactions(id);
+			} catch (error) {
+				console.error(error);
+				showError("Erreur lors de la récupération de l'achat");
+				return null;
+			}
+		},
+		enabled: !!id,
+	});
+};
+
 // Create purchase mutation
 export const useCreatePurchase = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();

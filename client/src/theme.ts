@@ -16,14 +16,14 @@ export const theme = createTheme({
 			styleOverrides: {
 				root: {
 					textTransform: 'none',
-					borderRadius: 5,
+					bsaleRadius: 5,
 				},
 			},
 		},
 		MuiPaper: {
 			styleOverrides: {
 				root: {
-					borderRadius: 10,
+					bsaleRadius: 10,
 				},
 			},
 		},

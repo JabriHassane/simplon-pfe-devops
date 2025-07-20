@@ -6,9 +6,7 @@ import {
 	TableContainer,
 	TableHead,
 	TableRow,
-	IconButton,
-	CircularProgress,
-	Chip,
+	IconButton, Chip
 } from '@mui/material';
 import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
@@ -109,7 +107,7 @@ export default function Purchases() {
 								</TableCell>
 								<TableCell>
 									<Chip
-										label={DICT.orderStatus[purchase.status]}
+										label={DICT.saleStatus[purchase.status]}
 										color={getStatusColor(purchase.status)}
 										size='small'
 										sx={{ px: 0.5 }}

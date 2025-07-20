@@ -1,12 +1,6 @@
 import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
-import {
-	getAllTransactions,
-	getTransactionById,
-	createTransaction,
-	updateTransaction,
-	deleteTransaction,
-} from '../controllers/transaction.controller';
+import { TransactionController } from '../controllers/transaction.controller';
 import { validate } from '../middlewares/validation.middleware';
 import {
 	CreateTransactionDto,
@@ -20,10 +14,14 @@ router.use(authenticate);
 router.use(requireAgent);
 
 // CRUD operations
-router.get('/', getAllTransactions);
-router.get('/:id', getTransactionById);
-router.post('/', validate(CreateTransactionDto), createTransaction);
-router.put('/:id', validate(UpdateTransactionDto), updateTransaction);
-router.delete('/:id', deleteTransaction);
+router.get('/', TransactionController.getPage);
+router.get('/:id', TransactionController.getById);
+router.post('/', validate(CreateTransactionDto), TransactionController.create);
+router.put(
+	'/:id',
+	validate(UpdateTransactionDto),
+	TransactionController.update
+);
+router.delete('/:id', TransactionController.delete);
 
 export default router;
