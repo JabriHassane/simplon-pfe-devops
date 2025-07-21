@@ -8,20 +8,17 @@ import {
 	TableHead,
 } from '@mui/material';
 import {
-	Delete,
-	DeleteOutline,
-	Edit,
-	EditOutlined,
+	DeleteOutline, EditOutlined,
 	FormatListBulleted,
-	HistoryOutlined,
+	HistoryOutlined
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
 import type {
-	SaleDtoType,
-	SaleItemDtoType,
+	SaleDtoType
 } from '../../../../shared/dtos/sale.dto';
+import type { PurchaseDtoType } from '../../../../shared/dtos/purchase.dto';
 
 interface ResourceTableHeader {
 	id: string;
@@ -112,7 +109,9 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 		{ id: 'account', name: 'Compte' },
 	];
 
-	const items = (row.item as SaleDtoType).items?.map((item) => ({
+	const sale = row.item as SaleDtoType | PurchaseDtoType;
+
+	const items = sale.items?.map((item) => ({
 		item: item,
 		data: {
 			ref: item.product.ref,
@@ -121,7 +120,7 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 		},
 	}));
 
-	const payments = (row.item as SaleDtoType).payments?.map((payment) => ({
+	const payments = sale.payments?.map((payment) => ({
 		item: payment,
 		data: {
 			ref: payment.ref,

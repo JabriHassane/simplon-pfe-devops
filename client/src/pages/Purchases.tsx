@@ -53,7 +53,7 @@ export default function Purchases() {
 	return (
 		<Box>
 			<ResourceHeader
-				title='Ventes'
+				title='Achats'
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>

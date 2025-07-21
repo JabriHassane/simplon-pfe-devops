@@ -25,7 +25,7 @@ async function main() {
 	const hashedPassword = await bcrypt.hash('admin123', 10);
 	const superAdmin = await prisma.user.create({
 		data: {
-			ref: 'USR-001',
+			ref: 'UTI-001',
 			name: 'admin',
 			password: hashedPassword,
 			role: 'super_admin',
@@ -35,7 +35,7 @@ async function main() {
 	// Create regular users/agents
 	const agent1 = await prisma.user.create({
 		data: {
-			ref: 'USR-002',
+			ref: 'UTI-002',
 			name: 'ahmed',
 			password: hashedPassword,
 			role: 'agent',
@@ -45,7 +45,7 @@ async function main() {
 
 	const agent2 = await prisma.user.create({
 		data: {
-			ref: 'USR-003',
+			ref: 'UTI-003',
 			name: 'fatima',
 			password: hashedPassword,
 			role: 'agent',
@@ -59,7 +59,7 @@ async function main() {
 	const accounts = await Promise.all([
 		prisma.account.create({
 			data: {
-				ref: 'ACC-001',
+				ref: 'COM-001',
 				name: 'Caisse Espèces',
 				balance: 15000,
 				createdById: superAdmin.id,
@@ -67,7 +67,7 @@ async function main() {
 		}),
 		prisma.account.create({
 			data: {
-				ref: 'ACC-002',
+				ref: 'COM-002',
 				name: 'Caisse Chèques',
 				balance: 25000,
 				createdById: superAdmin.id,
@@ -75,7 +75,7 @@ async function main() {
 		}),
 		prisma.account.create({
 			data: {
-				ref: 'ACC-003',
+				ref: 'COM-003',
 				name: 'Banque Principale',
 				balance: 150000,
 				createdById: superAdmin.id,
@@ -123,7 +123,7 @@ async function main() {
 	const products = await Promise.all([
 		prisma.product.create({
 			data: {
-				ref: 'PROD-001',
+				ref: 'ART-001',
 				name: 'Smartphone Samsung Galaxy',
 				image: 'https://via.placeholder.com/300x300?text=Smartphone',
 				price: 899.99,
@@ -134,7 +134,7 @@ async function main() {
 		}),
 		prisma.product.create({
 			data: {
-				ref: 'PROD-002',
+				ref: 'ART-002',
 				name: 'Laptop HP Pavilion',
 				image: 'https://via.placeholder.com/300x300?text=Laptop',
 				price: 1299.99,
@@ -145,7 +145,7 @@ async function main() {
 		}),
 		prisma.product.create({
 			data: {
-				ref: 'PROD-003',
+				ref: 'ART-003',
 				name: 'T-shirt Homme',
 				image: 'https://via.placeholder.com/300x300?text=T-shirt',
 				price: 29.99,
@@ -156,7 +156,7 @@ async function main() {
 		}),
 		prisma.product.create({
 			data: {
-				ref: 'PROD-004',
+				ref: 'ART-004',
 				name: 'Robe Femme',
 				image: 'https://via.placeholder.com/300x300?text=Robe',
 				price: 89.99,
@@ -167,7 +167,7 @@ async function main() {
 		}),
 		prisma.product.create({
 			data: {
-				ref: 'PROD-005',
+				ref: 'ART-005',
 				name: 'Livre de Cuisine',
 				image: 'https://via.placeholder.com/300x300?text=Livre',
 				price: 24.99,
@@ -178,7 +178,7 @@ async function main() {
 		}),
 		prisma.product.create({
 			data: {
-				ref: 'PROD-006',
+				ref: 'ART-006',
 				name: 'Lampe de Bureau',
 				image: 'https://via.placeholder.com/300x300?text=Lampe',
 				price: 45.99,
@@ -237,7 +237,7 @@ async function main() {
 	const suppliers = await Promise.all([
 		prisma.supplier.create({
 			data: {
-				ref: 'SUP-001',
+				ref: 'FOU-001',
 				name: 'TechImport SARL',
 				phone: '0522345678',
 				address: '100 Rue de la Technologie, Casablanca',
@@ -246,7 +246,7 @@ async function main() {
 		}),
 		prisma.supplier.create({
 			data: {
-				ref: 'SUP-002',
+				ref: 'FOU-002',
 				name: 'TextilePlus',
 				phone: '0523456789',
 				address: '200 Avenue du Textile, Tanger',
@@ -255,7 +255,7 @@ async function main() {
 		}),
 		prisma.supplier.create({
 			data: {
-				ref: 'SUP-003',
+				ref: 'FOU-003',
 				name: 'Librairie Centrale',
 				phone: '0524567890',
 				address: '300 Boulevard des Livres, Rabat',
@@ -270,7 +270,7 @@ async function main() {
 	const sales = await Promise.all([
 		prisma.sale.create({
 			data: {
-				ref: 'ORD-001',
+				ref: 'VEN-001',
 				date: '2024-01-15T00:00:00.000Z',
 				receiptNumber: 'REC-001',
 				invoiceNumber: 'INV-001',
@@ -286,7 +286,7 @@ async function main() {
 		}),
 		prisma.sale.create({
 			data: {
-				ref: 'ORD-002',
+				ref: 'VEN-002',
 				date: '2024-01-20T00:00:00.000Z',
 				receiptNumber: 'REC-002',
 				invoiceNumber: 'INV-002',
@@ -302,7 +302,7 @@ async function main() {
 		}),
 		prisma.sale.create({
 			data: {
-				ref: 'ORD-003',
+				ref: 'VEN-003',
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'REC-003',
 				invoiceNumber: 'INV-003',
@@ -375,10 +375,10 @@ async function main() {
 	const purchases = await Promise.all([
 		prisma.purchase.create({
 			data: {
-				ref: 'PUR-001',
+				ref: 'ACH-001',
 				date: '2024-01-10T00:00:00.000Z',
-				receiptNumber: 'PUR-REC-001',
-				invoiceNumber: 'PUR-INV-001',
+				receiptNumber: 'ACH-REC-001',
+				invoiceNumber: 'ACH-INV-001',
 				totalPrice: 5000,
 				totalPaid: 5000,
 				totalDue: 0,
@@ -391,10 +391,10 @@ async function main() {
 		}),
 		prisma.purchase.create({
 			data: {
-				ref: 'PUR-002',
+				ref: 'ACH-002',
 				date: '2024-01-18T00:00:00.000Z',
-				receiptNumber: 'PUR-REC-002',
-				invoiceNumber: 'PUR-INV-002',
+				receiptNumber: 'ACH-REC-002',
+				invoiceNumber: 'ACH-INV-002',
 				totalPrice: 2000,
 				totalPaid: 1500,
 				totalDue: 500,
@@ -447,7 +447,7 @@ async function main() {
 		// Sale 1 payments (fully paid - 929.98)
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-001',
+				ref: 'TRA-001',
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'cash',
@@ -460,7 +460,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-002',
+				ref: 'TRA-002',
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'bankTransfer',
@@ -475,7 +475,7 @@ async function main() {
 		// Sale 2 payments (partially paid - 100 out of 179.98)
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-003',
+				ref: 'TRA-003',
 				date: '2024-01-20T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'check',
@@ -490,7 +490,7 @@ async function main() {
 		// Purchase 1 payments (fully paid - 5000)
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-004',
+				ref: 'TRA-004',
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
@@ -503,7 +503,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-005',
+				ref: 'TRA-005',
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'check',
@@ -518,7 +518,7 @@ async function main() {
 		// Purchase 2 payments (partially paid - 1500 out of 2000)
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-006',
+				ref: 'TRA-006',
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'cash',
@@ -531,7 +531,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-007',
+				ref: 'TRA-007',
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
@@ -546,7 +546,7 @@ async function main() {
 		// Account transfer
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-008',
+				ref: 'TRA-008',
 				date: '2024-01-22T00:00:00.000Z',
 				type: 'transfer',
 				amount: 5000,
