@@ -81,7 +81,7 @@ export const AccountController = {
 				data: {
 					...body,
 					balance: 0,
-					ref: `ACC-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: `COM-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 				},
 			});

@@ -1,4 +1,5 @@
 import { Box, Chip } from '@mui/material';
+import { useState } from 'react';
 import SaleForm from '../components/forms/SaleForm';
 import { useDeleteSale, useSales } from '../hooks/ressources/useSales';
 import type { SaleDtoType } from '../../../shared/dtos/sale.dto';
@@ -12,8 +13,13 @@ import { DICT } from '../i18n/fr';
 import type { SaleStatus } from '../../../shared/constants';
 import { formatDiscount, formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
+import OrderFilters, {
+	type OrderFiltersData,
+} from '../components/shared/OrderFilters';
 
 export default function Sales() {
+	const [filters, setFilters] = useState<OrderFiltersData>({});
+
 	const {
 		openFormPopup,
 		openDeletePopup,
@@ -23,7 +29,18 @@ export default function Sales() {
 		handleClosePopup,
 	} = useCrud<SaleDtoType>();
 
-	const { data: sales, isLoading, error } = useSales();
+	const {
+		data: sales,
+		isLoading,
+		error,
+	} = useSales({
+		search: filters.ref,
+		dateFrom: filters.dateFrom,
+		dateTo: filters.dateTo,
+		agentId: filters.agentId,
+		clientId: filters.clientId,
+		status: filters.status,
+	});
 
 	const deleteSaleMutation = useDeleteSale(handleClosePopup);
 
@@ -31,6 +48,14 @@ export default function Sales() {
 		if (selectedSale) {
 			deleteSaleMutation.mutate(selectedSale.id);
 		}
+	};
+
+	const handleFiltersChange = (newFilters: OrderFiltersData) => {
+		setFilters(newFilters);
+	};
+
+	const handleClearFilters = () => {
+		setFilters({});
 	};
 
 	if (isLoading) {
@@ -56,6 +81,11 @@ export default function Sales() {
 				title='Ventes'
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
+			/>
+
+			<OrderFilters
+				onFiltersChange={handleFiltersChange}
+				onClearFilters={handleClearFilters}
 			/>
 
 			<ResourceTable

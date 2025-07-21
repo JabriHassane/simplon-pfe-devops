@@ -4,6 +4,11 @@ export interface PaginationParams {
 	page?: number;
 	limit?: number;
 	search?: string;
+	dateFrom?: string;
+	dateTo?: string;
+	agentId?: string;
+	clientId?: string;
+	status?: string;
 }
 
 export interface PaginatedResponse<T> {

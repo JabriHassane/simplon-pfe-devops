@@ -132,7 +132,7 @@ export const TransactionController = {
 			const transaction = await prisma.transaction.create({
 				data: {
 					...body,
-					ref: `TXN-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: `TRA-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 				},
 				include: {

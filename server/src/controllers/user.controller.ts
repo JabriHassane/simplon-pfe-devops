@@ -1,8 +1,9 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { CreateUserDtoType } from '../../../shared/dtos/user.dto';
-import bcrypt from 'bcryptjs';
 import { getPaginationCondition } from '../utils/pagination';
+import { hashPassword } from '../utils/auth.utils';
+import { getNextRef } from '../utils/db.utils';
 
 export const UserController = {
 	async getPage(req: Request, res: Response) {
@@ -73,18 +74,17 @@ export const UserController = {
 					.json({ message: "Nom d'utilisateur déjà existant" });
 			}
 
-			// Hash password
-			const saltRounds = 12;
-			const hashedPassword = await bcrypt.hash(body.password, saltRounds);
+			const hashedPassword = await hashPassword(body.password);
+
+			const ref = await getNextRef('users');
 
 			// Create user
 			const user = await prisma.user.create({
 				data: {
 					name: body.name,
 					password: hashedPassword,
-
 					role: body.role,
-					ref: `USER-${Date.now()}`,
+					ref,
 					createdById: userId,
 				},
 			});
@@ -111,10 +111,15 @@ export const UserController = {
 				return res.status(404).json({ message: 'User not found' });
 			}
 
+			const hashedPassword = body.password
+				? await hashPassword(body.password)
+				: undefined;
+
 			const user = await prisma.user.update({
 				where: { id },
 				data: {
 					...body,
+					password: hashedPassword,
 					updatedAt: new Date(),
 					updatedById: userId,
 				},

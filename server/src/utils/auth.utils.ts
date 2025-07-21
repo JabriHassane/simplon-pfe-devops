@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import { Role, User } from '@prisma/client';
 import ms from 'ms';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-here';
 const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7D') as ms.StringValue;
@@ -14,7 +15,7 @@ export interface JWTPayload {
 	role: Role;
 }
 
-export const generateToken = (user: User): string => {
+export const generateToken = (user: User) => {
 	const payload: JWTPayload = {
 		userId: user.id,
 		name: user.name,
@@ -24,7 +25,7 @@ export const generateToken = (user: User): string => {
 	return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
 };
 
-export const generateRefreshToken = (): string => {
+export const generateRefreshToken = () => {
 	return crypto.randomBytes(40).toString('hex');
 };
 
@@ -34,4 +35,8 @@ export const verifyToken = (token: string): JWTPayload => {
 	} catch (error) {
 		throw new Error('Invalid token');
 	}
+};
+
+export const hashPassword = async (password: string) => {
+	return await bcrypt.hash(password, 12);
 };

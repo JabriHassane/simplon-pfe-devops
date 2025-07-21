@@ -4,18 +4,14 @@ import {
 	CreateSaleDtoType,
 	UpdateSaleDtoType,
 } from '../../../shared/dtos/sale.dto';
-import { getPaginationCondition } from '../utils/pagination';
+import { getSalePaginationCondition } from '../utils/pagination';
 
 type SaleItemInput = { articleId: string; price: number; quantity: number };
 
 export const SaleController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
-				'ref',
-				'receiptNumber',
-				'invoiceNumber',
-			]);
+			const { page, limit, skip, whereClause } = getSalePaginationCondition(req);
 
 			const salesPromise = prisma.sale.findMany({
 				where: whereClause,
@@ -192,7 +188,7 @@ export const SaleController = {
 					discountType: body.discountType,
 					note: body.note || '',
 					agentId: userId,
-					ref: `ORD-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: `VEN-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 					items: {
 						create: body.items.map((item: SaleItemInput) => ({

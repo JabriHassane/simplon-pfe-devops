@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { getNextRef } from '../src/utils/db.utils';
 
 const prisma = new PrismaClient();
 
@@ -21,11 +22,33 @@ async function main() {
 
 	console.log('🗑️  Cleared existing data');
 
+	// console.log('Creating ref sequences');
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE user_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE account_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE category_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE article_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE client_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE supplier_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE sale_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE purchase_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE transaction_ref_seq START 1`);
+
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE users_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE accounts_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE categories_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE articles_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE clients_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE suppliers_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE sales_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE purchases_ref_seq START 1`);
+	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE transactions_ref_seq START 1`);
+	// console.log('Ref sequences created');
+
 	// Create super admin user
 	const hashedPassword = await bcrypt.hash('admin123', 10);
 	const superAdmin = await prisma.user.create({
 		data: {
-			ref: 'UTI-001',
+			ref: await getNextRef('users'),
 			name: 'admin',
 			password: hashedPassword,
 			role: 'super_admin',
@@ -35,7 +58,7 @@ async function main() {
 	// Create regular users/agents
 	const agent1 = await prisma.user.create({
 		data: {
-			ref: 'UTI-002',
+			ref: await getNextRef('users'),
 			name: 'rachid',
 			password: hashedPassword,
 			role: 'agent',
@@ -45,7 +68,7 @@ async function main() {
 
 	const agent2 = await prisma.user.create({
 		data: {
-			ref: 'UTI-003',
+			ref: await getNextRef('users'),
 			name: 'yasmine',
 			password: hashedPassword,
 			role: 'agent',
@@ -59,7 +82,7 @@ async function main() {
 	const accounts = await Promise.all([
 		prisma.account.create({
 			data: {
-				ref: 'COM-001',
+				ref: await getNextRef('accounts'),
 				name: 'Caisse Espèces',
 				balance: 15000,
 				createdById: superAdmin.id,
@@ -67,7 +90,7 @@ async function main() {
 		}),
 		prisma.account.create({
 			data: {
-				ref: 'COM-002',
+				ref: await getNextRef('accounts'),
 				name: 'Caisse Chèques',
 				balance: 25000,
 				createdById: superAdmin.id,
@@ -75,7 +98,7 @@ async function main() {
 		}),
 		prisma.account.create({
 			data: {
-				ref: 'COM-003',
+				ref: await getNextRef('accounts'),
 				name: 'Banque Principale',
 				balance: 150000,
 				createdById: superAdmin.id,
@@ -89,28 +112,28 @@ async function main() {
 	const categories = await Promise.all([
 		prisma.category.create({
 			data: {
-				ref: 'CAT-001',
-				name: 'Plantes d\'Intérieur',
+				ref: await getNextRef('categories'),
+				name: "Plantes d'Intérieur",
 				createdById: superAdmin.id,
 			},
 		}),
 		prisma.category.create({
 			data: {
-				ref: 'CAT-002',
+				ref: await getNextRef('categories'),
 				name: 'Arbres Fruitiers',
 				createdById: superAdmin.id,
 			},
 		}),
 		prisma.category.create({
 			data: {
-				ref: 'CAT-003',
+				ref: await getNextRef('categories'),
 				name: 'Fleurs',
 				createdById: superAdmin.id,
 			},
 		}),
 		prisma.category.create({
 			data: {
-				ref: 'CAT-004',
+				ref: await getNextRef('categories'),
 				name: 'Matériel de Jardinage',
 				createdById: superAdmin.id,
 			},
@@ -123,7 +146,7 @@ async function main() {
 	const articles = await Promise.all([
 		prisma.article.create({
 			data: {
-				ref: 'ART-001',
+				ref: await getNextRef('articles'),
 				name: 'Monstera Deliciosa',
 				image: 'https://via.placeholder.com/300x300?text=Monstera',
 				price: 299.99,
@@ -134,7 +157,7 @@ async function main() {
 		}),
 		prisma.article.create({
 			data: {
-				ref: 'ART-002',
+				ref: await getNextRef('articles'),
 				name: 'Olivier 5 ans',
 				image: 'https://via.placeholder.com/300x300?text=Olivier',
 				price: 899.99,
@@ -145,7 +168,7 @@ async function main() {
 		}),
 		prisma.article.create({
 			data: {
-				ref: 'ART-003',
+				ref: await getNextRef('articles'),
 				name: 'Rosier Rouge',
 				image: 'https://via.placeholder.com/300x300?text=Rose',
 				price: 89.99,
@@ -156,7 +179,7 @@ async function main() {
 		}),
 		prisma.article.create({
 			data: {
-				ref: 'ART-004',
+				ref: await getNextRef('articles'),
 				name: 'Lavande',
 				image: 'https://via.placeholder.com/300x300?text=Lavande',
 				price: 49.99,
@@ -167,8 +190,8 @@ async function main() {
 		}),
 		prisma.article.create({
 			data: {
-				ref: 'ART-005',
-				name: 'Kit d\'Outils de Jardinage',
+				ref: await getNextRef('articles'),
+				name: "Kit d'Outils de Jardinage",
 				image: 'https://via.placeholder.com/300x300?text=Outils',
 				price: 199.99,
 				inventory: 75,
@@ -178,7 +201,7 @@ async function main() {
 		}),
 		prisma.article.create({
 			data: {
-				ref: 'ART-006',
+				ref: await getNextRef('articles'),
 				name: 'Terreau Premium 40L',
 				image: 'https://via.placeholder.com/300x300?text=Terreau',
 				price: 79.99,
@@ -195,7 +218,7 @@ async function main() {
 	const clients = await Promise.all([
 		prisma.client.create({
 			data: {
-				ref: 'CLI-001',
+				ref: await getNextRef('clients'),
 				name: 'Mohammed Alami',
 				phone: '0612345678',
 				address: '123 Rue Hassan II, Casablanca',
@@ -204,7 +227,7 @@ async function main() {
 		}),
 		prisma.client.create({
 			data: {
-				ref: 'CLI-002',
+				ref: await getNextRef('clients'),
 				name: 'Amina Benjelloun',
 				phone: '0623456789',
 				address: '456 Avenue Mohammed V, Rabat',
@@ -213,7 +236,7 @@ async function main() {
 		}),
 		prisma.client.create({
 			data: {
-				ref: 'CLI-003',
+				ref: await getNextRef('clients'),
 				name: 'Karim Tazi',
 				phone: '0634567890',
 				address: '789 Boulevard Al Massira, Marrakech',
@@ -222,7 +245,7 @@ async function main() {
 		}),
 		prisma.client.create({
 			data: {
-				ref: 'CLI-004',
+				ref: await getNextRef('clients'),
 				name: 'Sara El Fassi',
 				phone: '0645678901',
 				address: '321 Rue Ibn Batouta, Fès',
@@ -237,7 +260,7 @@ async function main() {
 	const suppliers = await Promise.all([
 		prisma.supplier.create({
 			data: {
-				ref: 'FOU-001',
+				ref: await getNextRef('suppliers'),
 				name: 'Pépinière Atlas',
 				phone: '0522345678',
 				address: '100 Route de Marrakech, Benslimane',
@@ -246,7 +269,7 @@ async function main() {
 		}),
 		prisma.supplier.create({
 			data: {
-				ref: 'FOU-002',
+				ref: await getNextRef('suppliers'),
 				name: 'Jardins du Souss',
 				phone: '0523456789',
 				address: '200 Zone Industrielle, Agadir',
@@ -255,7 +278,7 @@ async function main() {
 		}),
 		prisma.supplier.create({
 			data: {
-				ref: 'FOU-003',
+				ref: await getNextRef('suppliers'),
 				name: 'GardenTools Pro',
 				phone: '0524567890',
 				address: '300 Quartier Industriel, Tanger',
@@ -270,7 +293,7 @@ async function main() {
 	const sales = await Promise.all([
 		prisma.sale.create({
 			data: {
-				ref: 'VEN-001',
+				ref: await getNextRef('sales'),
 				date: '2024-01-15T00:00:00.000Z',
 				receiptNumber: 'REC-001',
 				invoiceNumber: 'INV-001',
@@ -286,7 +309,7 @@ async function main() {
 		}),
 		prisma.sale.create({
 			data: {
-				ref: 'VEN-002',
+				ref: await getNextRef('sales'),
 				date: '2024-01-20T00:00:00.000Z',
 				receiptNumber: 'REC-002',
 				invoiceNumber: 'INV-002',
@@ -302,7 +325,7 @@ async function main() {
 		}),
 		prisma.sale.create({
 			data: {
-				ref: 'VEN-003',
+				ref: await getNextRef('sales'),
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'REC-003',
 				invoiceNumber: 'INV-003',
@@ -375,7 +398,7 @@ async function main() {
 	const purchases = await Promise.all([
 		prisma.purchase.create({
 			data: {
-				ref: 'ACH-001',
+				ref: await getNextRef('purchases'),
 				date: '2024-01-10T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-001',
 				invoiceNumber: 'ACH-INV-001',
@@ -391,7 +414,7 @@ async function main() {
 		}),
 		prisma.purchase.create({
 			data: {
-				ref: 'ACH-002',
+				ref: await getNextRef('purchases'),
 				date: '2024-01-18T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-002',
 				invoiceNumber: 'ACH-INV-002',
@@ -407,7 +430,7 @@ async function main() {
 		}),
 		prisma.purchase.create({
 			data: {
-				ref: 'ACH-003',
+				ref: await getNextRef('purchases'),
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-003',
 				invoiceNumber: 'ACH-INV-003',
@@ -472,7 +495,7 @@ async function main() {
 		// Sale 1 payments (fully paid - 389.98)
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-001',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'cash',
@@ -485,7 +508,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-002',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'bankTransfer',
@@ -500,7 +523,7 @@ async function main() {
 		// Sale 2 payments (partially paid - 200 out of 279.98)
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-003',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-20T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'check',
@@ -515,7 +538,7 @@ async function main() {
 		// Purchase 1 payments (fully paid - 5000)
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-004',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
@@ -528,7 +551,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-005',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'check',
@@ -543,7 +566,7 @@ async function main() {
 		// Purchase 2 payments (partially paid - 1500 out of 2000)
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-006',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'cash',
@@ -556,7 +579,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-007',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
@@ -571,7 +594,7 @@ async function main() {
 		// Purchase 3 payments (partially paid - 2000 out of 3500)
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-008',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-25T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
@@ -584,7 +607,7 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-009',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-25T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'check',
@@ -599,7 +622,7 @@ async function main() {
 		// Account transfer
 		prisma.transaction.create({
 			data: {
-				ref: 'TRA-010',
+				ref: await getNextRef('transactions'),
 				date: '2024-01-22T00:00:00.000Z',
 				type: 'transfer',
 				amount: 5000,

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import { prisma } from '../index';
-import { generateToken, generateRefreshToken } from '../utils/jwt.utils';
+import { generateToken, generateRefreshToken } from '../utils/auth.utils';
 import ms from 'ms';
 
 export const AuthController = {

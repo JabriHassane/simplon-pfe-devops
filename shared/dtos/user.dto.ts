@@ -34,4 +34,3 @@ export const UserDto = z.object({
 export type CreateUserDtoType = z.infer<typeof CreateUserDto>;
 export type UpdateUserDtoType = z.infer<typeof UpdateUserDto>;
 export type UserDtoType = z.infer<typeof UserDto>;
-

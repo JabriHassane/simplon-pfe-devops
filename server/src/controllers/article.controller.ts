@@ -82,7 +82,7 @@ export const ArticleController = {
 					categoryId,
 					price: parseFloat(price),
 					inventory: parseInt(inventory),
-					ref: `PROD-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: `ART-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 				},
 				include: {

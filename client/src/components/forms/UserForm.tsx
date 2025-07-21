@@ -10,7 +10,9 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateUserDto,
+	UpdateUserDto,
 	type CreateUserDtoType,
+	type UpdateUserDtoType,
 	type UserDtoType,
 } from '../../../../shared/dtos/user.dto';
 import ResourceForm from './ResourceForm';
@@ -28,15 +30,16 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 		formState: { errors, isValid },
 		control,
 	} = useForm({
-		resolver: zodResolver(CreateUserDto),
+		resolver: zodResolver(init ? UpdateUserDto : CreateUserDto),
 		defaultValues: init
 			? {
 					...init,
-					role: 'agent' as const,
+					password: '',
 			  }
 			: {
 					name: '',
 					role: 'agent' as const,
+					password: '',
 			  },
 		mode: 'onChange',
 		reValidateMode: 'onChange',
@@ -45,14 +48,14 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 	const createUserMutation = useCreateUser(onClose);
 	const updateUserMutation = useUpdateUser(onClose);
 
-	const onSubmit = async (data: CreateUserDtoType) => {
+	const onSubmit = async (data: CreateUserDtoType | UpdateUserDtoType) => {
 		if (init) {
 			await updateUserMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createUserMutation.mutateAsync(data);
+			await createUserMutation.mutateAsync(data as CreateUserDtoType);
 		}
 	};
 
@@ -73,7 +76,7 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 					helperText={errors.name?.message as string}
 					required
 				/>
-				
+
 				<Controller
 					name='role'
 					control={control}
@@ -100,7 +103,8 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 				variant='outlined'
 				error={!!errors.password}
 				helperText={errors.password?.message as string}
-				required
+				required={!init}
+				autoComplete='new-password'
 			/>
 		</ResourceForm>
 	);

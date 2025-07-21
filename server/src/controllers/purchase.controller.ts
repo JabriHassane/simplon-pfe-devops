@@ -187,7 +187,7 @@ export const PurchaseController = {
 					discountType,
 					note: note || '',
 					agentId: userId,
-					ref: `PUR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+					ref: `ACH-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 					items: {
 						create: items.map((item: PurchaseItemInput) => ({

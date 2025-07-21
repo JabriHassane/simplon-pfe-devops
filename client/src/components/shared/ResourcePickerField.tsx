@@ -1,5 +1,13 @@
 import { useState } from 'react';
-import { TextField, FormControl, FormHelperText } from '@mui/material';
+import {
+	TextField,
+	FormControl,
+	FormHelperText,
+	IconButton,
+	InputAdornment,
+	Box,
+} from '@mui/material';
+import { Clear } from '@mui/icons-material';
 import ResourcePickerPopup, { type ResourceType } from './ResourcePickerPopup';
 import { useClients } from '../../hooks/ressources/useClients';
 import { useUsers } from '../../hooks/ressources/useUsers';
@@ -7,7 +15,7 @@ import { useSuppliers } from '../../hooks/ressources/useSuppliers';
 import { useArticles } from '../../hooks/ressources/useArticles';
 import { useAccounts } from '../../hooks/ressources/useAccounts';
 import { useCategories } from '../../hooks/ressources/useCategories';
-	import type { UseQueryResult } from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 interface ResourcePickerFieldProps {
 	label: string;
@@ -19,6 +27,8 @@ interface ResourcePickerFieldProps {
 	helperText?: string;
 	required?: boolean;
 	disabled?: boolean;
+	showClearButton?: boolean;
+	onClear?: () => void;
 }
 
 const useResource = (
@@ -31,8 +41,8 @@ const useResource = (
 			return useUsers();
 		case 'supplier':
 			return useSuppliers();
-			case 'category':
-				return useCategories();
+		case 'category':
+			return useCategories();
 		case 'article':
 			return useArticles();
 		case 'account':
@@ -59,6 +69,8 @@ export default function ResourcePickerField({
 	helperText,
 	required = false,
 	disabled = false,
+	showClearButton = false,
+	onClear,
 }: ResourcePickerFieldProps) {
 	const [open, setOpen] = useState(false);
 	const { data: resourceData } = useResource(resourceType);
@@ -79,6 +91,15 @@ export default function ResourcePickerField({
 		setOpen(false);
 	};
 
+	const handleClear = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (onClear) {
+			onClear();
+		} else {
+			onChange('');
+		}
+	};
+
 	const getDisplayValue = () => {
 		if (value) {
 			const selectedResource = resources.find((r: any) => r.id === value);
@@ -95,31 +116,33 @@ export default function ResourcePickerField({
 	};
 
 	return (
-		<FormControl fullWidth error={error} required={required}>
-			<TextField
-				label={label}
-				value={getDisplayValue()}
-				placeholder={placeholder}
-				onClick={handleOpen}
-				disabled={disabled}
-				error={error}
-				required={required}
-				fullWidth
-				slotProps={{
-					input: {
-						readOnly: true,
-					},
-				}}
-			/>
-			{helperText && <FormHelperText>{helperText}</FormHelperText>}
-
-			{open && (
-				<ResourcePickerPopup
-					onClose={handleClose}
-					resourceType={resourceType}
-					onSelect={handleSelect}
-				/>
+		<Box display='flex' alignItems='center' gap={1}>
+			{showClearButton && (
+				<IconButton size='small' onClick={handleClear} disabled={!value}>
+					<Clear />
+				</IconButton>
 			)}
-		</FormControl>
+
+			<FormControl fullWidth error={error} required={required}>
+				<TextField
+					label={label}
+					value={getDisplayValue()}
+					placeholder={placeholder}
+					onClick={handleOpen}
+					disabled={disabled}
+					error={error}
+					required={required}
+					fullWidth
+				/>
+				{helperText && <FormHelperText>{helperText}</FormHelperText>}
+				{open && (
+					<ResourcePickerPopup
+						onClose={handleClose}
+						resourceType={resourceType}
+						onSelect={handleSelect}
+					/>
+				)}
+			</FormControl>
+		</Box>
 	);
 }

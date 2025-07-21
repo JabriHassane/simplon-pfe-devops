@@ -80,7 +80,7 @@ export const SupplierController = {
 					name,
 					phone,
 					address,
-					ref: `SUP-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+					ref: `FOU-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 				},
 			});
