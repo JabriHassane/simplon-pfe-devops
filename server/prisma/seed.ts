@@ -444,13 +444,14 @@ async function main() {
 
 	// Create transactions
 	await Promise.all([
+		// Sale 1 payments (fully paid - 929.98)
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-001',
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'cash',
-				amount: 929.98,
+				amount: 500,
 				agentId: agent1.id,
 				saleId: sales[0].id,
 				toId: accounts[0].id,
@@ -460,6 +461,21 @@ async function main() {
 		prisma.transaction.create({
 			data: {
 				ref: 'TXN-002',
+				date: '2024-01-15T00:00:00.000Z',
+				type: 'sale',
+				paymentMethod: 'bankTransfer',
+				amount: 429.98,
+				agentId: agent1.id,
+				saleId: sales[0].id,
+				toId: accounts[2].id,
+				createdById: agent1.id,
+			},
+		}),
+
+		// Sale 2 payments (partially paid - 100 out of 179.98)
+		prisma.transaction.create({
+			data: {
+				ref: 'TXN-003',
 				date: '2024-01-20T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'check',
@@ -470,13 +486,15 @@ async function main() {
 				createdById: agent2.id,
 			},
 		}),
+
+		// Purchase 1 payments (fully paid - 5000)
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-003',
+				ref: 'TXN-004',
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'bankTransfer',
-				amount: 5000,
+				amount: 3000,
 				agentId: superAdmin.id,
 				purchaseId: purchases[0].id,
 				fromId: accounts[2].id,
@@ -485,11 +503,26 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-004',
+				ref: 'TXN-005',
+				date: '2024-01-10T00:00:00.000Z',
+				type: 'purchase',
+				paymentMethod: 'check',
+				amount: 2000,
+				agentId: superAdmin.id,
+				purchaseId: purchases[0].id,
+				fromId: accounts[1].id,
+				createdById: superAdmin.id,
+			},
+		}),
+
+		// Purchase 2 payments (partially paid - 1500 out of 2000)
+		prisma.transaction.create({
+			data: {
+				ref: 'TXN-006',
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
 				paymentMethod: 'cash',
-				amount: 1500,
+				amount: 1000,
 				agentId: superAdmin.id,
 				purchaseId: purchases[1].id,
 				fromId: accounts[0].id,
@@ -498,7 +531,22 @@ async function main() {
 		}),
 		prisma.transaction.create({
 			data: {
-				ref: 'TXN-005',
+				ref: 'TXN-007',
+				date: '2024-01-18T00:00:00.000Z',
+				type: 'purchase',
+				paymentMethod: 'bankTransfer',
+				amount: 500,
+				agentId: superAdmin.id,
+				purchaseId: purchases[1].id,
+				fromId: accounts[2].id,
+				createdById: superAdmin.id,
+			},
+		}),
+
+		// Account transfer
+		prisma.transaction.create({
+			data: {
+				ref: 'TXN-008',
 				date: '2024-01-22T00:00:00.000Z',
 				type: 'transfer',
 				amount: 5000,
@@ -522,7 +570,7 @@ async function main() {
 	console.log(`- Suppliers: 3`);
 	console.log(`- Sales: 3`);
 	console.log(`- Purchases: 2`);
-	console.log(`- Transactions: 5`);
+	console.log(`- Transactions: 8`);
 }
 
 main()

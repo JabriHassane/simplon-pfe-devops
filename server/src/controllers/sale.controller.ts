@@ -26,6 +26,12 @@ export const SaleController = {
 							product: true,
 						},
 					},
+					payments: {
+						include: {
+							from: true,
+							to: true,
+						},
+					},
 					agent: {
 						select: {
 							id: true,
@@ -46,6 +52,8 @@ export const SaleController = {
 				salesPromise,
 				salesCountPromise,
 			]);
+
+			console.log(sales[0].payments);
 
 			const totalPages = Math.ceil(total / limit);
 

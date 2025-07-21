@@ -1,14 +1,6 @@
 import {
-	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	IconButton,
+	Box
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import {
 	useSuppliers,
 	useDeleteSupplier,
@@ -20,6 +12,7 @@ import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import useCrud from '../hooks/useCrud';
+import ResourceTable from '../components/shared/ResourceTable';
 
 export default function Suppliers() {
 	const {
@@ -52,40 +45,25 @@ export default function Suppliers() {
 				error={!!error}
 			/>
 
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Nom</TableCell>
-							<TableCell>Téléphone</TableCell>
-							<TableCell>Adresse</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{suppliers?.data.map((supplier) => (
-							<TableRow key={supplier.id}>
-								<TableCell>{supplier.name}</TableCell>
-								<TableCell>{supplier.phone}</TableCell>
-								<TableCell>{supplier.address}</TableCell>
-								<TableCell align='right'>
-									<IconButton
-										onClick={() => handleOpenFormPopup(supplier)}
-										size='small'
-									>
-										<EditIcon />
-									</IconButton>
-									<IconButton
-										onClick={() => handleOpenDeletePopup(supplier)}
-										size='small'
-									>
-										<DeleteIcon />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'name', name: 'Nom' },
+					{ id: 'phone', name: 'Téléphone' },
+					{ id: 'address', name: 'Adresse' },
+				]}
+				rows={suppliers?.data.map((supplier) => ({
+					item: supplier,
+					data: {
+						ref: supplier.ref,
+						name: supplier.name,
+						phone: supplier.phone,
+						address: supplier.address,
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
 			{openFormPopup && (
 				<ResourceFormPopup

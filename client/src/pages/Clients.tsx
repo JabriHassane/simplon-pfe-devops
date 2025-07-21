@@ -1,14 +1,6 @@
 import {
-	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	IconButton,
+	Box
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useClients, useDeleteClient } from '../hooks/ressources/useClients';
 import ClientForm from '../components/forms/ClientForm';
 import type { ClientDtoType } from '../../../shared/dtos/client.dto';
@@ -17,6 +9,7 @@ import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import useCrud from '../hooks/useCrud';
+import ResourceTable from '../components/shared/ResourceTable';
 
 export default function Clients() {
 	const {
@@ -49,41 +42,25 @@ export default function Clients() {
 				error={!!error}
 			/>
 
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Nom</TableCell>
-							<TableCell>Téléphone</TableCell>
-							<TableCell>Adresse</TableCell>
-						</TableRow>
-					</TableHead>
-
-					<TableBody>
-						{clients?.data.map((client) => (
-							<TableRow key={client.id}>
-								<TableCell>{client.name}</TableCell>
-								<TableCell>{client.phone}</TableCell>
-								<TableCell>{client.address}</TableCell>
-								<TableCell align='right'>
-									<IconButton
-										onClick={() => handleOpenFormPopup(client)}
-										size='small'
-									>
-										<EditIcon />
-									</IconButton>
-									<IconButton
-										onClick={() => handleOpenDeletePopup(client)}
-										size='small'
-									>
-										<DeleteIcon />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'name', name: 'Nom' },
+					{ id: 'phone', name: 'Téléphone' },
+					{ id: 'address', name: 'Adresse' },
+				]}
+				rows={clients?.data.map((client) => ({
+					item: client,
+					data: {
+						ref: client.ref,
+						name: client.name,
+						phone: client.phone,
+						address: client.address,
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
 			{openFormPopup && (
 				<ResourceFormPopup

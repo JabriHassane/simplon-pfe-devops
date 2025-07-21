@@ -1,16 +1,4 @@
-import {
-	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	IconButton,
-	CircularProgress,
-	Chip,
-} from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
+import { Box, Chip } from '@mui/material';
 import {
 	useTransactions,
 	useDeleteTransaction,
@@ -25,6 +13,8 @@ import { DICT } from '../i18n/fr';
 import { formatPrice } from '../utils/price.utils';
 import useCrud from '../hooks/useCrud';
 import type { TransactionType } from '../../../shared/constants';
+import { formatDate } from '../utils/date.utils';
+import ResourceTable from '../components/shared/ResourceTable';
 
 export default function Transactions() {
 	const {
@@ -68,60 +58,37 @@ export default function Transactions() {
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Reference</TableCell>
-							<TableCell>Date</TableCell>
-							<TableCell>Account</TableCell>
-							<TableCell>Type</TableCell>
-							<TableCell>Amount</TableCell>
-						</TableRow>
-					</TableHead>
 
-					<TableBody>
-						{transactions?.data.map((transaction) => (
-							<TableRow key={transaction.id}>
-								<TableCell>{transaction.ref}</TableCell>
-								<TableCell>
-									{new Date(transaction.date).toLocaleDateString()}
-								</TableCell>
-								<TableCell>{transaction.fromId || 'N/A'}</TableCell>
-								<TableCell>
-									<Chip
-										label={DICT.transactionType[transaction.type]}
-										color={getTypeColor(transaction.type)}
-										size='small'
-										sx={{ px: 0.5 }}
-									/>
-								</TableCell>
-								<TableCell>{formatPrice(transaction.amount)}</TableCell>
-
-								<TableCell align='right'>
-									<IconButton
-										onClick={() => handleOpenFormPopup(transaction)}
-										size='small'
-									>
-										<EditIcon />
-									</IconButton>
-									<IconButton
-										onClick={() => handleOpenDeletePopup(transaction)}
-										size='small'
-										disabled={deleteTransactionMutation.isPending}
-									>
-										{deleteTransactionMutation.isPending ? (
-											<CircularProgress size={20} />
-										) : (
-											<DeleteIcon />
-										)}
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'date', name: 'Date' },
+					{ id: 'from', name: 'Compte source' },
+					{ id: 'to', name: 'Compte destination' },
+					{ id: 'type', name: 'Type' },
+					{ id: 'amount', name: 'Montant' },
+				]}
+				rows={transactions?.data.map((transaction) => ({
+					item: transaction,
+					data: {
+						ref: transaction.ref,
+						date: formatDate(transaction.date),
+						from: transaction.from?.name || 'N/A',
+						to: transaction.to?.name || 'N/A',
+						type: (
+							<Chip
+								label={DICT.transactionType[transaction.type]}
+								color={getTypeColor(transaction.type)}
+								size='small'
+								sx={{ px: 0.5 }}
+							/>
+						),
+						amount: formatPrice(transaction.amount),
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
 			{openFormPopup && (
 				<ResourceFormPopup

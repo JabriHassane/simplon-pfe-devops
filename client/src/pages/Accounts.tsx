@@ -1,14 +1,6 @@
 import {
-	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	IconButton,
+	Box
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useAccounts, useDeleteAccount } from '../hooks/ressources/useAccounts';
 import AccountForm from '../components/forms/AccountForm';
 import type { AccountDtoType } from '../../../shared/dtos/account.dto';
@@ -17,6 +9,8 @@ import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import useCrud from '../hooks/useCrud';
+import { formatPrice } from '../utils/price.utils';
+import ResourceTable from '../components/shared/ResourceTable';
 
 export default function Accounts() {
 	const {
@@ -49,40 +43,23 @@ export default function Accounts() {
 				error={!!error}
 			/>
 
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Nom</TableCell>
-							<TableCell>Référence</TableCell>
-							<TableCell>Solde</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{accounts?.data.map((account) => (
-							<TableRow key={account.id}>
-								<TableCell>{account.name}</TableCell>
-								<TableCell>{account.ref}</TableCell>
-								<TableCell>{account.balance}</TableCell>
-								<TableCell align='right'>
-									<IconButton
-										onClick={() => handleOpenFormPopup(account)}
-										size='small'
-									>
-										<EditIcon />
-									</IconButton>
-									<IconButton
-										onClick={() => handleOpenDeletePopup(account)}
-										size='small'
-									>
-										<DeleteIcon />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'name', name: 'Nom' },
+					{ id: 'balance', name: 'Solde' },
+				]}
+				rows={accounts?.data.map((account) => ({
+					item: account,
+					data: {
+						ref: account.ref,
+						name: account.name,
+						balance: formatPrice(account.balance),
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
 			{openFormPopup && (
 				<ResourceFormPopup

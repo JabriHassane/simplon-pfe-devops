@@ -1,22 +1,4 @@
-import {
-	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	IconButton,
-	Chip,
-	Collapse,
-	Typography,
-} from '@mui/material';
-import {
-	Edit as EditIcon,
-	Delete as DeleteIcon,
-	ArrowDropDown,
-	ArrowDropUp,
-} from '@mui/icons-material';
+import { Box, Chip } from '@mui/material';
 import SaleForm from '../components/forms/SaleForm';
 import { useDeleteSale, useSales } from '../hooks/ressources/useSales';
 import type { SaleDtoType } from '../../../shared/dtos/sale.dto';
@@ -27,10 +9,9 @@ import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import useCrud from '../hooks/useCrud';
 import { DICT } from '../i18n/fr';
-import { useTransactions } from '../hooks/ressources/useTransactions';
-import { useState } from 'react';
-import type { SaleStatus, TransactionType } from '../../../shared/constants';
-import { formatPrice } from '../utils/price.utils';
+import type { SaleStatus } from '../../../shared/constants';
+import { formatDiscount, formatPrice } from '../utils/price.utils';
+import ResourceTable from '../components/shared/ResourceTable';
 
 export default function Sales() {
 	const {
@@ -56,6 +37,19 @@ export default function Sales() {
 		return <ResourceLoader />;
 	}
 
+	const getStatusColor = (status: SaleStatus) => {
+		switch (status) {
+			case 'pending':
+				return 'secondary';
+			case 'partially_paid':
+				return 'info';
+			case 'paid':
+				return 'primary';
+			case 'cancelled':
+				return 'error';
+		}
+	};
+
 	return (
 		<Box>
 			<ResourceHeader
@@ -64,33 +58,43 @@ export default function Sales() {
 				error={!!error}
 			/>
 
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Ref</TableCell>
-							<TableCell>Date</TableCell>
-							<TableCell>Agent</TableCell>
-							<TableCell>Client</TableCell>
-							<TableCell>Articles</TableCell>
-							<TableCell>Total</TableCell>
-							<TableCell>Remise</TableCell>
-							<TableCell>Statut</TableCell>
-						</TableRow>
-					</TableHead>
-
-					<TableBody>
-						{sales?.data.map((sale) => (
-							<Row
-								key={sale.id}
-								sale={sale}
-								onOpenDeletePopup={handleOpenDeletePopup}
-								onOpenFormPopup={handleOpenFormPopup}
-							/>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'date', name: 'Date' },
+					{ id: 'agent', name: 'Agent' },
+					{ id: 'client', name: 'Client' },
+					{ id: 'articles', name: 'Articles' },
+					{ id: 'total', name: 'Total' },
+					{ id: 'remise', name: 'Remise' },
+					{ id: 'statut', name: 'Statut' },
+				]}
+				rows={
+					sales?.data.map((sale) => ({
+						item: sale,
+						data: {
+							ref: sale.ref,
+							date: formatDate(sale.date),
+							agent: sale.agent?.name,
+							client: sale.client?.name,
+							articles: sale.items?.length,
+							total: formatPrice(sale.totalPrice),
+							remise: formatDiscount(sale.discountAmount, sale.discountType),
+							statut: (
+								<Chip
+									key={sale.id}
+									label={DICT.saleStatus[sale.status]}
+									color={getStatusColor(sale.status)}
+									size='small'
+									sx={{ px: 0.5 }}
+								/>
+							),
+						},
+					})) || []
+				}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
 			{openFormPopup && (
 				<ResourceFormPopup
@@ -110,135 +114,5 @@ export default function Sales() {
 				/>
 			)}
 		</Box>
-	);
-}
-
-interface RowProps {
-	sale: SaleDtoType;
-	onOpenFormPopup: any;
-	onOpenDeletePopup: any;
-}
-
-function Row({ sale, onOpenFormPopup, onOpenDeletePopup }: RowProps) {
-	const [open, setOpen] = useState(false);
-
-	const { data: transactions, isLoading, error } = useTransactions();
-
-	const getTypeColor = (type: TransactionType) => {
-		switch (type) {
-			case 'sale':
-				return 'success';
-			case 'purchase':
-				return 'warning';
-			case 'transfer':
-				return 'info';
-		}
-	};
-
-	const getStatusColor = (status: SaleStatus) => {
-		switch (status) {
-			case 'pending':
-				return 'secondary';
-			case 'partially_paid':
-				return 'info';
-			case 'paid':
-				return 'primary';
-			case 'cancelled':
-				return 'error';
-		}
-	};
-
-	return (
-		<>
-			<TableRow>
-				<TableCell>
-					<IconButton
-						aria-label='expand row'
-						size='small'
-						onClick={() => setOpen(!open)}
-					>
-						{open ? <ArrowDropUp /> : <ArrowDropDown />}
-					</IconButton>
-				</TableCell>
-				<TableCell>{sale.ref}</TableCell>
-				<TableCell>{formatDate(sale.date)}</TableCell>
-				<TableCell>{sale.agent?.name || 'N/A'}</TableCell>
-				<TableCell>{sale.client?.name || 'N/A'}</TableCell>
-				<TableCell>{sale.items?.length || 0} items</TableCell>
-				<TableCell>{formatPrice(sale.totalPrice)}</TableCell>
-				<TableCell>
-					{sale.discountAmount > 0
-						? `${sale.discountAmount}${
-								sale.discountType === 'percentage' ? '%' : ''
-						  }`
-						: 'None'}
-				</TableCell>
-				<TableCell>
-					<Chip
-						label={DICT.saleStatus[sale.status]}
-						color={getStatusColor(sale.status)}
-						size='small'
-						sx={{ px: 0.5 }}
-					/>
-				</TableCell>
-				<TableCell align='right'>
-					<IconButton onClick={() => onOpenFormPopup(sale)} size='small'>
-						<EditIcon />
-					</IconButton>
-					<IconButton onClick={() => onOpenDeletePopup(sale)} size='small'>
-						<DeleteIcon />
-					</IconButton>
-				</TableCell>
-			</TableRow>
-
-			<TableRow>
-				<TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={12}>
-					<Collapse in={open} timeout='auto' unmountOnExit>
-						<Box my={2}>
-							<Typography variant='h6' gutterBottom component='div'>
-								Paiements
-							</Typography>
-							<Table size='small' aria-label='purchases'>
-								<TableHead>
-									<TableRow>
-										<TableCell>Ref</TableCell>
-										<TableCell>Date</TableCell>
-										<TableCell>Compte</TableCell>
-										<TableCell>Montant</TableCell>
-									</TableRow>
-								</TableHead>
-								<TableBody>
-									{transactions?.data.map((transaction) => (
-										<TableRow key={transaction.id}>
-											<TableCell>{transaction.ref}</TableCell>
-											<TableCell>
-												{new Date(transaction.date).toLocaleDateString()}
-											</TableCell>
-											<TableCell>{transaction.fromId || 'N/A'}</TableCell>
-											<TableCell>{formatPrice(transaction.amount)}</TableCell>
-
-											{/* <TableCell align='right'>
-												<IconButton
-													onClick={() => onOpenFormPopup(transaction)}
-													size='small'
-												>
-													<EditIcon />
-												</IconButton>
-												<IconButton
-													onClick={() => onOpenDeletePopup(transaction)}
-													size='small'
-												>
-													<DeleteIcon />
-												</IconButton>
-											</TableCell> */}
-										</TableRow>
-									))}
-								</TableBody>
-							</Table>
-						</Box>
-					</Collapse>
-				</TableCell>
-			</TableRow>
-		</>
 	);
 }

@@ -1,14 +1,6 @@
 import {
-	Box,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-	IconButton,
+	Box
 } from '@mui/material';
-import { Edit as EditIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useProducts, useDeleteProduct } from '../hooks/ressources/useProducts';
 import ProductForm from '../components/forms/ProductForm';
 import type { ProductDtoType } from '../../../shared/dtos/product.dto';
@@ -17,6 +9,7 @@ import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import useCrud from '../hooks/useCrud';
+import ResourceTable from '../components/shared/ResourceTable';
 
 export default function Products() {
 	const {
@@ -49,40 +42,25 @@ export default function Products() {
 				error={!!error}
 			/>
 
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Nom</TableCell>
-							<TableCell>Prix</TableCell>
-							<TableCell>Stock</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{products?.data.map((product) => (
-							<TableRow key={product.id}>
-								<TableCell>{product.name}</TableCell>
-								<TableCell>{product.price}</TableCell>
-								<TableCell>{product.inventory}</TableCell>
-								<TableCell align='right'>
-									<IconButton
-										onClick={() => handleOpenFormPopup(product)}
-										size='small'
-									>
-										<EditIcon />
-									</IconButton>
-									<IconButton
-										onClick={() => handleOpenDeletePopup(product)}
-										size='small'
-									>
-										<DeleteIcon />
-									</IconButton>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'name', name: 'Nom' },
+					{ id: 'price', name: 'Prix' },
+					{ id: 'inventory', name: 'Stock' },
+				]}
+				rows={products?.data.map((product) => ({
+					item: product,
+					data: {
+						ref: product.ref,
+						name: product.name,
+						price: product.price,
+						inventory: product.inventory,
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
 			{openFormPopup && (
 				<ResourceFormPopup
