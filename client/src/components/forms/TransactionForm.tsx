@@ -17,6 +17,9 @@ import {
 import ResourceForm from './ResourceForm';
 import { useCreateTransaction } from '../../hooks/ressources/useTransactions';
 import { useUpdateTransaction } from '../../hooks/ressources/useTransactions';
+import ResourcePickerField from '../shared/ResourcePickerField';
+import { TRANSACTION_TYPES } from '../../../../shared/constants';
+import { DICT } from '../../i18n/fr';
 
 interface TransactionFormProps {
 	init: TransactionDtoType | null;
@@ -30,6 +33,8 @@ export default function TransactionForm({
 	const {
 		register,
 		handleSubmit,
+		watch,
+		setValue,
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateTransactionDto),
@@ -72,16 +77,19 @@ export default function TransactionForm({
 				required
 				InputLabelProps={{ shrink: true }}
 			/>
-			<FormControl fullWidth margin='normal'>
-				<InputLabel>Compte</InputLabel>
-				<Select
-					{...register('fromId')}
-					label='Compte'
-					error={!!errors.fromId}
-					required
-					defaultValue=''
-				></Select>
-			</FormControl>
+
+			<ResourcePickerField
+				label='Compte'
+				value={watch('fromId') || ''}
+				onChange={(value) => {
+					setValue('fromId', value);
+				}}
+				resourceType='account'
+				error={!!errors.fromId}
+				helperText={errors.fromId?.message}
+				required
+			/>
+
 			<FormControl fullWidth margin='normal'>
 				<InputLabel>Type</InputLabel>
 				<Select
@@ -89,12 +97,16 @@ export default function TransactionForm({
 					label='Type'
 					error={!!errors.type}
 					required
-					defaultValue='EXPENSE'
+					defaultValue='purchase'
 				>
-					<MenuItem value='INCOME'>Revenus</MenuItem>
-					<MenuItem value='EXPENSE'>Dépenses</MenuItem>
+					{TRANSACTION_TYPES.map((type) => (
+						<MenuItem key={type} value={type}>
+							{DICT.transactionType[type]}
+						</MenuItem>
+					))}
 				</Select>
 			</FormControl>
+
 			<TextField
 				fullWidth
 				label='Montant'

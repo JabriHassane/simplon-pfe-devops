@@ -1,6 +1,9 @@
 import { Box, Chip } from '@mui/material';
 import PurchaseForm from '../components/forms/PurchaseForm';
-import { useDeletePurchase, usePurchases } from '../hooks/ressources/usePurchases';
+import {
+	useDeletePurchase,
+	usePurchases,
+} from '../hooks/ressources/usePurchases';
 import type { PurchaseDtoType } from '../../../shared/dtos/purchase.dto';
 import { formatDate } from '../utils/date.utils';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
@@ -79,11 +82,14 @@ export default function Purchases() {
 							supplier: purchase.supplier?.name,
 							articles: purchase.items?.length,
 							total: formatPrice(purchase.totalPrice),
-							remise: formatDiscount(purchase.discountAmount, purchase.discountType),
+							remise: formatDiscount(
+								purchase.discountAmount,
+								purchase.discountType
+							),
 							statut: (
 								<Chip
 									key={purchase.id}
-									label={DICT.saleStatus[purchase.status]}
+									label={DICT.orderStatus[purchase.status]}
 									color={getStatusColor(purchase.status)}
 									size='small'
 									sx={{ px: 0.5 }}
@@ -99,7 +105,11 @@ export default function Purchases() {
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={selectedPurchase ? 'Modifier l\'achat' : 'Nouvel achat'}
+					title={
+						selectedPurchase
+							? `Modifier ${selectedPurchase.ref}`
+							: 'Nouvel achat'
+					}
 				>
 					<PurchaseForm init={selectedPurchase} onClose={handleClosePopup} />
 				</ResourceFormPopup>
@@ -108,11 +118,11 @@ export default function Purchases() {
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title="Supprimer l'achat"
+					title={`Supprimer ${selectedPurchase?.ref}`}
 					description='Voulez-vous vraiment supprimer cet achat ?'
 					onDelete={handleDelete}
 				/>
 			)}
 		</Box>
-	)
+	);
 }

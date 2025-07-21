@@ -12,8 +12,8 @@ async function main() {
 	await prisma.purchaseItem.deleteMany();
 	await prisma.sale.deleteMany();
 	await prisma.purchase.deleteMany();
-	await prisma.product.deleteMany();
-	await prisma.productCategory.deleteMany();
+	await prisma.article.deleteMany();
+	await prisma.category.deleteMany();
 	await prisma.client.deleteMany();
 	await prisma.supplier.deleteMany();
 	await prisma.account.deleteMany();
@@ -36,7 +36,7 @@ async function main() {
 	const agent1 = await prisma.user.create({
 		data: {
 			ref: 'UTI-002',
-			name: 'ahmed',
+			name: 'rachid',
 			password: hashedPassword,
 			role: 'agent',
 			createdById: superAdmin.id,
@@ -46,7 +46,7 @@ async function main() {
 	const agent2 = await prisma.user.create({
 		data: {
 			ref: 'UTI-003',
-			name: 'fatima',
+			name: 'yasmine',
 			password: hashedPassword,
 			role: 'agent',
 			createdById: superAdmin.id,
@@ -85,111 +85,111 @@ async function main() {
 
 	console.log('💰 Created accounts');
 
-	// Create product categories
+	// Create plant categories
 	const categories = await Promise.all([
-		prisma.productCategory.create({
+		prisma.category.create({
 			data: {
 				ref: 'CAT-001',
-				name: 'Électronique',
+				name: 'Plantes d\'Intérieur',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.productCategory.create({
+		prisma.category.create({
 			data: {
 				ref: 'CAT-002',
-				name: 'Vêtements',
+				name: 'Arbres Fruitiers',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.productCategory.create({
+		prisma.category.create({
 			data: {
 				ref: 'CAT-003',
-				name: 'Livres',
+				name: 'Fleurs',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.productCategory.create({
+		prisma.category.create({
 			data: {
 				ref: 'CAT-004',
-				name: 'Maison & Jardin',
+				name: 'Matériel de Jardinage',
 				createdById: superAdmin.id,
 			},
 		}),
 	]);
 
-	console.log('📂 Created product categories');
+	console.log('📂 Created plant categories');
 
-	// Create products
-	const products = await Promise.all([
-		prisma.product.create({
+	// Create plants and materials
+	const articles = await Promise.all([
+		prisma.article.create({
 			data: {
 				ref: 'ART-001',
-				name: 'Smartphone Samsung Galaxy',
-				image: 'https://via.placeholder.com/300x300?text=Smartphone',
-				price: 899.99,
+				name: 'Monstera Deliciosa',
+				image: 'https://via.placeholder.com/300x300?text=Monstera',
+				price: 299.99,
 				inventory: 25,
 				categoryId: categories[0].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.product.create({
+		prisma.article.create({
 			data: {
 				ref: 'ART-002',
-				name: 'Laptop HP Pavilion',
-				image: 'https://via.placeholder.com/300x300?text=Laptop',
-				price: 1299.99,
+				name: 'Olivier 5 ans',
+				image: 'https://via.placeholder.com/300x300?text=Olivier',
+				price: 899.99,
 				inventory: 15,
-				categoryId: categories[0].id,
+				categoryId: categories[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.product.create({
+		prisma.article.create({
 			data: {
 				ref: 'ART-003',
-				name: 'T-shirt Homme',
-				image: 'https://via.placeholder.com/300x300?text=T-shirt',
-				price: 29.99,
-				inventory: 100,
-				categoryId: categories[1].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.product.create({
-			data: {
-				ref: 'ART-004',
-				name: 'Robe Femme',
-				image: 'https://via.placeholder.com/300x300?text=Robe',
+				name: 'Rosier Rouge',
+				image: 'https://via.placeholder.com/300x300?text=Rose',
 				price: 89.99,
-				inventory: 50,
-				categoryId: categories[1].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.product.create({
-			data: {
-				ref: 'ART-005',
-				name: 'Livre de Cuisine',
-				image: 'https://via.placeholder.com/300x300?text=Livre',
-				price: 24.99,
-				inventory: 75,
+				inventory: 100,
 				categoryId: categories[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.product.create({
+		prisma.article.create({
+			data: {
+				ref: 'ART-004',
+				name: 'Lavande',
+				image: 'https://via.placeholder.com/300x300?text=Lavande',
+				price: 49.99,
+				inventory: 150,
+				categoryId: categories[2].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.article.create({
+			data: {
+				ref: 'ART-005',
+				name: 'Kit d\'Outils de Jardinage',
+				image: 'https://via.placeholder.com/300x300?text=Outils',
+				price: 199.99,
+				inventory: 75,
+				categoryId: categories[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.article.create({
 			data: {
 				ref: 'ART-006',
-				name: 'Lampe de Bureau',
-				image: 'https://via.placeholder.com/300x300?text=Lampe',
-				price: 45.99,
-				inventory: 30,
+				name: 'Terreau Premium 40L',
+				image: 'https://via.placeholder.com/300x300?text=Terreau',
+				price: 79.99,
+				inventory: 200,
 				categoryId: categories[3].id,
 				createdById: superAdmin.id,
 			},
 		}),
 	]);
 
-	console.log('📦 Created products');
+	console.log('🌿 Created plants and materials');
 
 	// Create clients
 	const clients = await Promise.all([
@@ -238,27 +238,27 @@ async function main() {
 		prisma.supplier.create({
 			data: {
 				ref: 'FOU-001',
-				name: 'TechImport SARL',
+				name: 'Pépinière Atlas',
 				phone: '0522345678',
-				address: '100 Rue de la Technologie, Casablanca',
+				address: '100 Route de Marrakech, Benslimane',
 				createdById: superAdmin.id,
 			},
 		}),
 		prisma.supplier.create({
 			data: {
 				ref: 'FOU-002',
-				name: 'TextilePlus',
+				name: 'Jardins du Souss',
 				phone: '0523456789',
-				address: '200 Avenue du Textile, Tanger',
+				address: '200 Zone Industrielle, Agadir',
 				createdById: superAdmin.id,
 			},
 		}),
 		prisma.supplier.create({
 			data: {
 				ref: 'FOU-003',
-				name: 'Librairie Centrale',
+				name: 'GardenTools Pro',
 				phone: '0524567890',
-				address: '300 Boulevard des Livres, Rabat',
+				address: '300 Quartier Industriel, Tanger',
 				createdById: superAdmin.id,
 			},
 		}),
@@ -274,8 +274,8 @@ async function main() {
 				date: '2024-01-15T00:00:00.000Z',
 				receiptNumber: 'REC-001',
 				invoiceNumber: 'INV-001',
-				totalPrice: 929.98,
-				totalPaid: 929.98,
+				totalPrice: 389.98,
+				totalPaid: 389.98,
 				totalDue: 0,
 				status: 'paid',
 				note: 'Livraison à domicile',
@@ -290,8 +290,8 @@ async function main() {
 				date: '2024-01-20T00:00:00.000Z',
 				receiptNumber: 'REC-002',
 				invoiceNumber: 'INV-002',
-				totalPrice: 179.98,
-				totalPaid: 100,
+				totalPrice: 279.98,
+				totalPaid: 200,
 				totalDue: 79.98,
 				status: 'partially_paid',
 				note: 'Paiement en plusieurs fois',
@@ -306,9 +306,9 @@ async function main() {
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'REC-003',
 				invoiceNumber: 'INV-003',
-				totalPrice: 1349.98,
+				totalPrice: 1099.98,
 				totalPaid: 0,
-				totalDue: 1349.98,
+				totalDue: 1099.98,
 				status: 'pending',
 				note: 'Commande en attente de paiement',
 				agentId: agent1.id,
@@ -324,52 +324,52 @@ async function main() {
 	await Promise.all([
 		prisma.saleItem.create({
 			data: {
-				price: 899.99,
+				price: 299.99,
 				quantity: 1,
 				saleId: sales[0].id,
-				productId: products[0].id,
-				createdById: agent1.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 29.99,
-				quantity: 1,
-				saleId: sales[0].id,
-				productId: products[2].id,
+				articleId: articles[0].id,
 				createdById: agent1.id,
 			},
 		}),
 		prisma.saleItem.create({
 			data: {
 				price: 89.99,
-				quantity: 2,
-				saleId: sales[1].id,
-				productId: products[3].id,
-				createdById: agent2.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 1299.99,
 				quantity: 1,
-				saleId: sales[2].id,
-				productId: products[1].id,
+				saleId: sales[0].id,
+				articleId: articles[2].id,
 				createdById: agent1.id,
 			},
 		}),
 		prisma.saleItem.create({
 			data: {
 				price: 49.99,
+				quantity: 2,
+				saleId: sales[1].id,
+				articleId: articles[3].id,
+				createdById: agent2.id,
+			},
+		}),
+		prisma.saleItem.create({
+			data: {
+				price: 899.99,
 				quantity: 1,
 				saleId: sales[2].id,
-				productId: products[5].id,
+				articleId: articles[1].id,
+				createdById: agent1.id,
+			},
+		}),
+		prisma.saleItem.create({
+			data: {
+				price: 199.99,
+				quantity: 1,
+				saleId: sales[2].id,
+				articleId: articles[4].id,
 				createdById: agent1.id,
 			},
 		}),
 	]);
 
-	console.log('📦 Created sale items');
+	console.log('🌿 Created sale items');
 
 	// Create purchases
 	const purchases = await Promise.all([
@@ -383,7 +383,7 @@ async function main() {
 				totalPaid: 5000,
 				totalDue: 0,
 				status: 'paid',
-				note: 'Stock initial',
+				note: 'Stock initial plantes',
 				agentId: superAdmin.id,
 				supplierId: suppliers[0].id,
 				createdById: superAdmin.id,
@@ -399,9 +399,25 @@ async function main() {
 				totalPaid: 1500,
 				totalDue: 500,
 				status: 'partially_paid',
-				note: 'Réapprovisionnement',
+				note: 'Réapprovisionnement arbres',
 				agentId: superAdmin.id,
 				supplierId: suppliers[1].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchase.create({
+			data: {
+				ref: 'ACH-003',
+				date: '2024-01-25T00:00:00.000Z',
+				receiptNumber: 'ACH-REC-003',
+				invoiceNumber: 'ACH-INV-003',
+				totalPrice: 3500,
+				totalPaid: 2000,
+				totalDue: 1500,
+				status: 'partially_paid',
+				note: 'Commande matériel',
+				agentId: superAdmin.id,
+				supplierId: suppliers[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -413,45 +429,54 @@ async function main() {
 	await Promise.all([
 		prisma.purchaseItem.create({
 			data: {
-				price: 800,
+				price: 200,
+				quantity: 15,
+				purchaseId: purchases[0].id,
+				articleId: articles[0].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchaseItem.create({
+			data: {
+				price: 600,
 				quantity: 5,
 				purchaseId: purchases[0].id,
-				productId: products[0].id,
+				articleId: articles[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
 		prisma.purchaseItem.create({
 			data: {
-				price: 1100,
-				quantity: 3,
-				purchaseId: purchases[0].id,
-				productId: products[1].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 20,
+				price: 30,
 				quantity: 50,
 				purchaseId: purchases[1].id,
-				productId: products[2].id,
+				articleId: articles[2].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchaseItem.create({
+			data: {
+				price: 150,
+				quantity: 20,
+				purchaseId: purchases[2].id,
+				articleId: articles[4].id,
 				createdById: superAdmin.id,
 			},
 		}),
 	]);
 
-	console.log('📦 Created purchase items');
+	console.log('🌿 Created purchase items');
 
 	// Create transactions
 	await Promise.all([
-		// Sale 1 payments (fully paid - 929.98)
+		// Sale 1 payments (fully paid - 389.98)
 		prisma.transaction.create({
 			data: {
 				ref: 'TRA-001',
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'cash',
-				amount: 500,
+				amount: 200,
 				agentId: agent1.id,
 				saleId: sales[0].id,
 				toId: accounts[0].id,
@@ -464,7 +489,7 @@ async function main() {
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'bankTransfer',
-				amount: 429.98,
+				amount: 189.98,
 				agentId: agent1.id,
 				saleId: sales[0].id,
 				toId: accounts[2].id,
@@ -472,14 +497,14 @@ async function main() {
 			},
 		}),
 
-		// Sale 2 payments (partially paid - 100 out of 179.98)
+		// Sale 2 payments (partially paid - 200 out of 279.98)
 		prisma.transaction.create({
 			data: {
 				ref: 'TRA-003',
 				date: '2024-01-20T00:00:00.000Z',
 				type: 'sale',
 				paymentMethod: 'check',
-				amount: 100,
+				amount: 200,
 				agentId: agent2.id,
 				saleId: sales[1].id,
 				toId: accounts[1].id,
@@ -543,10 +568,38 @@ async function main() {
 			},
 		}),
 
-		// Account transfer
+		// Purchase 3 payments (partially paid - 2000 out of 3500)
 		prisma.transaction.create({
 			data: {
 				ref: 'TRA-008',
+				date: '2024-01-25T00:00:00.000Z',
+				type: 'purchase',
+				paymentMethod: 'bankTransfer',
+				amount: 1500,
+				agentId: superAdmin.id,
+				purchaseId: purchases[2].id,
+				fromId: accounts[2].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: 'TRA-009',
+				date: '2024-01-25T00:00:00.000Z',
+				type: 'purchase',
+				paymentMethod: 'check',
+				amount: 500,
+				agentId: superAdmin.id,
+				purchaseId: purchases[2].id,
+				fromId: accounts[1].id,
+				createdById: superAdmin.id,
+			},
+		}),
+
+		// Account transfer
+		prisma.transaction.create({
+			data: {
+				ref: 'TRA-010',
 				date: '2024-01-22T00:00:00.000Z',
 				type: 'transfer',
 				amount: 5000,
@@ -564,13 +617,13 @@ async function main() {
 	console.log('\n📊 Summary:');
 	console.log(`- Users: 3 (1 admin, 2 agents)`);
 	console.log(`- Accounts: 3`);
-	console.log(`- Product Categories: 4`);
-	console.log(`- Products: 6`);
+	console.log(`- Plant Categories: 4`);
+	console.log(`- Plants & Materials: 6`);
 	console.log(`- Clients: 4`);
 	console.log(`- Suppliers: 3`);
 	console.log(`- Sales: 3`);
-	console.log(`- Purchases: 2`);
-	console.log(`- Transactions: 8`);
+	console.log(`- Purchases: 3`);
+	console.log(`- Transactions: 10`);
 }
 
 main()

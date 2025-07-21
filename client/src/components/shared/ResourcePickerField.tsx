@@ -4,9 +4,10 @@ import ResourcePickerPopup, { type ResourceType } from './ResourcePickerPopup';
 import { useClients } from '../../hooks/ressources/useClients';
 import { useUsers } from '../../hooks/ressources/useUsers';
 import { useSuppliers } from '../../hooks/ressources/useSuppliers';
-import { useProducts } from '../../hooks/ressources/useProducts';
+import { useArticles } from '../../hooks/ressources/useArticles';
 import { useAccounts } from '../../hooks/ressources/useAccounts';
-import type { UseQueryResult } from '@tanstack/react-query';
+import { useCategories } from '../../hooks/ressources/useCategories';
+	import type { UseQueryResult } from '@tanstack/react-query';
 
 interface ResourcePickerFieldProps {
 	label: string;
@@ -30,8 +31,10 @@ const useResource = (
 			return useUsers();
 		case 'supplier':
 			return useSuppliers();
-		case 'product':
-			return useProducts();
+			case 'category':
+				return useCategories();
+		case 'article':
+			return useArticles();
 		case 'account':
 			return useAccounts();
 		default:

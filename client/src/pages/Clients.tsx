@@ -65,7 +65,11 @@ export default function Clients() {
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={selectedClient ? 'Modifier le client' : 'Ajouter un client'}
+					title={
+						selectedClient
+							? `Modifier ${selectedClient.ref}`
+							: 'Nouveau client'
+					}
 				>
 					<ClientForm init={selectedClient} onClose={handleClosePopup} />
 				</ResourceFormPopup>
@@ -74,7 +78,7 @@ export default function Clients() {
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title='Supprimer le client'
+					title={`Supprimer ${selectedClient?.ref}`}
 					description='Voulez-vous vraiment supprimer ce client ?'
 					onDelete={handleDelete}
 				/>

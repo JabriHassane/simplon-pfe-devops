@@ -8,9 +8,9 @@ import {
 	MenuItem,
 	Typography,
 	IconButton,
+	Grid,
 } from '@mui/material';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../shared/ResourcePickerField';
 import {
@@ -20,11 +20,14 @@ import {
 } from '../../../../shared/dtos/purchase.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
-import { useProducts } from '../../hooks/ressources/useProducts';
-import { useSuppliers } from '../../hooks/ressources/useSuppliers';
 import ResourceForm from './ResourceForm';
-import { useCreatePurchase } from '../../hooks/ressources/usePurchases';
-import { useUpdatePurchase } from '../../hooks/ressources/usePurchases';
+import {
+	useCreatePurchase,
+	useUpdatePurchase,
+} from '../../hooks/ressources/usePurchases';
+import { Add } from '@mui/icons-material';
+import { DISCOUNT_TYPES, ORDER_STATUSES } from '../../../../shared/constants';
+import { DICT } from '../../i18n/fr';
 
 interface PurchaseFormProps {
 	init: PurchaseDtoType | null;
@@ -32,22 +35,6 @@ interface PurchaseFormProps {
 }
 
 export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
-	const { data: suppliers = [], isLoading: suppliersLoading } = useSuppliers();
-	const { data: products = [], isLoading: productsLoading } = useProducts();
-
-	const [selectedSupplier, setSelectedSupplier] = useState<
-		| {
-				id: string;
-				name: string;
-				email?: string;
-		  }
-		| undefined
-	>(undefined);
-
-	const [selectedProducts, setSelectedProducts] = useState<{
-		[key: number]: { id: string; name: string; price: number };
-	}>({});
-
 	const {
 		register,
 		handleSubmit,
@@ -57,7 +44,14 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreatePurchaseDto),
-		defaultValues: init || undefined,
+		defaultValues: init || {
+			supplierId: '',
+			items: [{ articleId: '', quantity: 1, price: 0 }],
+			discountAmount: 0,
+			discountType: 'fixed',
+			note: '',
+			status: 'pending',
+		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -89,80 +83,121 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 				createPurchaseMutation.isPending || updatePurchaseMutation.isPending
 			}
 		>
-			<Controller
-				name='date'
-				control={control}
-				render={({ field }) => (
-					<DatePicker
-						label='Date'
-						value={dayjs(field.value)}
-						onChange={(date) => field.onChange(date?.toISOString())}
-						slotProps={{
-							textField: {
-								error: !!errors.date,
-								helperText: errors.date?.message as string,
-							},
-						}}
+			<Grid container columnSpacing={2} mt={3}>
+				<Grid size={6}>
+					<Controller
+						name='date'
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								sx={{ width: '100%' }}
+								label='Date'
+								value={dayjs(field.value)}
+								onChange={(date) => field.onChange(date?.toISOString())}
+								slotProps={{
+									textField: {
+										error: !!errors.date,
+										helperText: errors.date?.message as string,
+									},
+								}}
+							/>
+						)}
 					/>
-				)}
-			/>
+				</Grid>
 
-			<ResourcePickerField
-				label='Fournisseur'
-				value={watch('supplierId') || ''}
-				onChange={(value) => {
-					setValue('supplierId', value);
-					const supplier = suppliers.find((c) => c.id === value);
-					setSelectedSupplier(supplier || undefined);
-				}}
-				resourceType='supplier'
-				error={!!errors.supplierId}
-				helperText={errors.supplierId?.message as string}
-				required
-				selectedResource={selectedSupplier}
-				disabled={suppliersLoading}
-			/>
+				<Grid size={6}>
+					<ResourcePickerField
+						label='Client'
+						value={watch('supplierId') || ''}
+						onChange={(value) => {
+							setValue('supplierId', value);
+						}}
+						resourceType='supplier'
+						error={!!errors.supplierId}
+						helperText={errors.supplierId?.message as string}
+						required
+					/>
+				</Grid>
 
-			<TextField
-				fullWidth
-				label='Numéro de reçu'
-				{...register('receiptNumber')}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.receiptNumber}
-				helperText={errors.receiptNumber?.message as string}
-				required
-			/>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						margin='normal'
+						label='Numéro de reçu'
+						{...register('receiptNumber')}
+						variant='outlined'
+						error={!!errors.receiptNumber}
+						helperText={errors.receiptNumber?.message as string}
+						required
+					/>
+				</Grid>
 
-			<TextField
-				fullWidth
-				label='Numéro de facture'
-				{...register('invoiceNumber')}
-				margin='normal'
-				variant='outlined'
-				error={!!errors.invoiceNumber}
-				helperText={errors.invoiceNumber?.message as string}
-				required
-			/>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						margin='normal'
+						label='Numéro de facture'
+						{...register('invoiceNumber')}
+						variant='outlined'
+						error={!!errors.invoiceNumber}
+						helperText={errors.invoiceNumber?.message as string}
+						required
+					/>
+				</Grid>
 
-			<FormControl fullWidth margin='normal'>
-				<InputLabel>Statut</InputLabel>
-				<Select
-					{...register('status')}
-					label='Statut'
-					error={!!errors.status}
-					required
+				<Grid size={6}>
+					<FormControl fullWidth margin='dense'>
+						<InputLabel>Statut</InputLabel>
+						<Select
+							{...register('status')}
+							label='Statut'
+							error={!!errors.status}
+							required
+							defaultValue='pending'
+						>
+							{ORDER_STATUSES.map((status) => (
+								<MenuItem key={status} value={status}>
+									{DICT.orderStatus[status]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
+
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Note'
+						{...register('note')}
+						margin='dense'
+						variant='outlined'
+						multiline
+						rows={3}
+						error={!!errors.note}
+						helperText={errors.note?.message as string}
+					/>
+				</Grid>
+			</Grid>
+
+			<Box
+				display='flex'
+				gap={2}
+				alignItems='center'
+				justifyContent='space-between'
+				mt={2}
+				mb={4}
+			>
+				<Typography variant='h6'>Articles</Typography>
+
+				<Button
+					onClick={() => append({ articleId: '', quantity: 1, price: 0 })}
+					variant='contained'
+					disableElevation
+					startIcon={<Add />}
 				>
-					<MenuItem value='pending'>En attente</MenuItem>
-					<MenuItem value='partially-paid'>Partiellement payé</MenuItem>
-					<MenuItem value='paid'>Payé</MenuItem>
-					<MenuItem value='cancelled'>Annulé</MenuItem>
-				</Select>
-			</FormControl>
-
-			<Typography variant='h6' sx={{ mt: 3, mb: 2 }}>
-				Articles
-			</Typography>
+					Ajouter
+				</Button>
+			</Box>
 
 			{fields.map((item, index) => (
 				<Box
@@ -171,27 +206,15 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 				>
 					<Box sx={{ flex: 2 }}>
 						<ResourcePickerField
-							label='Produit'
-							value={watch(`items.${index}.productId`) || ''}
+							label='Article'
+							value={watch(`items.${index}.articleId`) || ''}
 							onChange={(value) => {
-								setValue(`items.${index}.productId`, value);
-								const product = products.find((p) => p.id === value);
-								if (product) {
-									setSelectedProducts((prev) => ({
-										...prev,
-										[index]: product,
-									}));
-									setValue(`items.${index}.price`, product.price);
-								}
+								setValue(`items.${index}.articleId`, value);
 							}}
-							resourceType='product'
-							error={!!(errors.items as any)?.[index]?.productId}
-							helperText={
-								(errors.items as any)?.[index]?.productId?.message as string
-							}
+							resourceType='article'
+							error={!!errors.items?.[index]?.articleId}
+							helperText={errors.items?.[index]?.articleId?.message}
 							required
-							selectedResource={selectedProducts[index]}
-							disabled={productsLoading}
 						/>
 					</Box>
 
@@ -201,10 +224,8 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 						{...register(`items.${index}.quantity`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
 						inputProps={{ min: 1 }}
-						error={!!(errors.items as any)?.[index]?.quantity}
-						helperText={
-							(errors.items as any)?.[index]?.quantity?.message as string
-						}
+						error={!!errors.items?.[index]?.quantity}
+						helperText={errors.items?.[index]?.quantity?.message}
 						required
 					/>
 
@@ -214,30 +235,19 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 						{...register(`items.${index}.price`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
 						inputProps={{ min: 0, step: 0.01 }}
-						error={!!(errors.items as any)?.[index]?.price}
-						helperText={
-							(errors.items as any)?.[index]?.price?.message as string
-						}
+						error={!!errors.items?.[index]?.price}
+						helperText={errors.items?.[index]?.price?.message}
 						required
 					/>
 
 					<IconButton
 						onClick={() => remove(index)}
-						color='error'
 						disabled={fields.length === 1}
 					>
 						×
 					</IconButton>
 				</Box>
 			))}
-
-			<Button
-				onClick={() => append({ productId: '', quantity: 1, price: 0 })}
-				variant='outlined'
-				sx={{ mb: 2 }}
-			>
-				Ajouter un article
-			</Button>
 
 			<Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
 				<TextField
@@ -257,23 +267,14 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 						error={!!errors.discountType}
 						defaultValue='fixed'
 					>
-						<MenuItem value='fixed'>Montant fixe</MenuItem>
-						<MenuItem value='percentage'>Pourcentage</MenuItem>
+						{DISCOUNT_TYPES.map((type) => (
+							<MenuItem key={type} value={type}>
+								{DICT.discountType[type]}
+							</MenuItem>
+						))}
 					</Select>
 				</FormControl>
 			</Box>
-
-			<TextField
-				fullWidth
-				label='Note'
-				{...register('note')}
-				margin='normal'
-				variant='outlined'
-				multiline
-				rows={3}
-				error={!!errors.note}
-				helperText={errors.note?.message as string}
-			/>
 		</ResourceForm>
 	);
 }

@@ -9,47 +9,50 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-	CreateProductDto,
-	type CreateProductDtoType,
-	type ProductDtoType,
-} from '../../../../shared/dtos/product.dto';
-import { useProductCategories } from '../../hooks/ressources/useProductCategories';
+	CreateArticleDto,
+	type CreateArticleDtoType,
+	type ArticleDtoType,
+} from '../../../../shared/dtos/article.dto';
+import { useCategories } from '../../hooks/ressources/useCategories';
 import ResourceForm from './ResourceForm';
 import {
-	useCreateProduct,
-	useUpdateProduct,
-} from '../../hooks/ressources/useProducts';
+	useCreateArticle,
+	useUpdateArticle,
+} from '../../hooks/ressources/useArticles';
+import ResourcePickerField from '../shared/ResourcePickerField';
 
 interface Props {
-	init: ProductDtoType | null;
+	init: ArticleDtoType | null;
 	onClose: () => void;
 }
 
-export default function ProductForm({ init, onClose }: Props) {
-	const { data: categories = [] } = useProductCategories();
+export default function ArticleForm({ init, onClose }: Props) {
+	const { data: categories } = useCategories();
 
 	const {
 		register,
 		handleSubmit,
+		watch,
+		setValue,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateProductDto),
+		resolver: zodResolver(CreateArticleDto),
 		defaultValues: init || undefined,
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
 
-	const createProductMutation = useCreateProduct(onClose);
-	const updateProductMutation = useUpdateProduct(onClose);
+	const createArticleMutation = useCreateArticle(onClose);
+	const updateArticleMutation = useUpdateArticle(onClose);
 
-	const onSubmit = async (data: CreateProductDtoType) => {
+	const onSubmit = async (data: CreateArticleDtoType) => {
 		if (init) {
-			await updateProductMutation.mutateAsync({
+			await updateArticleMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createProductMutation.mutateAsync(data);
+			await createArticleMutation.mutateAsync(data);
 		}
 	};
 
@@ -58,12 +61,12 @@ export default function ProductForm({ init, onClose }: Props) {
 			onSubmit={handleSubmit(onSubmit)}
 			isValid={isValid}
 			isLoading={
-				createProductMutation.isPending || updateProductMutation.isPending
+				createArticleMutation.isPending || updateArticleMutation.isPending
 			}
 		>
 			<TextField
 				fullWidth
-				label='Nom du produit'
+				label='Nom du article'
 				{...register('name')}
 				margin='normal'
 				variant='outlined'
@@ -106,34 +109,17 @@ export default function ProductForm({ init, onClose }: Props) {
 				helperText={errors.image?.message as string}
 			/>
 
-			{categories.length > 0 ? (
-				<FormControl fullWidth margin='normal'>
-					<InputLabel>Catégorie</InputLabel>
-					<Select
-						{...register('categoryId')}
-						label='Catégorie'
-						error={!!errors.categoryId}
-						required
-					>
-						{categories.map((category) => (
-							<MenuItem key={category.id} value={category.id}>
-								{category.name}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-			) : (
-				<TextField
-					fullWidth
-					label='ID de la catégorie'
-					{...register('categoryId')}
-					margin='normal'
-					variant='outlined'
-					error={!!errors.categoryId}
-					helperText={errors.categoryId?.message as string}
-					required
-				/>
-			)}
+			<ResourcePickerField
+				label='Catégorie'
+				value={watch(`categoryId`) || ''}
+				onChange={(value) => {
+					setValue(`categoryId`, value);
+				}}
+				resourceType='category'
+				error={!!errors.categoryId}
+				helperText={errors.categoryId?.message as string}
+				required
+			/>
 		</ResourceForm>
 	);
 }

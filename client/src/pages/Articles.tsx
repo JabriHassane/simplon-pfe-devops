@@ -1,9 +1,7 @@
-import {
-	Box
-} from '@mui/material';
-import { useProducts, useDeleteProduct } from '../hooks/ressources/useProducts';
-import ProductForm from '../components/forms/ProductForm';
-import type { ProductDtoType } from '../../../shared/dtos/product.dto';
+import { Box } from '@mui/material';
+import { useArticles, useDeleteArticle } from '../hooks/ressources/useArticles';
+import ArticleForm from '../components/forms/ArticleForm';
+import type { ArticleDtoType } from '../../../shared/dtos/article.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
@@ -11,22 +9,22 @@ import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfi
 import useCrud from '../hooks/useCrud';
 import ResourceTable from '../components/shared/ResourceTable';
 
-export default function Products() {
+export default function Articles() {
 	const {
 		openFormPopup,
 		openDeletePopup,
-		selectedResource: selectedProduct,
+		selectedResource: selectedArticle,
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = useCrud<ProductDtoType>();
+	} = useCrud<ArticleDtoType>();
 
-	const { data: products, isLoading, error } = useProducts();
-	const deleteProductMutation = useDeleteProduct(handleClosePopup);
+	const { data: articles, isLoading, error } = useArticles();
+	const deleteArticleMutation = useDeleteArticle(handleClosePopup);
 
 	const handleDelete = () => {
-		if (selectedProduct) {
-			deleteProductMutation.mutate(selectedProduct.id);
+		if (selectedArticle) {
+			deleteArticleMutation.mutate(selectedArticle.id);
 		}
 	};
 
@@ -37,7 +35,7 @@ export default function Products() {
 	return (
 		<Box>
 			<ResourceHeader
-				title='Produits'
+				title='Articles'
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
@@ -49,13 +47,13 @@ export default function Products() {
 					{ id: 'price', name: 'Prix' },
 					{ id: 'inventory', name: 'Stock' },
 				]}
-				rows={products?.data.map((product) => ({
-					item: product,
+				rows={articles?.data.map((article) => ({
+					item: article,
 					data: {
-						ref: product.ref,
-						name: product.name,
-						price: product.price,
-						inventory: product.inventory,
+						ref: article.ref,
+						name: article.name,
+						price: article.price,
+						inventory: article.inventory,
 					},
 				}))}
 				onEdit={handleOpenFormPopup}
@@ -65,17 +63,21 @@ export default function Products() {
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={selectedProduct ? 'Modifier le produit' : 'Ajouter un produit'}
+					title={
+						selectedArticle
+							? `Modifier ${selectedArticle.ref}`
+							: 'Nouvel article'
+					}
 				>
-					<ProductForm init={selectedProduct} onClose={handleClosePopup} />
+					<ArticleForm init={selectedArticle} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title='Supprimer le produit'
-					description='Voulez-vous vraiment supprimer ce produit ?'
+					title={`Supprimer ${selectedArticle?.ref}`}
+					description='Voulez-vous vraiment supprimer cet article ?'
 					onDelete={handleDelete}
 				/>
 			)}

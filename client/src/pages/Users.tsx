@@ -1,6 +1,4 @@
-import {
-	Box
-} from '@mui/material';
+import { Box } from '@mui/material';
 import { useUsers, useDeleteUser } from '../hooks/ressources/useUsers';
 import UserForm from '../components/forms/UserForm';
 import type { UserDtoType } from '../../../shared/dtos/user.dto';
@@ -64,7 +62,9 @@ export default function Users() {
 				<ResourceFormPopup
 					onClose={handleClosePopup}
 					title={
-						selectedUser ? "Modifier l'utilisateur" : 'Ajouter un utilisateur'
+						selectedUser
+							? `Modifier ${selectedUser.ref}`
+							: 'Nouvel utilisateur'
 					}
 				>
 					<UserForm init={selectedUser} onClose={handleClosePopup} />
@@ -74,7 +74,7 @@ export default function Users() {
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title="Supprimer l'utilisateur"
+					title={`Supprimer ${selectedUser?.ref}`}
 					description='Voulez-vous vraiment supprimer cet utilisateur ?'
 					onDelete={handleDelete}
 				/>

@@ -81,13 +81,13 @@ model User {
   updatedSuppliers Supplier[] @relation("SupplierUpdatedBy")
   deletedSuppliers Supplier[] @relation("SupplierDeletedBy")
 
-  createdProductCategories ProductCategory[] @relation("ProductCategoryCreatedBy")
-  updatedProductCategories ProductCategory[] @relation("ProductCategoryUpdatedBy")
-  deletedProductCategories ProductCategory[] @relation("ProductCategoryDeletedBy")
+  createdCategories Category[] @relation("CategoryCreatedBy")
+  updatedCategories Category[] @relation("CategoryUpdatedBy")
+  deletedCategories Category[] @relation("CategoryDeletedBy")
 
-  createdProducts Product[] @relation("ProductCreatedBy")
-  updatedProducts Product[] @relation("ProductUpdatedBy")
-  deletedProducts Product[] @relation("ProductDeletedBy")
+  createdArticles Article[] @relation("ArticleCreatedBy")
+  updatedArticles Article[] @relation("ArticleUpdatedBy")
+  deletedArticles Article[] @relation("ArticleDeletedBy")
 
   createdSaleItems SaleItem[] @relation("SaleItemCreatedBy")
   updatedSaleItems SaleItem[] @relation("SaleItemUpdatedBy")
@@ -173,7 +173,7 @@ model Supplier {
   @@map("suppliers")
 }
 
-model ProductCategory {
+model Category {
   id        String    @id @default(cuid())
   ref       String    @unique
   createdAt DateTime  @default(now())
@@ -183,19 +183,19 @@ model ProductCategory {
   name String
 
   // Relations
-  products Product[]
+  articles Article[]
 
   createdById String?
-  createdBy   User?   @relation("ProductCategoryCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?   @relation("CategoryCreatedBy", fields: [createdById], references: [id])
   updatedById String?
-  updatedBy   User?   @relation("ProductCategoryUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?   @relation("CategoryUpdatedBy", fields: [updatedById], references: [id])
   deletedById String?
-  deletedBy   User?   @relation("ProductCategoryDeletedBy", fields: [deletedById], references: [id])
+  deletedBy   User?   @relation("CategoryDeletedBy", fields: [deletedById], references: [id])
 
-  @@map("product_categories")
+  @@map("categories")
 }
 
-model Product {
+model Article {
   id        String    @id @default(cuid())
   ref       String    @unique
   createdAt DateTime  @default(now())
@@ -209,18 +209,18 @@ model Product {
 
   // Relations
   categoryId    String
-  category      ProductCategory @relation(fields: [categoryId], references: [id])
+  category      Category       @relation(fields: [categoryId], references: [id])
   saleItems     SaleItem[]
   purchaseItems PurchaseItem[]
 
   createdById String?
-  createdBy   User?   @relation("ProductCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?   @relation("ArticleCreatedBy", fields: [createdById], references: [id])
   updatedById String?
-  updatedBy   User?   @relation("ProductUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?   @relation("ArticleUpdatedBy", fields: [updatedById], references: [id])
   deletedById String?
-  deletedBy   User?   @relation("ProductDeletedBy", fields: [deletedById], references: [id])
+  deletedBy   User?   @relation("ArticleDeletedBy", fields: [deletedById], references: [id])
 
-  @@map("products")
+  @@map("articles")
 }
 
 model Sale {
@@ -278,8 +278,8 @@ model SaleItem {
   saleId String
   sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id])
 
   createdById String?
   createdBy   User?   @relation("SaleItemCreatedBy", fields: [createdById], references: [id])
@@ -346,8 +346,8 @@ model PurchaseItem {
   purchaseId String
   purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
 
-  productId String
-  product   Product @relation(fields: [productId], references: [id])
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id])
 
   createdById String?
   createdBy   User?   @relation("PurchaseItemCreatedBy", fields: [createdById], references: [id])

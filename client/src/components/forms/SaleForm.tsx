@@ -8,6 +8,7 @@ import {
 	MenuItem,
 	Typography,
 	IconButton,
+	Grid,
 } from '@mui/material';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,6 +23,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import ResourceForm from './ResourceForm';
 import { useCreateSale, useUpdateSale } from '../../hooks/ressources/useSales';
 import { Add } from '@mui/icons-material';
+import { DISCOUNT_TYPES, ORDER_STATUSES } from '../../../../shared/constants';
+import { DICT } from '../../i18n/fr';
 
 interface SaleFormProps {
 	init: SaleDtoType | null;
@@ -40,10 +43,11 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		resolver: zodResolver(CreateSaleDto),
 		defaultValues: init || {
 			clientId: '',
-			items: [{ productId: '', quantity: 1, price: 0 }],
+			items: [{ articleId: '', quantity: 1, price: 0 }],
 			discountAmount: 0,
 			discountType: 'fixed',
 			note: '',
+			status: 'pending',
 		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
@@ -74,75 +78,101 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 			isValid={isValid}
 			isLoading={createSaleMutation.isPending || updateSaleMutation.isPending}
 		>
-			<Box display='flex' gap={2} alignItems='center'>
-				<Controller
-					name='date'
-					control={control}
-					render={({ field }) => (
-						<DatePicker
-							label='Date'
-							value={dayjs(field.value)}
-							onChange={(date) => field.onChange(date?.toISOString())}
-							slotProps={{
-								textField: {
-									error: !!errors.date,
-									helperText: errors.date?.message as string,
-								},
-							}}
-						/>
-					)}
-				/>
+			<Grid container columnSpacing={2} mt={3}>
+				<Grid size={6}>
+					<Controller
+						name='date'
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								sx={{ width: '100%' }}
+								label='Date'
+								value={dayjs(field.value)}
+								onChange={(date) => field.onChange(date?.toISOString())}
+								slotProps={{
+									textField: {
+										error: !!errors.date,
+										helperText: errors.date?.message as string,
+									},
+								}}
+							/>
+						)}
+					/>
+				</Grid>
 
-				<ResourcePickerField
-					label='Client'
-					value={watch('clientId') || ''}
-					onChange={(value) => {
-						setValue('clientId', value);
-					}}
-					resourceType='client'
-					error={!!errors.clientId}
-					helperText={errors.clientId?.message as string}
-					required
-				/>
-			</Box>
+				<Grid size={6}>
+					<ResourcePickerField
+						label='Client'
+						value={watch('clientId') || ''}
+						onChange={(value) => {
+							setValue('clientId', value);
+						}}
+						resourceType='client'
+						error={!!errors.clientId}
+						helperText={errors.clientId?.message as string}
+						required
+					/>
+				</Grid>
 
-			<Box display='flex' gap={2} alignItems='center'>
-				<TextField
-					fullWidth
-					margin='normal'
-					label='Numéro de reçu'
-					{...register('receiptNumber')}
-					variant='outlined'
-					error={!!errors.receiptNumber}
-					helperText={errors.receiptNumber?.message as string}
-					required
-				/>
-				<TextField
-					fullWidth
-					margin='normal'
-					label='Numéro de facture'
-					{...register('invoiceNumber')}
-					variant='outlined'
-					error={!!errors.invoiceNumber}
-					helperText={errors.invoiceNumber?.message as string}
-					required
-				/>
-			</Box>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						margin='normal'
+						label='Numéro de reçu'
+						{...register('receiptNumber')}
+						variant='outlined'
+						error={!!errors.receiptNumber}
+						helperText={errors.receiptNumber?.message as string}
+						required
+					/>
+				</Grid>
 
-			<FormControl fullWidth margin='normal'>
-				<InputLabel>Statut</InputLabel>
-				<Select
-					{...register('status')}
-					label='Statut'
-					error={!!errors.status}
-					required
-				>
-					<MenuItem value='pending'>En attente</MenuItem>
-					<MenuItem value='partially_paid'>Règlement</MenuItem>
-					<MenuItem value='paid'>Payé</MenuItem>
-					<MenuItem value='cancelled'>Annulé</MenuItem>
-				</Select>
-			</FormControl>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						margin='normal'
+						label='Numéro de facture'
+						{...register('invoiceNumber')}
+						variant='outlined'
+						error={!!errors.invoiceNumber}
+						helperText={errors.invoiceNumber?.message as string}
+						required
+					/>
+				</Grid>
+
+				<Grid size={6}>
+					<FormControl fullWidth margin='dense'>
+						<InputLabel>Statut</InputLabel>
+						<Select
+							{...register('status')}
+							label='Statut'
+							error={!!errors.status}
+							required
+							defaultValue='pending'
+						>
+							{ORDER_STATUSES.map((status) => (
+								<MenuItem key={status} value={status}>
+									{DICT.orderStatus[status]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
+
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Note'
+						{...register('note')}
+						margin='dense'
+						variant='outlined'
+						multiline
+						rows={3}
+						error={!!errors.note}
+						helperText={errors.note?.message as string}
+					/>
+				</Grid>
+			</Grid>
 
 			<Box
 				display='flex'
@@ -155,7 +185,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				<Typography variant='h6'>Articles</Typography>
 
 				<Button
-					onClick={() => append({ productId: '', quantity: 1, price: 0 })}
+					onClick={() => append({ articleId: '', quantity: 1, price: 0 })}
 					variant='contained'
 					disableElevation
 					startIcon={<Add />}
@@ -171,14 +201,14 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				>
 					<Box sx={{ flex: 2 }}>
 						<ResourcePickerField
-							label='Produit'
-							value={watch(`items.${index}.productId`) || ''}
+							label='Article'
+							value={watch(`items.${index}.articleId`) || ''}
 							onChange={(value) => {
-								setValue(`items.${index}.productId`, value);
+								setValue(`items.${index}.articleId`, value);
 							}}
-							resourceType='product'
-							error={!!errors.items?.[index]?.productId}
-							helperText={errors.items?.[index]?.productId?.message}
+							resourceType='article'
+							error={!!errors.items?.[index]?.articleId}
+							helperText={errors.items?.[index]?.articleId?.message}
 							required
 						/>
 					</Box>
@@ -232,23 +262,14 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 						error={!!errors.discountType}
 						defaultValue='fixed'
 					>
-						<MenuItem value='fixed'>Montant fixe</MenuItem>
-						<MenuItem value='percentage'>Pourcentage</MenuItem>
+						{DISCOUNT_TYPES.map((type) => (
+							<MenuItem key={type} value={type}>
+								{DICT.discountType[type]}
+							</MenuItem>
+						))}
 					</Select>
 				</FormControl>
 			</Box>
-
-			<TextField
-				fullWidth
-				label='Note'
-				{...register('note')}
-				margin='normal'
-				variant='outlined'
-				multiline
-				rows={3}
-				error={!!errors.note}
-				helperText={errors.note?.message as string}
-			/>
 		</ResourceForm>
 	);
 }

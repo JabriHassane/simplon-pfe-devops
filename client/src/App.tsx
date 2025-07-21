@@ -31,13 +31,14 @@ import { useLogout } from './hooks/ressources/useAuth';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Suppliers from './pages/Suppliers';
-import Products from './pages/Products';
+import Articles from './pages/Articles';
 import Sales from './pages/Sales';
 import Purchases from './pages/Purchases';
 import Transactions from './pages/Transactions';
 import Accounts from './pages/Accounts';
 import Reports from './pages/Reports';
 import Users from './pages/Users';
+import Categories from './pages/Categories';
 
 const drawerWidth = 240;
 
@@ -105,7 +106,8 @@ function AppContent() {
 							<Route path='/' element={<Dashboard />} />
 							<Route path='/clients' element={<Clients />} />
 							<Route path='/suppliers' element={<Suppliers />} />
-							<Route path='/products' element={<Products />} />
+							<Route path='/categories' element={<Categories />} />
+							<Route path='/articles' element={<Articles />} />
 							<Route path='/sales' element={<Sales />} />
 							<Route path='/purchases' element={<Purchases />} />
 							<Route path='/transactions' element={<Transactions />} />

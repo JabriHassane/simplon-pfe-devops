@@ -1,6 +1,4 @@
-import {
-	Box
-} from '@mui/material';
+import { Box } from '@mui/material';
 import { useAccounts, useDeleteAccount } from '../hooks/ressources/useAccounts';
 import AccountForm from '../components/forms/AccountForm';
 import type { AccountDtoType } from '../../../shared/dtos/account.dto';
@@ -64,7 +62,11 @@ export default function Accounts() {
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={selectedAccount ? 'Modifier le compte' : 'Ajouter un compte'}
+					title={
+						selectedAccount
+							? `Modifier ${selectedAccount.ref}`
+							: 'Nouveau compte'
+					}
 				>
 					<AccountForm init={selectedAccount} onClose={handleClosePopup} />
 				</ResourceFormPopup>
@@ -73,7 +75,7 @@ export default function Accounts() {
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title='Supprimer le compte'
+					title={`Supprimer ${selectedAccount?.ref}`}
 					description='Voulez-vous vraiment supprimer ce compte ?'
 					onDelete={handleDelete}
 				/>

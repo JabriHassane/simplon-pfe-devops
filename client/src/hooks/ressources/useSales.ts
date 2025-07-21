@@ -9,7 +9,7 @@ import type { PaginationParams } from '../../services/api.service';
 
 export interface SaleItem {
 	id: string;
-	product: {
+	article: {
 		id: string;
 		name: string;
 	};

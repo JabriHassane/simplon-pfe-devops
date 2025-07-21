@@ -6,17 +6,19 @@ import {
 	SyncAltOutlined,
 	TimelineOutlined,
 	LocalShippingOutlined,
-	AccountBalanceWalletOutlined, PeopleAltOutlined,
+	AccountBalanceWalletOutlined,
+	PeopleAltOutlined,
 	PersonOutline,
-	WorkOutline,
-	Dashboard as DashboardIcon
+	Dashboard as DashboardIcon,
+	CategoryOutlined,
 } from '@mui/icons-material';
 
 export const navigationItems = [
 	{ name: 'Tableau de bord', icon: <DashboardIcon />, path: '/' },
 	{ name: 'Clients', icon: <PersonOutline />, path: '/clients' },
 	{ name: 'Fournisseurs', icon: <StoreOutlined />, path: '/suppliers' },
-	{ name: 'Produits', icon: <SellOutlined />, path: '/products' },
+	{ name: 'Catégories', icon: <CategoryOutlined />, path: '/categories' },
+	{ name: 'Articles', icon: <SellOutlined />, path: '/articles' },
 	{ name: 'Ventes', icon: <ShoppingBagOutlined />, path: '/sales' },
 	{ name: 'Achats', icon: <LocalShippingOutlined />, path: '/purchases' },
 	{ name: 'Transactions', icon: <SyncAltOutlined />, path: '/transactions' },

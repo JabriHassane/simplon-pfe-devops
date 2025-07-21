@@ -95,7 +95,7 @@ export default function Transactions() {
 					onClose={handleClosePopup}
 					title={
 						selectedTransaction
-							? 'Modifier la transaction'
+							? `Modifier ${selectedTransaction.ref}`
 							: 'Nouvelle transaction'
 					}
 				>
@@ -109,7 +109,7 @@ export default function Transactions() {
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title='Supprimer la transaction'
+					title={`Supprimer ${selectedTransaction?.ref}`}
 					description='Voulez-vous vraiment supprimer cette transaction ?'
 					onDelete={handleDelete}
 				/>

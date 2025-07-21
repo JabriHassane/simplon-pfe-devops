@@ -26,7 +26,7 @@ ALTER TABLE "order_items" DROP CONSTRAINT "order_items_deletedById_fkey";
 ALTER TABLE "order_items" DROP CONSTRAINT "order_items_orderId_fkey";
 
 -- DropForeignKey
-ALTER TABLE "order_items" DROP CONSTRAINT "order_items_productId_fkey";
+ALTER TABLE "order_items" DROP CONSTRAINT "order_items_articleId_fkey";
 
 -- DropForeignKey
 ALTER TABLE "order_items" DROP CONSTRAINT "order_items_updatedById_fkey";
@@ -94,7 +94,7 @@ CREATE TABLE "sale_items" (
     "price" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
     "saleId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
+    "articleId" TEXT NOT NULL,
     "createdById" TEXT,
     "updatedById" TEXT,
     "deletedById" TEXT,
@@ -124,7 +124,7 @@ ALTER TABLE "sales" ADD CONSTRAINT "sales_deletedById_fkey" FOREIGN KEY ("delete
 ALTER TABLE "sale_items" ADD CONSTRAINT "sale_items_saleId_fkey" FOREIGN KEY ("saleId") REFERENCES "sales"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "sale_items" ADD CONSTRAINT "sale_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "sale_items" ADD CONSTRAINT "sale_items_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "articles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "sale_items" ADD CONSTRAINT "sale_items_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

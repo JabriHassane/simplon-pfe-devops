@@ -25,7 +25,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useAccounts } from '../hooks/ressources/useAccounts';
 import { useTransactions } from '../hooks/ressources/useTransactions';
-import { useProducts } from '../hooks/ressources/useProducts';
+import { useArticles } from '../hooks/ressources/useArticles';
 import { useClients } from '../hooks/ressources/useClients';
 import { useSuppliers } from '../hooks/ressources/useSuppliers';
 
@@ -44,10 +44,10 @@ export default function Dashboard() {
 		error: transactionsError,
 	} = useTransactions();
 	const {
-		data: products,
-		isLoading: productsLoading,
-		error: productsError,
-	} = useProducts();
+		data: articles,
+		isLoading: articlesLoading,
+		error: articlesError,
+	} = useArticles();
 	const {
 		data: clients,
 		isLoading: clientsLoading,
@@ -62,13 +62,13 @@ export default function Dashboard() {
 	const isLoading =
 		accountsLoading ||
 		transactionsLoading ||
-		productsLoading ||
+		articlesLoading ||
 		clientsLoading ||
 		suppliersLoading;
 	const error =
 		accountsError ||
 		transactionsError ||
-		productsError ||
+		articlesError ||
 		clientsError ||
 		suppliersError;
 
@@ -151,10 +151,10 @@ export default function Dashboard() {
 					<Button
 						variant='outlined'
 						startIcon={<AddIcon />}
-						onClick={() => navigate('/products')}
+						onClick={() => navigate('/articles')}
 						fullWidth
 					>
-						Ajouter un produit
+						Ajouter un article
 					</Button>
 					<Button
 						variant='outlined'
@@ -237,10 +237,10 @@ export default function Dashboard() {
 						>
 							<Box>
 								<Typography color='textSecondary' gutterBottom>
-									Active Products
+									Active Articles
 								</Typography>
 								<Typography variant='h4' color='primary.main'>
-									{products?.data.length}
+									{articles?.data.length}
 								</Typography>
 							</Box>
 							<InventoryIcon color='primary' sx={{ fontSize: 40 }} />

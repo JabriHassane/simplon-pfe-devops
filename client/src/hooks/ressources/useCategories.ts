@@ -1,30 +1,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ProductCategoryService } from '../../services/product-category.service';
+import { CategoryService } from '../../services/category.service';
 import type {
-	CreateProductCategoryDtoType,
-	UpdateProductCategoryDtoType,
-} from '../../../../shared/dtos/product-category.dto';
+	CreateCategoryDtoType,
+	UpdateCategoryDtoType,
+} from '../../../../shared/dtos/category.dto';
 import { useSnackbar } from './useSnackbar';
 import type { PaginationParams } from '../../services/api.service';
 
 // Query keys
-export const productCategoryKeys = {
-	lists: () => ['product-categories'],
-	detail: (id: string) => [...productCategoryKeys.lists(), id],
+export const CategoryKeys = {
+	lists: () => ['categories'],
+	detail: (id: string) => [...CategoryKeys.lists(), id],
 };
 
-// Get all product categories
-export const useProductCategories = (params?: PaginationParams) => {
+// Get all categories
+export const useCategories = (params?: PaginationParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
-		queryKey: [...productCategoryKeys.lists(), params],
+		queryKey: [...CategoryKeys.lists(), params],
 		queryFn: async () => {
 			try {
-				return await ProductCategoryService.getPage(params);
+				return await CategoryService.getPage(params);
 			} catch (error) {
 				console.error(error);
-				showError('Erreur lors de la récupération des catégories de produits');
+				showError('Erreur lors de la récupération des catégories de articles');
 				return {
 					data: [],
 					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
@@ -34,15 +34,15 @@ export const useProductCategories = (params?: PaginationParams) => {
 	});
 };
 
-// Get single product category
-export const useProductCategory = (id: string) => {
+// Get single category
+export const useCategory = (id: string) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
-		queryKey: productCategoryKeys.detail(id),
+		queryKey: CategoryKeys.detail(id),
 		queryFn: async () => {
 			try {
-				return await ProductCategoryService.getById(id);
+				return await CategoryService.getById(id);
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la récupération de la catégorie');
@@ -53,31 +53,31 @@ export const useProductCategory = (id: string) => {
 	});
 };
 
-// Create product category mutation
-export const useCreateProductCategory = () => {
+// Create article category mutation
+export const useCreateCategory = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (data: CreateProductCategoryDtoType) => {
+		mutationFn: async (data: CreateCategoryDtoType) => {
 			try {
-				await ProductCategoryService.create(data);
+				await CategoryService.create(data);
 				queryClient.invalidateQueries({
-					queryKey: productCategoryKeys.lists(),
+					queryKey: CategoryKeys.lists(),
 				});
 
 				showSuccess('Catégorie créée');
+				callback();
 			} catch (error) {
 				console.error(error);
 				showError('Erreur lors de la création de la catégorie');
 			}
 		},
-		onSuccess: () => {},
 	});
 };
 
-// Update product category mutation
-export const useUpdateProductCategory = (callback: () => void) => {
+// Update article category mutation
+export const useUpdateCategory = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
@@ -87,15 +87,15 @@ export const useUpdateProductCategory = (callback: () => void) => {
 			data,
 		}: {
 			id: string;
-			data: UpdateProductCategoryDtoType;
+			data: UpdateCategoryDtoType;
 		}) => {
 			try {
-				await ProductCategoryService.update(id, data);
+				await CategoryService.update(id, data);
 
 				queryClient.invalidateQueries({
-					queryKey: productCategoryKeys.lists(),
+					queryKey: CategoryKeys.lists(),
 				});
-				queryClient.setQueryData(productCategoryKeys.detail(id), data);
+				queryClient.setQueryData(CategoryKeys.detail(id), data);
 
 				showSuccess('Catégorie modifiée');
 				callback();
@@ -107,20 +107,20 @@ export const useUpdateProductCategory = (callback: () => void) => {
 	});
 };
 
-// Delete product category mutation
-export const useDeleteProductCategory = (callback: () => void) => {
+// Delete article category mutation
+export const useDeleteCategory = (callback: () => void) => {
 	const { showSuccess, showError } = useSnackbar();
 	const queryClient = useQueryClient();
 
 	return useMutation({
 		mutationFn: async (id: string) => {
 			try {
-				await ProductCategoryService.delete(id);
+				await CategoryService.delete(id);
 
 				queryClient.invalidateQueries({
-					queryKey: productCategoryKeys.lists(),
+					queryKey: CategoryKeys.lists(),
 				});
-				queryClient.removeQueries({ queryKey: productCategoryKeys.detail(id) });
+				queryClient.removeQueries({ queryKey: CategoryKeys.detail(id) });
 
 				showSuccess('Catégorie supprimée');
 				callback();

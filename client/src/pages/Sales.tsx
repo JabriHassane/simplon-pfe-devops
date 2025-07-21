@@ -83,7 +83,7 @@ export default function Sales() {
 							statut: (
 								<Chip
 									key={sale.id}
-									label={DICT.saleStatus[sale.status]}
+									label={DICT.orderStatus[sale.status]}
 									color={getStatusColor(sale.status)}
 									size='small'
 									sx={{ px: 0.5 }}
@@ -99,7 +99,9 @@ export default function Sales() {
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={selectedSale ? 'Modifier la vente' : 'Nouvelle vente'}
+					title={
+						selectedSale ? `Modifier ${selectedSale.ref}` : 'Nouvelle vente'
+					}
 				>
 					<SaleForm init={selectedSale} onClose={handleClosePopup} />
 				</ResourceFormPopup>
@@ -108,7 +110,7 @@ export default function Sales() {
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title='Supprimer la vente'
+					title={`Supprimer ${selectedSale?.ref}`}
 					description='Voulez-vous vraiment supprimer cette vente ?'
 					onDelete={handleDelete}
 				/>

@@ -2,11 +2,11 @@ import { z } from 'zod';
 import { ORDER_STATUSES, DISCOUNT_TYPES } from '../constants';
 import { UserDto } from './user.dto';
 import { ClientDto } from './client.dto';
-import { ProductDto } from './product.dto';
+import { ArticleDto } from './article.dto';
 import { AccountDto } from './account.dto';
 
 export const CreateSaleItemDto = z.object({
-	productId: z.string().min(1, 'Produit requis'),
+	articleId: z.string().min(1, 'Article requis'),
 	price: z.number().min(0, 'Le prix doit être positif'),
 	quantity: z.number().int().min(1, 'La quantité doit être au moins 1'),
 });
@@ -49,7 +49,7 @@ export const SalePaymentDto = z.object({
 });
 
 export const SaleItemDto = CreateSaleItemDto.extend({
-	product: ProductDto,
+	article: ArticleDto,
 });
 
 export const SaleDto = z.object({

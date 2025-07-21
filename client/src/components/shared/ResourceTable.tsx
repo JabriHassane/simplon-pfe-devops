@@ -8,16 +8,15 @@ import {
 	TableHead,
 } from '@mui/material';
 import {
-	DeleteOutline, EditOutlined,
+	DeleteOutline,
+	EditOutlined,
 	FormatListBulleted,
-	HistoryOutlined
+	HistoryOutlined,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
-import type {
-	SaleDtoType
-} from '../../../../shared/dtos/sale.dto';
+import type { SaleDtoType } from '../../../../shared/dtos/sale.dto';
 import type { PurchaseDtoType } from '../../../../shared/dtos/purchase.dto';
 
 interface ResourceTableHeader {
@@ -109,24 +108,24 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 		{ id: 'account', name: 'Compte' },
 	];
 
-	const sale = row.item as SaleDtoType | PurchaseDtoType;
+	const order = row.item as SaleDtoType | PurchaseDtoType;
 
-	const items = sale.items?.map((item) => ({
+	const items = order.items?.map((item) => ({
 		item: item,
 		data: {
-			ref: item.product.ref,
+			ref: item.article.ref,
 			quantity: item.quantity,
 			price: formatPrice(item.price),
 		},
 	}));
 
-	const payments = sale.payments?.map((payment) => ({
+	const payments = order.payments?.map((payment) => ({
 		item: payment,
 		data: {
 			ref: payment.ref,
 			date: formatDate(payment.date),
 			amount: formatPrice(payment.amount),
-			account: payment.to?.name,
+			account: payment.from?.name || payment.to?.name,
 		},
 	}));
 

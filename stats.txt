@@ -4,8 +4,8 @@ Total revenue by period (daily, weekly, monthly, yearly)
 Average order value (AOV)
 Revenue by payment method (cash, check, TPE, bank transfer)
 Revenue by client (top customers)
-Revenue by product category
-Revenue by product (best sellers)
+Revenue by article category
+Revenue by article (best sellers)
 
 - Order Statistics:
 Order count by period
@@ -30,5 +30,5 @@ Peak sales periods (time of day, day of week, month)
 
 - Dashboard-Ready Metrics:
 KPI Cards: Total revenue, orders today, pending payments
-Charts: Revenue trends, top products, payment method distribution
-Tables: Top customers, best-selling products, recent transactions
+Charts: Revenue trends, top articles, payment method distribution
+Tables: Top customers, best-selling articles, recent transactions

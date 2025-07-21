@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { getPaginationCondition } from '../utils/pagination';
 
-export const ProductController = {
+export const ArticleController = {
 	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
@@ -11,10 +11,10 @@ export const ProductController = {
 			]);
 
 			// Get total count for pagination
-			const total = await prisma.product.count({ where: whereClause });
+			const total = await prisma.article.count({ where: whereClause });
 
 			// Get paginated results
-			const products = await prisma.product.findMany({
+			const articles = await prisma.article.findMany({
 				where: whereClause,
 				include: {
 					category: true,
@@ -25,7 +25,7 @@ export const ProductController = {
 			});
 
 			res.json({
-				data: products,
+				data: articles,
 				pagination: {
 					page,
 					limit,
@@ -34,7 +34,7 @@ export const ProductController = {
 				},
 			});
 		} catch (error) {
-			console.error('Error in ProductController.getPage', error);
+			console.error('Error in ArticleController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -43,20 +43,20 @@ export const ProductController = {
 		try {
 			const { id } = req.params;
 
-			const product = await prisma.product.findUnique({
+			const article = await prisma.article.findUnique({
 				where: { id },
 				include: {
 					category: true,
 				},
 			});
 
-			if (!product) {
-				return res.status(404).json({ message: 'Product not found' });
+			if (!article) {
+				return res.status(404).json({ message: 'Article not found' });
 			}
 
-			res.json(product);
+			res.json(article);
 		} catch (error) {
-			console.error('Error in ProductController.getById', error);
+			console.error('Error in ArticleController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -67,7 +67,7 @@ export const ProductController = {
 			const { name, image, categoryId, price, inventory } = req.body;
 
 			// Check if category exists
-			const category = await prisma.productCategory.findUnique({
+			const category = await prisma.category.findUnique({
 				where: { id: categoryId },
 			});
 
@@ -75,7 +75,7 @@ export const ProductController = {
 				return res.status(400).json({ message: 'Invalid category' });
 			}
 
-			const product = await prisma.product.create({
+			const article = await prisma.article.create({
 				data: {
 					name,
 					image: image || '',
@@ -90,9 +90,9 @@ export const ProductController = {
 				},
 			});
 
-			res.status(201).json(product);
+			res.status(201).json(article);
 		} catch (error) {
-			console.error('Error in ProductController.create', error);
+			console.error('Error in ArticleController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -103,18 +103,18 @@ export const ProductController = {
 			const { userId } = req.user!;
 			const { name, image, categoryId, price, inventory } = req.body;
 
-			// Check if product exists
-			const existingProduct = await prisma.product.findUnique({
+			// Check if article exists
+			const existingArticle = await prisma.article.findUnique({
 				where: { id },
 			});
 
-			if (!existingProduct) {
-				return res.status(404).json({ message: 'Product not found' });
+			if (!existingArticle) {
+				return res.status(404).json({ message: 'Article not found' });
 			}
 
 			// Check if category exists (if categoryId is being updated)
 			if (categoryId) {
-				const category = await prisma.productCategory.findUnique({
+				const category = await prisma.category.findUnique({
 					where: { id: categoryId },
 				});
 
@@ -123,7 +123,7 @@ export const ProductController = {
 				}
 			}
 
-			const product = await prisma.product.update({
+			const article = await prisma.article.update({
 				where: { id },
 				data: {
 					...(name && { name }),
@@ -139,9 +139,9 @@ export const ProductController = {
 				},
 			});
 
-			res.json(product);
+			res.json(article);
 		} catch (error) {
-			console.error('Error in ProductController.update', error);
+			console.error('Error in ArticleController.update', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -151,28 +151,28 @@ export const ProductController = {
 			const { id } = req.params;
 			const { userId } = req.user!;
 
-			// Check if product exists
-			const existingProduct = await prisma.product.findUnique({
+			// Check if article exists
+			const existingArticle = await prisma.article.findUnique({
 				where: { id },
 			});
 
-			if (!existingProduct) {
-				return res.status(404).json({ message: 'Product not found' });
+			if (!existingArticle) {
+				return res.status(404).json({ message: 'Article not found' });
 			}
 
-			// Check if product has sales
+			// Check if article has sales
 			const hasSales = await prisma.saleItem.findFirst({
-				where: { productId: id },
+				where: { articleId: id },
 			});
 
 			if (hasSales) {
 				return res.status(400).json({
-					message: 'Cannot delete product with existing sales',
+					message: 'Cannot delete article with existing sales',
 				});
 			}
 
 			// Soft delete
-			await prisma.product.update({
+			await prisma.article.update({
 				where: { id },
 				data: {
 					deletedAt: new Date(),
@@ -180,9 +180,9 @@ export const ProductController = {
 				},
 			});
 
-			res.json({ message: 'Product deleted successfully' });
+			res.json({ message: 'Article deleted successfully' });
 		} catch (error) {
-			console.error('Error in ProductController.delete', error);
+			console.error('Error in ArticleController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},

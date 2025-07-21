@@ -26,16 +26,18 @@ import {
 import { useClients } from '../../hooks/ressources/useClients';
 import { useUsers } from '../../hooks/ressources/useUsers';
 import { useSuppliers } from '../../hooks/ressources/useSuppliers';
-import { useProducts } from '../../hooks/ressources/useProducts';
+import { useArticles } from '../../hooks/ressources/useArticles';
 import { useAccounts } from '../../hooks/ressources/useAccounts';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { PaginationParams } from '../../services/api.service';
+import { useCategories } from '../../hooks/ressources/useCategories';
 
 export type ResourceType =
 	| 'user'
 	| 'client'
 	| 'supplier'
-	| 'product'
+	| 'category'
+	| 'article'
 	| 'account';
 
 interface Resource {
@@ -62,8 +64,10 @@ const useResource = (
 			return useUsers(params);
 		case 'supplier':
 			return useSuppliers(params);
-		case 'product':
-			return useProducts(params);
+		case 'category':
+			return useCategories(params);
+		case 'article':
+			return useArticles(params);
 		case 'account':
 			return useAccounts(params);
 		default:

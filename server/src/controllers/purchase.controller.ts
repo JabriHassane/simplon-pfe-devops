@@ -3,7 +3,7 @@ import { prisma } from '../index';
 import { getPaginationCondition } from '../utils/pagination';
 import { UpdatePurchaseDtoType } from '../../../shared/dtos/purchase.dto';
 
-type PurchaseItemInput = { productId: string; price: number; quantity: number };
+type PurchaseItemInput = { articleId: string; price: number; quantity: number };
 
 export const PurchaseController = {
 	async getPage(req: Request, res: Response) {
@@ -21,7 +21,12 @@ export const PurchaseController = {
 						supplier: true,
 						items: {
 							include: {
-								product: true,
+								article: true,
+							},
+						},
+						payments: {
+							include: {
+								from: true,
 							},
 						},
 						agent: {
@@ -67,7 +72,7 @@ export const PurchaseController = {
 					supplier: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					agent: {
@@ -143,16 +148,16 @@ export const PurchaseController = {
 				return res.status(400).json({ message: 'Supplier not found' });
 			}
 
-			// Validate all products exist
+			// Validate all articles exist
 			for (const item of items) {
-				const product = await prisma.product.findUnique({
-					where: { id: item.productId },
+				const article = await prisma.article.findUnique({
+					where: { id: item.articleId },
 				});
 
-				if (!product) {
+				if (!article) {
 					return res
 						.status(400)
-						.json({ message: `Product ${item.productId} not found` });
+						.json({ message: `Article ${item.articleId} not found` });
 				}
 			}
 
@@ -186,7 +191,7 @@ export const PurchaseController = {
 					createdById: userId,
 					items: {
 						create: items.map((item: PurchaseItemInput) => ({
-							productId: item.productId,
+							articleId: item.articleId,
 							price: item.price,
 							quantity: item.quantity,
 							ref: `PI-${Date.now()}-${Math.random()
@@ -200,7 +205,7 @@ export const PurchaseController = {
 					supplier: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					agent: {
@@ -212,10 +217,10 @@ export const PurchaseController = {
 				},
 			});
 
-			// Update product inventory (purchases increase inventory)
+			// Update article inventory (purchases increase inventory)
 			for (const item of items) {
-				await prisma.product.update({
-					where: { id: item.productId },
+				await prisma.article.update({
+					where: { id: item.articleId },
 					data: {
 						inventory: {
 							increment: item.quantity,
@@ -263,14 +268,14 @@ export const PurchaseController = {
 			// If items are being updated, validate them
 			if (body.items) {
 				for (const item of body.items) {
-					const product = await prisma.product.findUnique({
-						where: { id: item.productId },
+					const article = await prisma.article.findUnique({
+						where: { id: item.articleId },
 					});
 
-					if (!product) {
+					if (!article) {
 						return res
 							.status(400)
-							.json({ message: `Product ${item.productId} not found` });
+							.json({ message: `Article ${item.articleId} not found` });
 					}
 				}
 			}
@@ -317,7 +322,7 @@ export const PurchaseController = {
 					supplier: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					agent: {
@@ -340,7 +345,7 @@ export const PurchaseController = {
 				await prisma.purchaseItem.createMany({
 					data: body.items.map((item) => ({
 						purchaseId: id,
-						productId: item.productId,
+						articleId: item.articleId,
 						price: item.price,
 						quantity: item.quantity,
 						ref: `PI-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -348,10 +353,10 @@ export const PurchaseController = {
 					})),
 				});
 
-				// Update product inventory
+				// Update article inventory
 				for (const item of body.items) {
 					const currentPurchaseItem = existingPurchase.items.find(
-						(pi) => pi.productId === item.productId
+						(pi) => pi.articleId === item.articleId
 					);
 					const currentQuantity = currentPurchaseItem
 						? currentPurchaseItem.quantity
@@ -359,8 +364,8 @@ export const PurchaseController = {
 					const quantityDifference = item.quantity - currentQuantity;
 
 					if (quantityDifference !== 0) {
-						await prisma.product.update({
-							where: { id: item.productId },
+						await prisma.article.update({
+							where: { id: item.articleId },
 							data: {
 								inventory: {
 									increment: quantityDifference,
@@ -406,10 +411,10 @@ export const PurchaseController = {
 				});
 			}
 
-			// Reduce product inventory (purchases increase inventory, so deletion reduces it)
+			// Reduce article inventory (purchases increase inventory, so deletion reduces it)
 			for (const item of existingPurchase.items) {
-				await prisma.product.update({
-					where: { id: item.productId },
+				await prisma.article.update({
+					where: { id: item.articleId },
 					data: {
 						inventory: {
 							decrement: item.quantity,

@@ -13,12 +13,12 @@
   - You are about to drop the column `createdBy` on the `orders` table. All the data in the column will be lost.
   - You are about to drop the column `deletedBy` on the `orders` table. All the data in the column will be lost.
   - You are about to drop the column `updatedBy` on the `orders` table. All the data in the column will be lost.
-  - You are about to drop the column `createdBy` on the `product_categories` table. All the data in the column will be lost.
-  - You are about to drop the column `deletedBy` on the `product_categories` table. All the data in the column will be lost.
-  - You are about to drop the column `updatedBy` on the `product_categories` table. All the data in the column will be lost.
-  - You are about to drop the column `createdBy` on the `products` table. All the data in the column will be lost.
-  - You are about to drop the column `deletedBy` on the `products` table. All the data in the column will be lost.
-  - You are about to drop the column `updatedBy` on the `products` table. All the data in the column will be lost.
+  - You are about to drop the column `createdBy` on the `article_categories` table. All the data in the column will be lost.
+  - You are about to drop the column `deletedBy` on the `article_categories` table. All the data in the column will be lost.
+  - You are about to drop the column `updatedBy` on the `article_categories` table. All the data in the column will be lost.
+  - You are about to drop the column `createdBy` on the `articles` table. All the data in the column will be lost.
+  - You are about to drop the column `deletedBy` on the `articles` table. All the data in the column will be lost.
+  - You are about to drop the column `updatedBy` on the `articles` table. All the data in the column will be lost.
   - You are about to drop the column `createdBy` on the `purchase_items` table. All the data in the column will be lost.
   - You are about to drop the column `deletedBy` on the `purchase_items` table. All the data in the column will be lost.
   - You are about to drop the column `updatedBy` on the `purchase_items` table. All the data in the column will be lost.
@@ -69,7 +69,7 @@ ADD COLUMN     "deletedById" TEXT,
 ADD COLUMN     "updatedById" TEXT;
 
 -- AlterTable
-ALTER TABLE "product_categories" DROP COLUMN "createdBy",
+ALTER TABLE "article_categories" DROP COLUMN "createdBy",
 DROP COLUMN "deletedBy",
 DROP COLUMN "updatedBy",
 ADD COLUMN     "createdById" TEXT,
@@ -77,7 +77,7 @@ ADD COLUMN     "deletedById" TEXT,
 ADD COLUMN     "updatedById" TEXT;
 
 -- AlterTable
-ALTER TABLE "products" DROP COLUMN "createdBy",
+ALTER TABLE "articles" DROP COLUMN "createdBy",
 DROP COLUMN "deletedBy",
 DROP COLUMN "updatedBy",
 ADD COLUMN     "createdById" TEXT,
@@ -152,22 +152,22 @@ ALTER TABLE "suppliers" ADD CONSTRAINT "suppliers_updatedById_fkey" FOREIGN KEY 
 ALTER TABLE "suppliers" ADD CONSTRAINT "suppliers_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "product_categories" ADD CONSTRAINT "product_categories_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "article_categories" ADD CONSTRAINT "article_categories_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "product_categories" ADD CONSTRAINT "product_categories_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "article_categories" ADD CONSTRAINT "article_categories_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "product_categories" ADD CONSTRAINT "product_categories_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "article_categories" ADD CONSTRAINT "article_categories_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "articles" ADD CONSTRAINT "articles_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "articles" ADD CONSTRAINT "articles_updatedById_fkey" FOREIGN KEY ("updatedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "articles" ADD CONSTRAINT "articles_deletedById_fkey" FOREIGN KEY ("deletedById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;

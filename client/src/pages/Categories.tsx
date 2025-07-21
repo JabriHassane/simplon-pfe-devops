@@ -1,35 +1,33 @@
+import { Box } from '@mui/material';
 import {
-	Box
-} from '@mui/material';
-import {
-	useSuppliers,
-	useDeleteSupplier,
-} from '../hooks/ressources/useSuppliers';
-import SupplierForm from '../components/forms/SupplierForm';
-import type { SupplierDtoType } from '../../../shared/dtos/supplier.dto';
+	useCategories,
+	useDeleteCategory,
+} from '../hooks/ressources/useCategories';
+import type { CategoryDtoType } from '../../../shared/dtos/category.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import useCrud from '../hooks/useCrud';
 import ResourceTable from '../components/shared/ResourceTable';
+import CategoryForm from '../components/forms/CategoryForm';
 
-export default function Suppliers() {
+export default function Categories() {
 	const {
 		openFormPopup,
 		openDeletePopup,
-		selectedResource: selectedSupplier,
+		selectedResource: selectedCategory,
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = useCrud<SupplierDtoType>();
+	} = useCrud<CategoryDtoType>();
 
-	const { data: suppliers, isLoading, error } = useSuppliers();
-	const deleteSupplierMutation = useDeleteSupplier(handleClosePopup);
+	const { data: categories, isLoading, error } = useCategories();
+	const deleteCategoryMutation = useDeleteCategory(handleClosePopup);
 
 	const handleDelete = () => {
-		if (selectedSupplier) {
-			deleteSupplierMutation.mutate(selectedSupplier.id);
+		if (selectedCategory) {
+			deleteCategoryMutation.mutate(selectedCategory.id);
 		}
 	};
 
@@ -40,7 +38,7 @@ export default function Suppliers() {
 	return (
 		<Box>
 			<ResourceHeader
-				title='Fournisseurs'
+				title='Catégories'
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
@@ -49,16 +47,12 @@ export default function Suppliers() {
 				headers={[
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'name', name: 'Nom' },
-					{ id: 'phone', name: 'Téléphone' },
-					{ id: 'address', name: 'Adresse' },
 				]}
-				rows={suppliers?.data.map((supplier) => ({
-					item: supplier,
+				rows={categories?.data.map((category) => ({
+					item: category,
 					data: {
-						ref: supplier.ref,
-						name: supplier.name,
-						phone: supplier.phone,
-						address: supplier.address,
+						ref: category.ref,
+						name: category.name,
 					},
 				}))}
 				onEdit={handleOpenFormPopup}
@@ -69,20 +63,20 @@ export default function Suppliers() {
 				<ResourceFormPopup
 					onClose={handleClosePopup}
 					title={
-						selectedSupplier
-							? `Modifier ${selectedSupplier.ref}`
-							: 'Nouveau fournisseur'
+						selectedCategory
+							? `Modifier ${selectedCategory.ref}`
+							: 'Nouvelle catégorie'
 					}
 				>
-					<SupplierForm init={selectedSupplier} onClose={handleClosePopup} />
+					<CategoryForm init={selectedCategory} onClose={handleClosePopup} />
 				</ResourceFormPopup>
 			)}
 
 			{openDeletePopup && (
 				<ResourceDeleteConfirmation
 					onClose={handleClosePopup}
-					title={`Supprimer ${selectedSupplier?.ref}`}
-					description='Voulez-vous vraiment supprimer ce fournisseur ?'
+					title={`Supprimer ${selectedCategory?.ref}`}
+					description='Voulez-vous vraiment supprimer cette catégorie ?'
 					onDelete={handleDelete}
 				/>
 			)}

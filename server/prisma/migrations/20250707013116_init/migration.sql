@@ -66,7 +66,7 @@ CREATE TABLE "suppliers" (
 );
 
 -- CreateTable
-CREATE TABLE "product_categories" (
+CREATE TABLE "article_categories" (
     "id" TEXT NOT NULL,
     "ref" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -77,11 +77,11 @@ CREATE TABLE "product_categories" (
     "deletedBy" TEXT,
     "name" TEXT NOT NULL,
 
-    CONSTRAINT "product_categories_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "article_categories_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "products" (
+CREATE TABLE "articles" (
     "id" TEXT NOT NULL,
     "ref" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -96,7 +96,7 @@ CREATE TABLE "products" (
     "inventory" INTEGER NOT NULL,
     "categoryId" TEXT NOT NULL,
 
-    CONSTRAINT "products_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "articles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -136,7 +136,7 @@ CREATE TABLE "order_items" (
     "price" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
     "orderId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
+    "articleId" TEXT NOT NULL,
 
     CONSTRAINT "order_items_pkey" PRIMARY KEY ("id")
 );
@@ -178,7 +178,7 @@ CREATE TABLE "purchase_items" (
     "price" DOUBLE PRECISION NOT NULL,
     "quantity" INTEGER NOT NULL,
     "purchaseId" TEXT NOT NULL,
-    "productId" TEXT NOT NULL,
+    "articleId" TEXT NOT NULL,
 
     CONSTRAINT "purchase_items_pkey" PRIMARY KEY ("id")
 );
@@ -256,10 +256,10 @@ CREATE UNIQUE INDEX "clients_ref_key" ON "clients"("ref");
 CREATE UNIQUE INDEX "suppliers_ref_key" ON "suppliers"("ref");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "product_categories_ref_key" ON "product_categories"("ref");
+CREATE UNIQUE INDEX "article_categories_ref_key" ON "article_categories"("ref");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "products_ref_key" ON "products"("ref");
+CREATE UNIQUE INDEX "articles_ref_key" ON "articles"("ref");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "orders_ref_key" ON "orders"("ref");
@@ -289,7 +289,7 @@ CREATE UNIQUE INDEX "discounts_orderId_key" ON "discounts"("orderId");
 CREATE UNIQUE INDEX "discounts_purchaseId_key" ON "discounts"("purchaseId");
 
 -- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "product_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "articles" ADD CONSTRAINT "articles_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "article_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "orders" ADD CONSTRAINT "orders_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -301,7 +301,7 @@ ALTER TABLE "orders" ADD CONSTRAINT "orders_clientId_fkey" FOREIGN KEY ("clientI
 ALTER TABLE "order_items" ADD CONSTRAINT "order_items_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "order_items" ADD CONSTRAINT "order_items_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "articles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "purchases" ADD CONSTRAINT "purchases_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -313,7 +313,7 @@ ALTER TABLE "purchases" ADD CONSTRAINT "purchases_supplierId_fkey" FOREIGN KEY (
 ALTER TABLE "purchase_items" ADD CONSTRAINT "purchase_items_purchaseId_fkey" FOREIGN KEY ("purchaseId") REFERENCES "purchases"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "purchase_items" ADD CONSTRAINT "purchase_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "purchase_items" ADD CONSTRAINT "purchase_items_articleId_fkey" FOREIGN KEY ("articleId") REFERENCES "articles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "transactions" ADD CONSTRAINT "transactions_agentId_fkey" FOREIGN KEY ("agentId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

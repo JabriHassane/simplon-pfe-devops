@@ -6,7 +6,7 @@ import {
 } from '../../../shared/dtos/sale.dto';
 import { getPaginationCondition } from '../utils/pagination';
 
-type SaleItemInput = { productId: string; price: number; quantity: number };
+type SaleItemInput = { articleId: string; price: number; quantity: number };
 
 export const SaleController = {
 	async getPage(req: Request, res: Response) {
@@ -23,12 +23,11 @@ export const SaleController = {
 					client: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					payments: {
 						include: {
-							from: true,
 							to: true,
 						},
 					},
@@ -82,7 +81,7 @@ export const SaleController = {
 					client: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					agent: {
@@ -148,21 +147,21 @@ export const SaleController = {
 				return res.status(400).json({ message: 'Client not found' });
 			}
 
-			// Validate all products exist and have sufficient inventory
+			// Validate all articles exist and have sufficient inventory
 			for (const item of body.items) {
-				const product = await prisma.product.findUnique({
-					where: { id: item.productId },
+				const article = await prisma.article.findUnique({
+					where: { id: item.articleId },
 				});
 
-				if (!product) {
+				if (!article) {
 					return res
 						.status(400)
-						.json({ message: `Product ${item.productId} not found` });
+						.json({ message: `Article ${item.articleId} not found` });
 				}
 
-				if (product.inventory < item.quantity) {
+				if (article.inventory < item.quantity) {
 					return res.status(400).json({
-						message: `Insufficient inventory for product ${product.name}`,
+						message: `Insufficient inventory for article ${article.name}`,
 					});
 				}
 			}
@@ -197,7 +196,7 @@ export const SaleController = {
 					createdById: userId,
 					items: {
 						create: body.items.map((item: SaleItemInput) => ({
-							productId: item.productId,
+							articleId: item.articleId,
 							price: item.price,
 							quantity: item.quantity,
 							ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -209,7 +208,7 @@ export const SaleController = {
 					client: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					agent: {
@@ -221,10 +220,10 @@ export const SaleController = {
 				},
 			});
 
-			// Update product inventory
+			// Update article inventory
 			for (const item of body.items) {
-				await prisma.product.update({
-					where: { id: item.productId },
+				await prisma.article.update({
+					where: { id: item.articleId },
 					data: {
 						inventory: {
 							decrement: item.quantity,
@@ -272,28 +271,28 @@ export const SaleController = {
 			// If items are being updated, validate them
 			if (body.items) {
 				for (const item of body.items) {
-					const product = await prisma.product.findUnique({
-						where: { id: item.productId },
+					const article = await prisma.article.findUnique({
+						where: { id: item.articleId },
 					});
 
-					if (!product) {
+					if (!article) {
 						return res
 							.status(400)
-							.json({ message: `Product ${item.productId} not found` });
+							.json({ message: `Article ${item.articleId} not found` });
 					}
 
 					// Check inventory (considering current sale items)
 					const currentSaleItem = existingSale.items.find(
-						(si) => si.productId === item.productId
+						(si) => si.articleId === item.articleId
 					);
 					const currentQuantity = currentSaleItem
 						? currentSaleItem.quantity
 						: 0;
-					const availableInventory = product.inventory + currentQuantity;
+					const availableInventory = article.inventory + currentQuantity;
 
 					if (availableInventory < item.quantity) {
 						return res.status(400).json({
-							message: `Insufficient inventory for product ${product.name}`,
+							message: `Insufficient inventory for article ${article.name}`,
 						});
 					}
 				}
@@ -341,7 +340,7 @@ export const SaleController = {
 					client: true,
 					items: {
 						include: {
-							product: true,
+							article: true,
 						},
 					},
 					agent: {
@@ -364,7 +363,7 @@ export const SaleController = {
 				await prisma.saleItem.createMany({
 					data: body.items.map((item) => ({
 						saleId: id,
-						productId: item.productId,
+						articleId: item.articleId,
 						price: item.price,
 						quantity: item.quantity,
 						ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -372,10 +371,10 @@ export const SaleController = {
 					})),
 				});
 
-				// Update product inventory
+				// Update article inventory
 				for (const item of body.items) {
 					const currentSaleItem = existingSale.items.find(
-						(si) => si.productId === item.productId
+						(si) => si.articleId === item.articleId
 					);
 					const currentQuantity = currentSaleItem
 						? currentSaleItem.quantity
@@ -383,8 +382,8 @@ export const SaleController = {
 					const quantityDifference = item.quantity - currentQuantity;
 
 					if (quantityDifference !== 0) {
-						await prisma.product.update({
-							where: { id: item.productId },
+						await prisma.article.update({
+							where: { id: item.articleId },
 							data: {
 								inventory: {
 									decrement: quantityDifference,
@@ -430,10 +429,10 @@ export const SaleController = {
 				});
 			}
 
-			// Restore product inventory
+			// Restore article inventory
 			for (const item of existingSale.items) {
-				await prisma.product.update({
-					where: { id: item.productId },
+				await prisma.article.update({
+					where: { id: item.articleId },
 					data: {
 						inventory: {
 							increment: item.quantity,

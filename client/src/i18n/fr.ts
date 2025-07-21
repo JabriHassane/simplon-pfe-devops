@@ -4,10 +4,14 @@ export const DICT = {
 		sale: 'Vente',
 		transfer: 'Transfert',
 	},
-	saleStatus: {
+	orderStatus: {
 		pending: 'En attente',
 		partially_paid: 'Règlement',
 		paid: 'Payé',
 		cancelled: 'Annulé',
+	},
+	discountType: {
+		fixed: 'Montant fixe',
+		percentage: 'Pourcentage',
 	},
 } as const;

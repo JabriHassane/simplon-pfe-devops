@@ -49,14 +49,14 @@ export const AuthController = {
 			// Set tokens in cookies
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
+				secure: process.env.NODE_ENV === 'articleion',
 				sameSite: 'lax',
 				maxAge: ms('15m'),
 			});
 
 			res.cookie('refreshToken', refreshToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
+				secure: process.env.NODE_ENV === 'articleion',
 				sameSite: 'lax',
 				maxAge: ms('7D'),
 			});
@@ -101,7 +101,7 @@ export const AuthController = {
 			// Set new access token in cookie
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
+				secure: process.env.NODE_ENV === 'articleion',
 				sameSite: 'lax',
 				maxAge: ms('15m'),
 			});
