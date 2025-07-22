@@ -14,7 +14,10 @@ import useCrud from '../hooks/useCrud';
 import { DICT } from '../i18n/fr';
 import { formatDiscount, formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
-import type { SaleStatus } from '../../../shared/constants';
+import {
+	ORDER_STATUS_COLOR_MAP,
+	type OrderStatus,
+} from '../../../shared/constants';
 
 export default function Purchases() {
 	const {
@@ -39,19 +42,6 @@ export default function Purchases() {
 	if (isLoading) {
 		return <ResourceLoader />;
 	}
-
-	const getStatusColor = (status: SaleStatus) => {
-		switch (status) {
-			case 'pending':
-				return 'secondary';
-			case 'partially_paid':
-				return 'info';
-			case 'paid':
-				return 'primary';
-			case 'cancelled':
-				return 'error';
-		}
-	};
 
 	return (
 		<Box>
@@ -90,7 +80,7 @@ export default function Purchases() {
 								<Chip
 									key={purchase.id}
 									label={DICT.orderStatus[purchase.status]}
-									color={getStatusColor(purchase.status)}
+									color={ORDER_STATUS_COLOR_MAP[purchase.status]}
 									size='small'
 									sx={{ px: 0.5 }}
 								/>

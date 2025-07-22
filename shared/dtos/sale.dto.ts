@@ -7,6 +7,7 @@ import { AccountDto } from './account.dto';
 
 export const CreateSaleItemDto = z.object({
 	articleId: z.string().min(1, 'Article requis'),
+	articleName: z.string().optional(),
 	price: z.number().min(0, 'Le prix doit être positif'),
 	quantity: z.number().int().min(1, 'La quantité doit être au moins 1'),
 });

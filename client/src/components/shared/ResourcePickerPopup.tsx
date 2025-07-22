@@ -23,14 +23,7 @@ import {
 	Close as CloseIcon,
 	Check as CheckIcon,
 } from '@mui/icons-material';
-import { useClients } from '../../hooks/ressources/useClients';
-import { useUsers } from '../../hooks/ressources/useUsers';
-import { useSuppliers } from '../../hooks/ressources/useSuppliers';
-import { useArticles } from '../../hooks/ressources/useArticles';
-import { useAccounts } from '../../hooks/ressources/useAccounts';
-import type { UseQueryResult } from '@tanstack/react-query';
-import type { PaginationParams } from '../../services/api.service';
-import { useCategories } from '../../hooks/ressources/useCategories';
+import { useResource } from '../../hooks/ressources/useResource';
 
 export type ResourceType =
 	| 'user'
@@ -52,35 +45,6 @@ interface ResourcePickerProps {
 	onSelect: (resource: Resource) => void;
 	pageSize?: number;
 }
-
-const useResource = (
-	resourceType: ResourceType,
-	params?: PaginationParams
-): UseQueryResult<any, Error> => {
-	switch (resourceType) {
-		case 'client':
-			return useClients(params);
-		case 'user':
-			return useUsers(params);
-		case 'supplier':
-			return useSuppliers(params);
-		case 'category':
-			return useCategories(params);
-		case 'article':
-			return useArticles(params);
-		case 'account':
-			return useAccounts(params);
-		default:
-			return {
-				data: {
-					data: [],
-					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
-				},
-				isLoading: false,
-				error: null,
-			} as any;
-	}
-};
 
 export default function ResourcePickerPopup({
 	onClose,
@@ -183,40 +147,28 @@ export default function ResourcePickerPopup({
 							<Table size='small'>
 								<TableHead>
 									<TableRow>
-										<TableCell>Référence</TableCell>
-										<TableCell>Nom</TableCell>
+										<TableCell sx={{ fontWeight: 'bold' }}>Référence</TableCell>
+										<TableCell sx={{ fontWeight: 'bold' }}>Nom</TableCell>
 									</TableRow>
 								</TableHead>
 
 								<TableBody>
-									{resources.length === 0 && (
-										<TableRow>
-											<TableCell colSpan={3} align='center'>
-												<Typography color='textSecondary'>
-													{searchTerm
-														? 'Aucune ressource trouvée'
-														: 'Aucune ressource disponible'}
-												</Typography>
+									{resources.map((resource: Resource) => (
+										<TableRow key={resource.id} hover>
+											<TableCell>{resource.ref}</TableCell>
+											<TableCell>{resource.name}</TableCell>
+											<TableCell align='right'>
+												<Button
+													variant='outlined'
+													size='small'
+													startIcon={<CheckIcon />}
+													onClick={() => handleSelect(resource)}
+												>
+													Choisir
+												</Button>
 											</TableCell>
 										</TableRow>
-									)}
-									{resources.length > 0 &&
-										resources.map((resource: Resource) => (
-											<TableRow key={resource.id} hover>
-												<TableCell>{resource.ref}</TableCell>
-												<TableCell>{resource.name}</TableCell>
-												<TableCell align='right'>
-													<Button
-														variant='outlined'
-														size='small'
-														startIcon={<CheckIcon />}
-														onClick={() => handleSelect(resource)}
-													>
-														Choisir
-													</Button>
-												</TableCell>
-											</TableRow>
-										))}
+									))}
 								</TableBody>
 							</Table>
 						</TableContainer>

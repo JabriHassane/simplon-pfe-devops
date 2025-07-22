@@ -42,6 +42,8 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 	} = useForm({
 		resolver: zodResolver(CreateSaleDto),
 		defaultValues: init || {
+			date: '',
+			agentId: '',
 			clientId: '',
 			items: [{ articleId: '', quantity: 1, price: 0 }],
 			discountAmount: 0,
@@ -110,6 +112,20 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 						resourceType='client'
 						error={!!errors.clientId}
 						helperText={errors.clientId?.message as string}
+						required
+					/>
+				</Grid>
+
+				<Grid size={6}>
+					<ResourcePickerField
+						label='Agent'
+						value={watch('agentId') || ''}
+						onChange={(value) => {
+							setValue('agentId', value);
+						}}
+						resourceType='user'
+						error={!!errors.agentId}
+						helperText={errors.agentId?.message as string}
 						required
 					/>
 				</Grid>

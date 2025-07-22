@@ -143,13 +143,15 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 								onClick={() => handleClick('items')}
 								size='small'
 								color={extension === 'items' ? 'info' : 'default'}
-							>
+								disabled={items.length === 0}
+								>
 								<FormatListBulleted />
 							</IconButton>
 							<IconButton
 								onClick={() => handleClick('payments')}
 								size='small'
 								color={extension === 'payments' ? 'info' : 'default'}
+								disabled={payments.length === 0}
 							>
 								<HistoryOutlined />
 							</IconButton>

@@ -7,7 +7,14 @@ export const ORDER_STATUSES = [
 	'paid',
 	'cancelled',
 ] as const;
-export type SaleStatus = (typeof ORDER_STATUSES)[number];
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export const ORDER_STATUS_COLOR_MAP = {
+	pending: 'warning',
+	partially_paid: 'info',
+	paid: 'primary',
+	cancelled: 'error',
+} as const;
 
 export const DISCOUNT_TYPES = ['percentage', 'fixed'] as const;
 export type DiscountType = (typeof DISCOUNT_TYPES)[number];

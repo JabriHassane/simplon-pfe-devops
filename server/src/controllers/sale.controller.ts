@@ -11,7 +11,8 @@ type SaleItemInput = { articleId: string; price: number; quantity: number };
 export const SaleController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } = getSalePaginationCondition(req);
+			const { page, limit, skip, whereClause } =
+				getSalePaginationCondition(req);
 
 			const salesPromise = prisma.sale.findMany({
 				where: whereClause,
@@ -47,8 +48,6 @@ export const SaleController = {
 				salesPromise,
 				salesCountPromise,
 			]);
-
-			console.log(sales[0].payments);
 
 			const totalPages = Math.ceil(total / limit);
 

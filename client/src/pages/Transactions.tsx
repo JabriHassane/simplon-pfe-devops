@@ -73,8 +73,8 @@ export default function Transactions() {
 					data: {
 						ref: transaction.ref,
 						date: formatDate(transaction.date),
-						from: transaction.from?.name || 'N/A',
-						to: transaction.to?.name || 'N/A',
+						from: transaction.from?.name || '-',
+						to: transaction.to?.name || '-',
 						type: (
 							<Chip
 								label={DICT.transactionType[transaction.type]}

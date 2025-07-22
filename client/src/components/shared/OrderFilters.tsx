@@ -5,24 +5,11 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Button,
 	Grid,
 	IconButton,
-	Collapse,
-	Paper,
-	Card,
-	InputAdornment,
 } from '@mui/material';
-import {
-	FilterList as FilterIcon,
-	Clear as ClearIcon,
-	ExpandMore as ExpandMoreIcon,
-	ExpandLess as ExpandLessIcon,
-	Clear,
-} from '@mui/icons-material';
-import { useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { CalendarIcon, DatePicker } from '@mui/x-date-pickers';
+import { Clear } from '@mui/icons-material';
+import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
 import { ORDER_STATUSES } from '../../../../shared/constants';
@@ -37,143 +24,83 @@ export interface OrderFiltersData {
 	status?: string;
 }
 
-interface OrderFiltersProps {
-	onFiltersChange: (filters: OrderFiltersData) => void;
-	onClearFilters: () => void;
+interface Props {
+	filters: OrderFiltersData;
+	onFiltersChange: (newFilters: Partial<OrderFiltersData>) => void;
 }
 
-export default function OrderFilters({
-	onFiltersChange,
-	onClearFilters,
-}: OrderFiltersProps) {
-	const [expanded, setExpanded] = useState(false);
-	const [hasActiveFilters, setHasActiveFilters] = useState(false);
-
-	const {
-		control,
-		handleSubmit,
-		reset,
-		watch,
-		setValue,
-		formState: { isDirty },
-	} = useForm<OrderFiltersData>({
-		defaultValues: {
-			ref: '',
-			dateFrom: '',
-			dateTo: '',
-			agentId: '',
-			clientId: '',
-			status: '',
-		},
-	});
-
-	const watchedValues = watch();
-
-	// Check if any filters are active
-	const checkActiveFilters = (values: OrderFiltersData) => {
-		return Object.values(values).some((value) => value && value !== '');
-	};
-
-	const onSubmit = (data: OrderFiltersData) => {
-		const activeFilters = checkActiveFilters(data);
-		setHasActiveFilters(activeFilters);
-		onFiltersChange(data);
-	};
-
-	const handleClearFilters = () => {
-		reset();
-		setHasActiveFilters(false);
-		onClearFilters();
-	};
-
-	const handleToggleExpanded = () => {
-		setExpanded(!expanded);
-	};
-
+export default function OrderFilters({ filters, onFiltersChange }: Props) {
 	return (
-		<Box component='form' onSubmit={handleSubmit(onSubmit)} sx={{ my: 2 }}>
+		<Box sx={{ my: 2 }}>
 			<Grid container spacing={1}>
 				<Grid size={2}>
-					<Controller
-						name='ref'
-						control={control}
-						render={({ field }) => (
-							<Box display='flex' alignItems='center' gap={1}>
-								<IconButton
-									size='small'
-									onClick={() => field.onChange('')}
-									disabled={!field.value}
-								>
-									<Clear />
-								</IconButton>
-								<TextField
-									{...field}
-									fullWidth
-									label='Référence'
-									variant='outlined'
-									placeholder='Rechercher par référence...'
-								/>
-							</Box>
-						)}
-					/>
+					<Box display='flex' alignItems='center' gap={1}>
+						<IconButton
+							size='small'
+							onClick={() => onFiltersChange({ ref: '' })}
+							disabled={!filters.ref}
+						>
+							<Clear />
+						</IconButton>
+						<TextField
+							value={filters.ref}
+							onChange={(e) => onFiltersChange({ ref: e.target.value })}
+							label='Référence'
+							variant='outlined'
+							placeholder='Rechercher par référence...'
+							fullWidth
+						/>
+					</Box>
 				</Grid>
 
 				<Grid size={2}>
-					<Controller
-						name='dateFrom'
-						control={control}
-						render={({ field }) => (
-							<Box display='flex' alignItems='center' gap={1}>
-								<IconButton
-									size='small'
-									onClick={() => field.onChange(null)}
-									disabled={!field.value}
-								>
-									<Clear />
-								</IconButton>
-								<DatePicker
-									sx={{ width: '100%' }}
-									label='Date de début'
-									value={field.value ? dayjs(field.value) : null}
-									onChange={(date) => field.onChange(date?.toISOString())}
-								/>
-							</Box>
-						)}
-					/>
+					<Box display='flex' alignItems='center' gap={1}>
+						<IconButton
+							size='small'
+							onClick={() => onFiltersChange({ dateFrom: '' })}
+							disabled={!filters.dateFrom}
+						>
+							<Clear />
+						</IconButton>
+						<DatePicker
+							sx={{ width: '100%' }}
+							label='Date de début'
+							value={filters.dateFrom ? dayjs(filters.dateFrom) : null}
+							onChange={(date) =>
+								onFiltersChange({ dateFrom: date?.toISOString() })
+							}
+						/>
+					</Box>
 				</Grid>
 
 				<Grid size={2}>
-					<Controller
-						name='dateTo'
-						control={control}
-						render={({ field }) => (
-							<Box display='flex' alignItems='center' gap={1}>
-								<IconButton
-									size='small'
-									onClick={() => field.onChange(null)}
-									disabled={!field.value}
-								>
-									<Clear />
-								</IconButton>
-								<DatePicker
-									sx={{ width: '100%' }}
-									label='Date de fin'
-									value={field.value ? dayjs(field.value) : null}
-									onChange={(date) => field.onChange(date?.toISOString())}
-								/>
-							</Box>
-						)}
-					/>
+					<Box display='flex' alignItems='center' gap={1}>
+						<IconButton
+							size='small'
+							onClick={() => onFiltersChange({ dateTo: '' })}
+							disabled={!filters.dateTo}
+						>
+							<Clear />
+						</IconButton>
+						<DatePicker
+							sx={{ width: '100%' }}
+							label='Date de fin'
+							value={filters.dateTo ? dayjs(filters.dateTo) : null}
+							onChange={(date) =>
+								onFiltersChange({ dateTo: date?.toISOString() })
+							}
+						/>
+					</Box>
 				</Grid>
 
 				<Grid size={2}>
 					<ResourcePickerField
 						label='Agent'
-						value={watchedValues.agentId || ''}
-						onChange={(value) => setValue('agentId', value)}
+						value={filters.agentId || ''}
+						onChange={(value) => onFiltersChange({ agentId: value })}
 						resourceType='user'
 						placeholder='Sélectionner un agent...'
-						onClear={() => setValue('agentId', '')}
+						onClear={() => onFiltersChange({ agentId: '' })}
 						showClearButton
 					/>
 				</Grid>
@@ -181,54 +108,49 @@ export default function OrderFilters({
 				<Grid size={2}>
 					<ResourcePickerField
 						label='Client'
-						value={watchedValues.clientId || ''}
-						onChange={(value) => setValue('clientId', value)}
+						value={filters.clientId || ''}
+						onChange={(value) => onFiltersChange({ clientId: value })}
 						resourceType='client'
 						placeholder='Sélectionner un client...'
-						onClear={() => setValue('clientId', '')}
+						onClear={() => onFiltersChange({ clientId: '' })}
 						showClearButton
 					/>
 				</Grid>
 
 				<Grid size={2}>
-					<Controller
-						name='status'
-						control={control}
-						render={({ field }) => (
-							<Box display='flex' alignItems='center' gap={1}>
-								<IconButton
-									size='small'
-									onClick={() => field.onChange('')}
-									disabled={!field.value}
-								>
-									<Clear />
-								</IconButton>
+					<Box display='flex' alignItems='center' gap={1}>
+						<IconButton
+							size='small'
+							onClick={() => onFiltersChange({ status: '' })}
+							disabled={!filters.status}
+						>
+							<Clear />
+						</IconButton>
 
-								<FormControl fullWidth>
-									<InputLabel>Statut</InputLabel>
-									<Select
-										{...field}
-										label='Statut'
-										IconComponent={field.value ? undefined : undefined}
-										MenuProps={{
-											PaperProps: {
-												style: {
-													maxHeight: 300,
-												},
-											},
-										}}
-									>
-										<MenuItem value=''>Tous</MenuItem>
-										{ORDER_STATUSES.map((status) => (
-											<MenuItem key={status} value={status}>
-												{DICT.orderStatus[status]}
-											</MenuItem>
-										))}
-									</Select>
-								</FormControl>
-							</Box>
-						)}
-					/>
+						<FormControl fullWidth>
+							<InputLabel>Statut</InputLabel>
+							<Select
+								value={filters.status}
+								onChange={(e) => onFiltersChange({ status: e.target.value })}
+								label='Statut'
+								IconComponent={filters.status ? undefined : undefined}
+								MenuProps={{
+									PaperProps: {
+										style: {
+											maxHeight: 300,
+										},
+									},
+								}}
+							>
+								<MenuItem value=''>Tous</MenuItem>
+								{ORDER_STATUSES.map((status) => (
+									<MenuItem key={status} value={status}>
+										{DICT.orderStatus[status]}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</Box>
 				</Grid>
 			</Grid>
 		</Box>

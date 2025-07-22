@@ -22,28 +22,6 @@ async function main() {
 
 	console.log('🗑️  Cleared existing data');
 
-	// console.log('Creating ref sequences');
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE user_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE account_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE category_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE article_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE client_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE supplier_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE sale_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE purchase_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`DELETE SEQUENCE transaction_ref_seq START 1`);
-
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE users_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE accounts_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE categories_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE articles_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE clients_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE suppliers_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE sales_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE purchases_ref_seq START 1`);
-	// await prisma.$executeRawUnsafe(`CREATE SEQUENCE transactions_ref_seq START 1`);
-	// console.log('Ref sequences created');
-
 	// Create super admin user
 	const hashedPassword = await bcrypt.hash('admin123', 10);
 	const superAdmin = await prisma.user.create({
@@ -70,6 +48,26 @@ async function main() {
 		data: {
 			ref: await getNextRef('users'),
 			name: 'yasmine',
+			password: hashedPassword,
+			role: 'agent',
+			createdById: superAdmin.id,
+		},
+	});
+
+	const agent3 = await prisma.user.create({
+		data: {
+			ref: await getNextRef('users'),
+			name: 'omar',
+			password: hashedPassword,
+			role: 'agent',
+			createdById: superAdmin.id,
+		},
+	});
+
+	const agent4 = await prisma.user.create({
+		data: {
+			ref: await getNextRef('users'),
+			name: 'fatima',
 			password: hashedPassword,
 			role: 'agent',
 			createdById: superAdmin.id,
@@ -104,6 +102,22 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
+		prisma.account.create({
+			data: {
+				ref: await getNextRef('accounts'),
+				name: 'Banque Secondaire',
+				balance: 75000,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.account.create({
+			data: {
+				ref: await getNextRef('accounts'),
+				name: 'Compte Épargne',
+				balance: 200000,
+				createdById: superAdmin.id,
+			},
+		}),
 	]);
 
 	console.log('💰 Created accounts');
@@ -135,6 +149,27 @@ async function main() {
 			data: {
 				ref: await getNextRef('categories'),
 				name: 'Matériel de Jardinage',
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				ref: await getNextRef('categories'),
+				name: 'Plantes Grimpantes',
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				ref: await getNextRef('categories'),
+				name: 'Cactus et Succulentes',
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.category.create({
+			data: {
+				ref: await getNextRef('categories'),
+				name: 'Herbes Aromatiques',
 				createdById: superAdmin.id,
 			},
 		}),
@@ -210,6 +245,50 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
+		prisma.article.create({
+			data: {
+				ref: await getNextRef('articles'),
+				name: 'Jasmin Grimpant',
+				image: 'https://via.placeholder.com/300x300?text=Jasmin',
+				price: 129.99,
+				inventory: 45,
+				categoryId: categories[4].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.article.create({
+			data: {
+				ref: await getNextRef('articles'),
+				name: 'Cactus Barrel',
+				image: 'https://via.placeholder.com/300x300?text=Cactus',
+				price: 69.99,
+				inventory: 80,
+				categoryId: categories[5].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.article.create({
+			data: {
+				ref: await getNextRef('articles'),
+				name: 'Basilic Bio',
+				image: 'https://via.placeholder.com/300x300?text=Basilic',
+				price: 29.99,
+				inventory: 120,
+				categoryId: categories[6].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.article.create({
+			data: {
+				ref: await getNextRef('articles'),
+				name: 'Menthe Fraîche',
+				image: 'https://via.placeholder.com/300x300?text=Menthe',
+				price: 24.99,
+				inventory: 150,
+				categoryId: categories[6].id,
+				createdById: superAdmin.id,
+			},
+		}),
 	]);
 
 	console.log('🌿 Created plants and materials');
@@ -252,6 +331,33 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
+		prisma.client.create({
+			data: {
+				ref: await getNextRef('clients'),
+				name: 'Hassan Berrada',
+				phone: '0656789012',
+				address: '567 Avenue des FAR, Tanger',
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.client.create({
+			data: {
+				ref: await getNextRef('clients'),
+				name: 'Leila Kadiri',
+				phone: '0667890123',
+				address: '890 Rue Zerktouni, Meknès',
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.client.create({
+			data: {
+				ref: await getNextRef('clients'),
+				name: 'Youssef Chraibi',
+				phone: '0678901234',
+				address: '234 Boulevard Moulay Ismail, Tétouan',
+				createdById: superAdmin.id,
+			},
+		}),
 	]);
 
 	console.log('👤 Created clients');
@@ -285,12 +391,31 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
+		prisma.supplier.create({
+			data: {
+				ref: await getNextRef('suppliers'),
+				name: 'Fleurs du Rif',
+				phone: '0525678901',
+				address: '400 Zone Artisanale, Al Hoceima',
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.supplier.create({
+			data: {
+				ref: await getNextRef('suppliers'),
+				name: 'Bio Plantes Maroc',
+				phone: '0526789012',
+				address: '500 Route Principale, Khemisset',
+				createdById: superAdmin.id,
+			},
+		}),
 	]);
 
 	console.log('🏢 Created suppliers');
 
-	// Create some sales
+	// Create more sales with varied statuses and payment methods
 	const sales = await Promise.all([
+		// Original sales
 		prisma.sale.create({
 			data: {
 				ref: await getNextRef('sales'),
@@ -339,12 +464,46 @@ async function main() {
 				createdById: agent1.id,
 			},
 		}),
+		// Additional sales
+		prisma.sale.create({
+			data: {
+				ref: await getNextRef('sales'),
+				date: '2024-02-01T00:00:00.000Z',
+				receiptNumber: 'REC-004',
+				invoiceNumber: 'INV-004',
+				totalPrice: 599.97,
+				totalPaid: 599.97,
+				totalDue: 0,
+				status: 'paid',
+				note: 'Paiement comptant',
+				agentId: agent3.id,
+				clientId: clients[4].id,
+				createdById: agent3.id,
+			},
+		}),
+		prisma.sale.create({
+			data: {
+				ref: await getNextRef('sales'),
+				date: '2024-02-05T00:00:00.000Z',
+				receiptNumber: 'REC-005',
+				invoiceNumber: 'INV-005',
+				totalPrice: 849.95,
+				totalPaid: 400,
+				totalDue: 449.95,
+				status: 'partially_paid',
+				note: 'Paiement échelonné',
+				agentId: agent4.id,
+				clientId: clients[5].id,
+				createdById: agent4.id,
+			},
+		}),
 	]);
 
 	console.log('📋 Created sales');
 
-	// Create sale items
+	// Create more sale items
 	await Promise.all([
+		// Original sale items
 		prisma.saleItem.create({
 			data: {
 				price: 299.99,
@@ -390,12 +549,50 @@ async function main() {
 				createdById: agent1.id,
 			},
 		}),
+		// Additional sale items
+		prisma.saleItem.create({
+			data: {
+				price: 129.99,
+				quantity: 2,
+				saleId: sales[3].id,
+				articleId: articles[6].id,
+				createdById: agent3.id,
+			},
+		}),
+		prisma.saleItem.create({
+			data: {
+				price: 69.99,
+				quantity: 3,
+				saleId: sales[3].id,
+				articleId: articles[7].id,
+				createdById: agent3.id,
+			},
+		}),
+		prisma.saleItem.create({
+			data: {
+				price: 29.99,
+				quantity: 5,
+				saleId: sales[4].id,
+				articleId: articles[8].id,
+				createdById: agent4.id,
+			},
+		}),
+		prisma.saleItem.create({
+			data: {
+				price: 24.99,
+				quantity: 10,
+				saleId: sales[4].id,
+				articleId: articles[9].id,
+				createdById: agent4.id,
+			},
+		}),
 	]);
 
 	console.log('🌿 Created sale items');
 
-	// Create purchases
+	// Create more purchases
 	const purchases = await Promise.all([
+		// Original purchases
 		prisma.purchase.create({
 			data: {
 				ref: await getNextRef('purchases'),
@@ -444,12 +641,46 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
+		// Additional purchases
+		prisma.purchase.create({
+			data: {
+				ref: await getNextRef('purchases'),
+				date: '2024-02-01T00:00:00.000Z',
+				receiptNumber: 'ACH-REC-004',
+				invoiceNumber: 'ACH-INV-004',
+				totalPrice: 4500,
+				totalPaid: 4500,
+				totalDue: 0,
+				status: 'paid',
+				note: 'Commande plantes exotiques',
+				agentId: superAdmin.id,
+				supplierId: suppliers[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchase.create({
+			data: {
+				ref: await getNextRef('purchases'),
+				date: '2024-02-08T00:00:00.000Z',
+				receiptNumber: 'ACH-REC-005',
+				invoiceNumber: 'ACH-INV-005',
+				totalPrice: 6000,
+				totalPaid: 0,
+				totalDue: 6000,
+				status: 'pending',
+				note: 'Commande saisonnière',
+				agentId: superAdmin.id,
+				supplierId: suppliers[4].id,
+				createdById: superAdmin.id,
+			},
+		}),
 	]);
 
 	console.log('🛒 Created purchases');
 
-	// Create purchase items
+	// Create more purchase items
 	await Promise.all([
+		// Original purchase items
 		prisma.purchaseItem.create({
 			data: {
 				price: 200,
@@ -486,13 +717,50 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
+		// Additional purchase items
+		prisma.purchaseItem.create({
+			data: {
+				price: 80,
+				quantity: 30,
+				purchaseId: purchases[3].id,
+				articleId: articles[6].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchaseItem.create({
+			data: {
+				price: 40,
+				quantity: 50,
+				purchaseId: purchases[3].id,
+				articleId: articles[7].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchaseItem.create({
+			data: {
+				price: 15,
+				quantity: 100,
+				purchaseId: purchases[4].id,
+				articleId: articles[8].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.purchaseItem.create({
+			data: {
+				price: 12,
+				quantity: 150,
+				purchaseId: purchases[4].id,
+				articleId: articles[9].id,
+				createdById: superAdmin.id,
+			},
+		}),
 	]);
 
 	console.log('🌿 Created purchase items');
 
-	// Create transactions
+	// Create more transactions
 	await Promise.all([
-		// Sale 1 payments (fully paid - 389.98)
+		// Original transactions
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -519,8 +787,6 @@ async function main() {
 				createdById: agent1.id,
 			},
 		}),
-
-		// Sale 2 payments (partially paid - 200 out of 279.98)
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -534,8 +800,6 @@ async function main() {
 				createdById: agent2.id,
 			},
 		}),
-
-		// Purchase 1 payments (fully paid - 5000)
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -562,8 +826,6 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
-
-		// Purchase 2 payments (partially paid - 1500 out of 2000)
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -590,8 +852,6 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
-
-		// Purchase 3 payments (partially paid - 2000 out of 3500)
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -618,8 +878,6 @@ async function main() {
 				createdById: superAdmin.id,
 			},
 		}),
-
-		// Account transfer
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),

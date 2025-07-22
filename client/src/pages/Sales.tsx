@@ -1,4 +1,4 @@
-import { Box, Chip } from '@mui/material';
+import { Box, Chip, TablePagination } from '@mui/material';
 import { useState } from 'react';
 import SaleForm from '../components/forms/SaleForm';
 import { useDeleteSale, useSales } from '../hooks/ressources/useSales';
@@ -10,7 +10,9 @@ import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import useCrud from '../hooks/useCrud';
 import { DICT } from '../i18n/fr';
-import type { SaleStatus } from '../../../shared/constants';
+import {
+	ORDER_STATUS_COLOR_MAP
+} from '../../../shared/constants';
 import { formatDiscount, formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
 import OrderFilters, {
@@ -19,6 +21,8 @@ import OrderFilters, {
 
 export default function Sales() {
 	const [filters, setFilters] = useState<OrderFiltersData>({});
+	const [page, setPage] = useState(0);
+	const [rowsPerPage, setRowsPerPage] = useState(10);
 
 	const {
 		openFormPopup,
@@ -34,6 +38,8 @@ export default function Sales() {
 		isLoading,
 		error,
 	} = useSales({
+		page: page + 1, // API uses 1-based pagination
+		limit: rowsPerPage,
 		search: filters.ref,
 		dateFrom: filters.dateFrom,
 		dateTo: filters.dateTo,
@@ -50,30 +56,29 @@ export default function Sales() {
 		}
 	};
 
-	const handleFiltersChange = (newFilters: OrderFiltersData) => {
-		setFilters(newFilters);
+	const handleFiltersChange = (newFilters: Partial<OrderFiltersData>) => {
+		setFilters({
+			...filters,
+			...newFilters,
+		});
+		// Reset to first page when filters change
+		setPage(0);
 	};
 
-	const handleClearFilters = () => {
-		setFilters({});
+	const handlePageChange = (event: unknown, newPage: number) => {
+		setPage(newPage);
+	};
+
+	const handleRowsPerPageChange = (
+		event: React.ChangeEvent<HTMLInputElement>
+	) => {
+		setRowsPerPage(parseInt(event.target.value, 10));
+		setPage(0);
 	};
 
 	if (isLoading) {
 		return <ResourceLoader />;
 	}
-
-	const getStatusColor = (status: SaleStatus) => {
-		switch (status) {
-			case 'pending':
-				return 'secondary';
-			case 'partially_paid':
-				return 'info';
-			case 'paid':
-				return 'primary';
-			case 'cancelled':
-				return 'error';
-		}
-	};
 
 	return (
 		<Box>
@@ -83,10 +88,7 @@ export default function Sales() {
 				error={!!error}
 			/>
 
-			<OrderFilters
-				onFiltersChange={handleFiltersChange}
-				onClearFilters={handleClearFilters}
-			/>
+			<OrderFilters filters={filters} onFiltersChange={handleFiltersChange} />
 
 			<ResourceTable
 				headers={[
@@ -114,7 +116,7 @@ export default function Sales() {
 								<Chip
 									key={sale.id}
 									label={DICT.orderStatus[sale.status]}
-									color={getStatusColor(sale.status)}
+									color={ORDER_STATUS_COLOR_MAP[sale.status]}
 									size='small'
 									sx={{ px: 0.5 }}
 								/>
@@ -125,6 +127,23 @@ export default function Sales() {
 				onEdit={handleOpenFormPopup}
 				onDelete={handleOpenDeletePopup}
 			/>
+
+			{sales?.pagination && (
+				<TablePagination
+					component='div'
+					count={sales.pagination.total}
+					page={page}
+					onPageChange={handlePageChange}
+					rowsPerPage={rowsPerPage}
+					onRowsPerPageChange={handleRowsPerPageChange}
+					rowsPerPageOptions={[5, 10, 25, 50]}
+					labelRowsPerPage='Lignes par page:'
+					labelDisplayedRows={({ from, to, count }) =>
+						`${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
+					}
+					sx={{ mt: 2 }}
+				/>
+			)}
 
 			{openFormPopup && (
 				<ResourceFormPopup
