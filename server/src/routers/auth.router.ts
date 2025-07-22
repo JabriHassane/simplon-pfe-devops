@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
 import { AuthController } from '../controllers/auth.controller';
 import { validate } from '../middlewares/validation.middleware';
-import { LoginDto } from '../../../shared/dtos/auth.dto';
+import { LoginDto, VerifyPasswordDto } from '../../../shared/dtos/auth.dto';
 
 const router = Router();
 
@@ -10,11 +10,18 @@ const router = Router();
 router.post('/login', validate(LoginDto), AuthController.login);
 router.post('/refresh', AuthController.refresh);
 
-// Protected routes (require authentication and agent role)
+// Protected routes (require authentication)
 router.use(authenticate);
-router.use(requireAgent);
 
 router.get('/me', AuthController.getConnectedUser);
 router.post('/logout', AuthController.logout);
+router.post(
+	'/verify-password',
+	validate(VerifyPasswordDto),
+	AuthController.verifyPassword
+);
+
+// Routes that require agent role
+router.use(requireAgent);
 
 export default router;

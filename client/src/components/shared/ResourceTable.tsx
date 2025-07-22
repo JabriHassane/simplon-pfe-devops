@@ -49,7 +49,7 @@ function ResourceTable({ headers, rows, onEdit, onDelete }: Props) {
 
 	return (
 		<Table size='small'>
-			<TableHead>
+			<TableHead sx={{ backgroundColor: 'background.default' }}>
 				<TableRow>
 					{headers.map((header) => (
 						<TableCell key={header.id} sx={{ fontWeight: 'bold' }}>
@@ -97,6 +97,7 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 
 	const itemsHeaders = [
 		{ id: 'ref', name: 'Ref' },
+		{ id: 'name', name: 'Nom' },
 		{ id: 'quantity', name: 'Quantité' },
 		{ id: 'price', name: 'Prix' },
 	];
@@ -113,7 +114,8 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 	const items = order.items?.map((item) => ({
 		item: item,
 		data: {
-			ref: item.article.ref,
+			ref: item.article?.ref || '',
+			name: item.article?.name || '',
 			quantity: item.quantity,
 			price: formatPrice(item.price),
 		},
@@ -144,9 +146,10 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 								size='small'
 								color={extension === 'items' ? 'info' : 'default'}
 								disabled={items.length === 0}
-								>
+							>
 								<FormatListBulleted />
 							</IconButton>
+
 							<IconButton
 								onClick={() => handleClick('payments')}
 								size='small'
@@ -157,9 +160,11 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 							</IconButton>
 						</>
 					)}
+
 					<IconButton onClick={() => onEdit(row.item)} size='small'>
 						<EditOutlined />
 					</IconButton>
+
 					<IconButton onClick={() => onDelete(row.item)} size='small'>
 						<DeleteOutline />
 					</IconButton>
@@ -168,15 +173,15 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 
 			{items && payments && extension && (
 				<TableRow>
-					<TableCell sx={{ py: 0, px: 5 }} colSpan={12}>
-						<Collapse in={!!extension} timeout='auto' unmountOnExit>
+					<TableCell sx={{ py: 0, pr: 0, pl: 10 }} colSpan={12}>
+						{extension && (
 							<ResourceTable
 								headers={extension === 'items' ? itemsHeaders : paymentsHeaders}
 								rows={extension === 'items' ? items : payments}
 								onEdit={onEdit}
 								onDelete={onDelete}
 							/>
-						</Collapse>
+						)}
 					</TableCell>
 				</TableRow>
 			)}

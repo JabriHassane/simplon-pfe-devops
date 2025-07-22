@@ -36,11 +36,6 @@ enum TransactionType {
   transfer
 }
 
-enum DiscountType {
-  fixed
-  percentage
-}
-
 model User {
   id        String    @id @default(cuid())
   ref       String    @unique
@@ -232,25 +227,22 @@ model Sale {
 
   date DateTime
 
-  receiptNumber String
-  invoiceNumber String
+  receiptNumber String?
+  invoiceNumber String?
 
   totalPrice Float
   totalPaid  Float
   totalDue   Float
 
   status SaleStatus
-  note   String
-
-  discountAmount Float        @default(0)
-  discountType   DiscountType @default(fixed)
+  note   String?
 
   // Relations
-  agentId String
-  agent   User   @relation("SaleAgent", fields: [agentId], references: [id])
+  agentId String?
+  agent   User?   @relation("SaleAgent", fields: [agentId], references: [id])
 
-  clientId String
-  client   Client @relation(fields: [clientId], references: [id])
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id])
 
   items    SaleItem[]
   payments Transaction[]
@@ -278,8 +270,10 @@ model SaleItem {
   saleId String
   sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
-  articleId String
-  article   Article @relation(fields: [articleId], references: [id])
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id])
+
+  articleName String?
 
   createdById String?
   createdBy   User?   @relation("SaleItemCreatedBy", fields: [createdById], references: [id])
@@ -300,25 +294,22 @@ model Purchase {
 
   date DateTime
 
-  receiptNumber String
-  invoiceNumber String
+  receiptNumber String?
+  invoiceNumber String?
 
   totalPrice Float
   totalPaid  Float
   totalDue   Float
 
   status SaleStatus
-  note   String
-
-  discountAmount Float        @default(0)
-  discountType   DiscountType @default(fixed)
+  note   String?
 
   // Relations
-  agentId String
-  agent   User   @relation("PurchaseAgent", fields: [agentId], references: [id])
+  agentId String?
+  agent   User?   @relation("PurchaseAgent", fields: [agentId], references: [id])
 
-  supplierId String
-  supplier   Supplier @relation(fields: [supplierId], references: [id])
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
   items    PurchaseItem[]
   payments Transaction[]
@@ -346,8 +337,10 @@ model PurchaseItem {
   purchaseId String
   purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
 
-  articleId String
-  article   Article @relation(fields: [articleId], references: [id])
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id])
+
+  articleName String?
 
   createdById String?
   createdBy   User?   @relation("PurchaseItemCreatedBy", fields: [createdById], references: [id])
@@ -368,6 +361,7 @@ model Account {
 
   name    String
   balance Float
+  paymentMethods String[]
 
   // Relations
   transactionsFrom Transaction[] @relation("AccountFrom")
@@ -396,8 +390,8 @@ model Transaction {
   amount        Float
 
   // Relations
-  agentId String
-  agent   User   @relation("TransactionAgent", fields: [agentId], references: [id])
+  agentId String?
+  agent   User?   @relation("TransactionAgent", fields: [agentId], references: [id])
 
   saleId String?
   sale   Sale?   @relation(fields: [saleId], references: [id])

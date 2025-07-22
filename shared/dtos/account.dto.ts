@@ -1,9 +1,11 @@
 import { z } from 'zod';
+import { PAYMENT_METHODS } from '../constants';
 
 export const CreateAccountDto = z.object({
-	name: z
-		.string()
-		.min(1, 'Le nom du compte est requis'),
+	name: z.string().min(1, 'Le nom du compte est requis'),
+	paymentMethods: z
+		.array(z.enum(PAYMENT_METHODS))
+		.min(1, 'Au moins une méthode de paiement est requise'),
 });
 
 export const UpdateAccountDto = CreateAccountDto;

@@ -1,5 +1,5 @@
 import { Box, Chip } from '@mui/material';
-import PurchaseForm from '../components/forms/PurchaseForm';
+import PurchaseForm from '../components/forms/order-form/PurchaseForm';
 import {
 	useDeletePurchase,
 	usePurchases,
@@ -12,12 +12,9 @@ import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import useCrud from '../hooks/useCrud';
 import { DICT } from '../i18n/fr';
-import { formatDiscount, formatPrice } from '../utils/price.utils';
+import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
-import {
-	ORDER_STATUS_COLOR_MAP,
-	type OrderStatus,
-} from '../../../shared/constants';
+import { ORDER_STATUS_COLOR_MAP } from '../../../shared/constants';
 
 export default function Purchases() {
 	const {
@@ -59,7 +56,6 @@ export default function Purchases() {
 					{ id: 'supplier', name: 'Fournisseur' },
 					{ id: 'articles', name: 'Articles' },
 					{ id: 'total', name: 'Total' },
-					{ id: 'remise', name: 'Remise' },
 					{ id: 'statut', name: 'Statut' },
 				]}
 				rows={
@@ -72,10 +68,6 @@ export default function Purchases() {
 							supplier: purchase.supplier?.name,
 							articles: purchase.items?.length,
 							total: formatPrice(purchase.totalPrice),
-							remise: formatDiscount(
-								purchase.discountAmount,
-								purchase.discountType
-							),
 							statut: (
 								<Chip
 									key={purchase.id}

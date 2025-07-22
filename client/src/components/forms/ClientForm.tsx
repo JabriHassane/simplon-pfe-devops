@@ -55,7 +55,6 @@ export default function ClientForm({ init, onClose }: ClientFormProps) {
 				fullWidth
 				label='Nom du client'
 				{...register('name')}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.name}
 				helperText={errors.name?.message as string}
@@ -66,7 +65,6 @@ export default function ClientForm({ init, onClose }: ClientFormProps) {
 				fullWidth
 				label='Téléphone'
 				{...register('phone')}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.phone}
 				helperText={errors.phone?.message as string}
@@ -77,7 +75,6 @@ export default function ClientForm({ init, onClose }: ClientFormProps) {
 				fullWidth
 				label='Adresse'
 				{...register('address')}
-				margin='normal'
 				variant='outlined'
 				multiline
 				rows={3}

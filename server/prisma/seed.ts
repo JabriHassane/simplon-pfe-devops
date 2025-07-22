@@ -27,47 +27,38 @@ async function main() {
 	const superAdmin = await prisma.user.create({
 		data: {
 			ref: await getNextRef('users'),
-			name: 'admin',
+			name: 'PPP',
 			password: hashedPassword,
 			role: 'super_admin',
 		},
 	});
 
-	// Create regular users/agents
-	const agent1 = await prisma.user.create({
+	// Create admin users
+	const admin1 = await prisma.user.create({
 		data: {
 			ref: await getNextRef('users'),
-			name: 'rachid',
+			name: 'Nabil',
 			password: hashedPassword,
-			role: 'agent',
+			role: 'admin',
 			createdById: superAdmin.id,
 		},
 	});
 
-	const agent2 = await prisma.user.create({
+	const admin2 = await prisma.user.create({
 		data: {
 			ref: await getNextRef('users'),
-			name: 'yasmine',
+			name: 'Faycal',
 			password: hashedPassword,
-			role: 'agent',
+			role: 'admin',
 			createdById: superAdmin.id,
 		},
 	});
 
-	const agent3 = await prisma.user.create({
+	// Create agent user
+	const agent = await prisma.user.create({
 		data: {
 			ref: await getNextRef('users'),
-			name: 'omar',
-			password: hashedPassword,
-			role: 'agent',
-			createdById: superAdmin.id,
-		},
-	});
-
-	const agent4 = await prisma.user.create({
-		data: {
-			ref: await getNextRef('users'),
-			name: 'fatima',
+			name: 'Oussama',
 			password: hashedPassword,
 			role: 'agent',
 			createdById: superAdmin.id,
@@ -83,6 +74,7 @@ async function main() {
 				ref: await getNextRef('accounts'),
 				name: 'Caisse Espèces',
 				balance: 15000,
+				paymentMethods: ['cash'],
 				createdById: superAdmin.id,
 			},
 		}),
@@ -91,6 +83,7 @@ async function main() {
 				ref: await getNextRef('accounts'),
 				name: 'Caisse Chèques',
 				balance: 25000,
+				paymentMethods: ['check'],
 				createdById: superAdmin.id,
 			},
 		}),
@@ -99,6 +92,7 @@ async function main() {
 				ref: await getNextRef('accounts'),
 				name: 'Banque Principale',
 				balance: 150000,
+				paymentMethods: ['bankTransfer', 'tpe'],
 				createdById: superAdmin.id,
 			},
 		}),
@@ -107,6 +101,7 @@ async function main() {
 				ref: await getNextRef('accounts'),
 				name: 'Banque Secondaire',
 				balance: 75000,
+				paymentMethods: ['bankTransfer'],
 				createdById: superAdmin.id,
 			},
 		}),
@@ -115,6 +110,7 @@ async function main() {
 				ref: await getNextRef('accounts'),
 				name: 'Compte Épargne',
 				balance: 200000,
+				paymentMethods: ['bankTransfer'],
 				createdById: superAdmin.id,
 			},
 		}),
@@ -427,9 +423,9 @@ async function main() {
 				totalDue: 0,
 				status: 'paid',
 				note: 'Livraison à domicile',
-				agentId: agent1.id,
+				agentId: agent.id,
 				clientId: clients[0].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		prisma.sale.create({
@@ -443,9 +439,9 @@ async function main() {
 				totalDue: 79.98,
 				status: 'partially_paid',
 				note: 'Paiement en plusieurs fois',
-				agentId: agent2.id,
+				agentId: admin1.id,
 				clientId: clients[1].id,
-				createdById: agent2.id,
+				createdById: admin1.id,
 			},
 		}),
 		prisma.sale.create({
@@ -459,9 +455,9 @@ async function main() {
 				totalDue: 1099.98,
 				status: 'pending',
 				note: 'Commande en attente de paiement',
-				agentId: agent1.id,
+				agentId: agent.id,
 				clientId: clients[2].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		// Additional sales
@@ -476,9 +472,9 @@ async function main() {
 				totalDue: 0,
 				status: 'paid',
 				note: 'Paiement comptant',
-				agentId: agent3.id,
+				agentId: admin2.id,
 				clientId: clients[4].id,
-				createdById: agent3.id,
+				createdById: admin2.id,
 			},
 		}),
 		prisma.sale.create({
@@ -492,9 +488,9 @@ async function main() {
 				totalDue: 449.95,
 				status: 'partially_paid',
 				note: 'Paiement échelonné',
-				agentId: agent4.id,
+				agentId: admin1.id,
 				clientId: clients[5].id,
-				createdById: agent4.id,
+				createdById: admin1.id,
 			},
 		}),
 	]);
@@ -510,7 +506,7 @@ async function main() {
 				quantity: 1,
 				saleId: sales[0].id,
 				articleId: articles[0].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -519,7 +515,7 @@ async function main() {
 				quantity: 1,
 				saleId: sales[0].id,
 				articleId: articles[2].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -528,7 +524,7 @@ async function main() {
 				quantity: 2,
 				saleId: sales[1].id,
 				articleId: articles[3].id,
-				createdById: agent2.id,
+				createdById: admin1.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -537,7 +533,7 @@ async function main() {
 				quantity: 1,
 				saleId: sales[2].id,
 				articleId: articles[1].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -546,7 +542,7 @@ async function main() {
 				quantity: 1,
 				saleId: sales[2].id,
 				articleId: articles[4].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		// Additional sale items
@@ -556,7 +552,7 @@ async function main() {
 				quantity: 2,
 				saleId: sales[3].id,
 				articleId: articles[6].id,
-				createdById: agent3.id,
+				createdById: admin2.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -565,7 +561,7 @@ async function main() {
 				quantity: 3,
 				saleId: sales[3].id,
 				articleId: articles[7].id,
-				createdById: agent3.id,
+				createdById: admin2.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -574,7 +570,7 @@ async function main() {
 				quantity: 5,
 				saleId: sales[4].id,
 				articleId: articles[8].id,
-				createdById: agent4.id,
+				createdById: admin1.id,
 			},
 		}),
 		prisma.saleItem.create({
@@ -583,7 +579,7 @@ async function main() {
 				quantity: 10,
 				saleId: sales[4].id,
 				articleId: articles[9].id,
-				createdById: agent4.id,
+				createdById: admin1.id,
 			},
 		}),
 	]);
@@ -768,10 +764,10 @@ async function main() {
 				type: 'sale',
 				paymentMethod: 'cash',
 				amount: 200,
-				agentId: agent1.id,
+				agentId: agent.id,
 				saleId: sales[0].id,
 				toId: accounts[0].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		prisma.transaction.create({
@@ -781,10 +777,10 @@ async function main() {
 				type: 'sale',
 				paymentMethod: 'bankTransfer',
 				amount: 189.98,
-				agentId: agent1.id,
+				agentId: agent.id,
 				saleId: sales[0].id,
 				toId: accounts[2].id,
-				createdById: agent1.id,
+				createdById: agent.id,
 			},
 		}),
 		prisma.transaction.create({
@@ -794,10 +790,10 @@ async function main() {
 				type: 'sale',
 				paymentMethod: 'check',
 				amount: 200,
-				agentId: agent2.id,
+				agentId: admin1.id,
 				saleId: sales[1].id,
 				toId: accounts[1].id,
-				createdById: agent2.id,
+				createdById: admin1.id,
 			},
 		}),
 		prisma.transaction.create({
@@ -896,6 +892,8 @@ async function main() {
 
 	console.log('✅ Database seeded successfully!');
 	console.log('\n📊 Summary:');
+	console.log(`- Users: 4 (1 super admin, 2 admins, 1 agent)`);
+	console.log(`- Accounts: 5`);
 	console.log(`- Users: 3 (1 admin, 2 agents)`);
 	console.log(`- Accounts: 3`);
 	console.log(`- Plant Categories: 4`);

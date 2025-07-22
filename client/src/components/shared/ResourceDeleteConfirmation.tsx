@@ -1,11 +1,19 @@
-import { Button, Box, Divider } from '@mui/material';
+import { Button, Box, Divider, TextField } from '@mui/material';
 import ResourceFormPopup from './ResourceFormPopup';
+import { useVerifyPassword } from '../../hooks/ressources/useAuth';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+	VerifyPasswordDto,
+	type VerifyPasswordDtoType,
+} from '../../../../shared/dtos/auth.dto';
 
 interface ResourceConfirmationDialogProps {
 	onClose: () => void;
 	title: string;
 	description: string;
 	onDelete: () => void;
+	requirePassword?: boolean;
 }
 
 function ResourceDeleteConfirmation({
@@ -13,23 +21,58 @@ function ResourceDeleteConfirmation({
 	title,
 	description,
 	onDelete,
+	requirePassword = false,
 }: ResourceConfirmationDialogProps) {
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isValid },
+	} = useForm<VerifyPasswordDtoType>({
+		resolver: zodResolver(VerifyPasswordDto),
+		mode: 'onChange',
+	});
+
+	const verifyPasswordMutation = useVerifyPassword(onDelete);
+
+	const handleDelete = async (data: VerifyPasswordDtoType) => {
+		await verifyPasswordMutation.mutateAsync(data);
+	};
+
 	return (
 		<ResourceFormPopup
 			onClose={onClose}
 			title={title}
 			description={description}
 		>
+			{requirePassword && (
+				<>
+					<Divider />
+					<Box p={2}>
+						<TextField
+							fullWidth
+							label='Mot de passe'
+							type='password'
+							{...register('password')}
+							error={!!errors.password}
+							helperText={errors.password?.message}
+							placeholder='Entrez votre mot de passe pour confirmer'
+							variant='outlined'
+						/>
+					</Box>
+				</>
+			)}
+
 			<Divider />
 
 			<Box display='flex' gap={2} justifyContent='end' p={2}>
 				<Button
-					onClick={onDelete}
+					onClick={requirePassword ? handleSubmit(handleDelete) : onDelete}
 					variant='outlined'
 					color='error'
 					size='large'
 					disableElevation
 					fullWidth
+					disabled={requirePassword && !isValid}
 				>
 					Oui
 				</Button>

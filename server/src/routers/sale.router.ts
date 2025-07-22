@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { authenticate, requireAgent } from '../middlewares/auth.middleware';
 import { SaleController } from '../controllers/sale.controller';
 import { validate } from '../middlewares/validation.middleware';
-import { CreateSaleDto, UpdateSaleDto } from '../../../shared/dtos/sale.dto';
+import { CreateOrderDto, UpdateSaleDto } from '../../../shared/dtos/sale.dto';
 
 const router = Router();
 
@@ -14,7 +14,7 @@ router.use(requireAgent);
 router.get('/', SaleController.getPage);
 router.get('/:id', SaleController.getById);
 router.get('/:id/transactions', SaleController.getTransactions);
-router.post('/', validate(CreateSaleDto), SaleController.create);
+router.post('/', validate(CreateOrderDto), SaleController.create);
 router.put('/:id', validate(UpdateSaleDto), SaleController.update);
 router.delete('/:id', SaleController.delete);
 

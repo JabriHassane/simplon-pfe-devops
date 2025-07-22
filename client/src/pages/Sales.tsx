@@ -1,6 +1,6 @@
 import { Box, Chip, TablePagination } from '@mui/material';
 import { useState } from 'react';
-import SaleForm from '../components/forms/SaleForm';
+import SaleForm from '../components/forms/order-form/SaleForm';
 import { useDeleteSale, useSales } from '../hooks/ressources/useSales';
 import type { SaleDtoType } from '../../../shared/dtos/sale.dto';
 import { formatDate } from '../utils/date.utils';
@@ -10,10 +10,8 @@ import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import useCrud from '../hooks/useCrud';
 import { DICT } from '../i18n/fr';
-import {
-	ORDER_STATUS_COLOR_MAP
-} from '../../../shared/constants';
-import { formatDiscount, formatPrice } from '../utils/price.utils';
+import { ORDER_STATUS_COLOR_MAP } from '../../../shared/constants';
+import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
 import OrderFilters, {
 	type OrderFiltersData,
@@ -111,7 +109,6 @@ export default function Sales() {
 							client: sale.client?.name,
 							articles: sale.items?.length,
 							total: formatPrice(sale.totalPrice),
-							remise: formatDiscount(sale.discountAmount, sale.discountType),
 							statut: (
 								<Chip
 									key={sale.id}

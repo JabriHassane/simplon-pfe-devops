@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import { useAccounts, useDeleteAccount } from '../hooks/ressources/useAccounts';
 import AccountForm from '../components/forms/AccountForm';
 import type { AccountDtoType } from '../../../shared/dtos/account.dto';
@@ -9,6 +9,11 @@ import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfi
 import useCrud from '../hooks/useCrud';
 import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
+import { DICT } from '../i18n/fr';
+import {
+	ORDER_STATUS_COLOR_MAP,
+	PAYMENT_METHODS_COLOR_MAP,
+} from '../../../shared/constants';
 
 export default function Accounts() {
 	const {
@@ -46,6 +51,7 @@ export default function Accounts() {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'name', name: 'Nom' },
 					{ id: 'balance', name: 'Solde' },
+					{ id: 'paymentMethods', name: 'Méthodes de paiement' },
 				]}
 				rows={accounts?.data.map((account) => ({
 					item: account,
@@ -53,6 +59,17 @@ export default function Accounts() {
 						ref: account.ref,
 						name: account.name,
 						balance: formatPrice(account.balance),
+						paymentMethods: (
+							<Box sx={{ display: 'flex', gap: 0.5 }}>
+								{account.paymentMethods.map((method) => (
+									<Chip
+										key={method}
+										label={DICT.paymentMethods[method]}
+										color={PAYMENT_METHODS_COLOR_MAP[method]}
+									/>
+								))}
+							</Box>
+						),
 					},
 				}))}
 				onEdit={handleOpenFormPopup}
@@ -78,6 +95,7 @@ export default function Accounts() {
 					title={`Supprimer ${selectedAccount?.ref}`}
 					description='Voulez-vous vraiment supprimer ce compte ?'
 					onDelete={handleDelete}
+					requirePassword
 				/>
 			)}
 		</Box>

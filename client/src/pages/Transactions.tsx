@@ -63,6 +63,7 @@ export default function Transactions() {
 				headers={[
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'date', name: 'Date' },
+					{ id: 'agent', name: 'Agent' },
 					{ id: 'from', name: 'Compte source' },
 					{ id: 'to', name: 'Compte destination' },
 					{ id: 'type', name: 'Type' },
@@ -73,6 +74,7 @@ export default function Transactions() {
 					data: {
 						ref: transaction.ref,
 						date: formatDate(transaction.date),
+						agent: transaction.agent?.name || '-',
 						from: transaction.from?.name || '-',
 						to: transaction.to?.name || '-',
 						type: (

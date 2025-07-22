@@ -70,7 +70,6 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 					fullWidth
 					label="Nom d'utilisateur"
 					{...register('name')}
-					margin='normal'
 					variant='outlined'
 					error={!!errors.name}
 					helperText={errors.name?.message as string}
@@ -81,8 +80,9 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 					name='role'
 					control={control}
 					defaultValue='agent'
+					disabled={init?.role === 'super_admin'}
 					render={({ field }) => (
-						<FormControl fullWidth margin='normal' error={!!errors.role}>
+						<FormControl fullWidth error={!!errors.role}>
 							<InputLabel>Rôle</InputLabel>
 							<Select {...field} label='Rôle'>
 								<MenuItem value='agent'>Agent</MenuItem>
@@ -99,7 +99,6 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 				label='Mot de passe'
 				type='password'
 				{...register('password')}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.password}
 				helperText={errors.password?.message as string}

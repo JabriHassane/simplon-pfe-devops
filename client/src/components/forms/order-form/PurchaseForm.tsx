@@ -12,26 +12,29 @@ import {
 } from '@mui/material';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import ResourcePickerField from '../shared/ResourcePickerField';
+import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
-	CreateSaleDto,
-	type CreateSaleDtoType,
-	type SaleDtoType,
-} from '../../../../shared/dtos/sale.dto';
+	CreatePurchaseDto,
+	type CreatePurchaseDtoType,
+	type PurchaseDtoType,
+} from '../../../../../shared/dtos/purchase.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
-import ResourceForm from './ResourceForm';
-import { useCreateSale, useUpdateSale } from '../../hooks/ressources/useSales';
+import ResourceForm from '../ResourceForm';
+import {
+	useCreatePurchase,
+	useUpdatePurchase,
+} from '../../../hooks/ressources/usePurchases';
 import { Add } from '@mui/icons-material';
-import { DISCOUNT_TYPES, ORDER_STATUSES } from '../../../../shared/constants';
-import { DICT } from '../../i18n/fr';
+import { ORDER_STATUSES } from '../../../../../shared/constants';
+import { DICT } from '../../../i18n/fr';
 
-interface SaleFormProps {
-	init: SaleDtoType | null;
+interface PurchaseFormProps {
+	init: PurchaseDtoType | null;
 	onClose: () => void;
 }
 
-export default function SaleForm({ init, onClose }: SaleFormProps) {
+export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 	const {
 		register,
 		handleSubmit,
@@ -40,16 +43,14 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		setValue,
 		formState: { errors, isValid },
 	} = useForm({
-		resolver: zodResolver(CreateSaleDto),
-		defaultValues: init || {
-			date: '',
-			agentId: '',
-			clientId: '',
-			items: [{ articleId: '', quantity: 1, price: 0 }],
-			discountAmount: 0,
-			discountType: 'fixed',
-			note: '',
-			status: 'pending',
+		resolver: zodResolver(CreatePurchaseDto),
+		defaultValues: {
+			date: init?.date || '',
+			supplierId: init?.supplier?.id || '',
+			items: [{ articleId: '', articleName: '', quantity: 1, price: 0 }],
+			payments: init?.payments || [],
+			note: init?.note || '',
+			status: init?.status || 'pending',
 		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
@@ -60,17 +61,17 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		name: 'items',
 	});
 
-	const createSaleMutation = useCreateSale(onClose);
-	const updateSaleMutation = useUpdateSale(onClose);
+	const createPurchaseMutation = useCreatePurchase(onClose);
+	const updatePurchaseMutation = useUpdatePurchase(onClose);
 
-	const onSubmit = async (data: CreateSaleDtoType) => {
+	const onSubmit = async (data: CreatePurchaseDtoType) => {
 		if (init) {
-			await updateSaleMutation.mutateAsync({
+			await updatePurchaseMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createSaleMutation.mutateAsync(data);
+			await createPurchaseMutation.mutateAsync(data);
 		}
 	};
 
@@ -78,7 +79,9 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		<ResourceForm
 			onSubmit={handleSubmit(onSubmit)}
 			isValid={isValid}
-			isLoading={createSaleMutation.isPending || updateSaleMutation.isPending}
+			isLoading={
+				createPurchaseMutation.isPending || updatePurchaseMutation.isPending
+			}
 		>
 			<Grid container columnSpacing={2} mt={3}>
 				<Grid size={6}>
@@ -105,27 +108,13 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				<Grid size={6}>
 					<ResourcePickerField
 						label='Client'
-						value={watch('clientId') || ''}
+						value={watch('supplierId') || ''}
 						onChange={(value) => {
-							setValue('clientId', value);
+							setValue('supplierId', value);
 						}}
-						resourceType='client'
-						error={!!errors.clientId}
-						helperText={errors.clientId?.message as string}
-						required
-					/>
-				</Grid>
-
-				<Grid size={6}>
-					<ResourcePickerField
-						label='Agent'
-						value={watch('agentId') || ''}
-						onChange={(value) => {
-							setValue('agentId', value);
-						}}
-						resourceType='user'
-						error={!!errors.agentId}
-						helperText={errors.agentId?.message as string}
+						resourceType='supplier'
+						error={!!errors.supplierId}
+						helperText={errors.supplierId?.message as string}
 						required
 					/>
 				</Grid>
@@ -133,7 +122,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				<Grid size={6}>
 					<TextField
 						fullWidth
-						margin='normal'
 						label='Numéro de reçu'
 						{...register('receiptNumber')}
 						variant='outlined'
@@ -146,7 +134,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				<Grid size={6}>
 					<TextField
 						fullWidth
-						margin='normal'
 						label='Numéro de facture'
 						{...register('invoiceNumber')}
 						variant='outlined'
@@ -157,7 +144,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				</Grid>
 
 				<Grid size={6}>
-					<FormControl fullWidth margin='dense'>
+					<FormControl fullWidth>
 						<InputLabel>Statut</InputLabel>
 						<Select
 							{...register('status')}
@@ -180,7 +167,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 						fullWidth
 						label='Note'
 						{...register('note')}
-						margin='dense'
 						variant='outlined'
 						multiline
 						rows={3}
@@ -234,7 +220,11 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 						type='number'
 						{...register(`items.${index}.quantity`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
-						inputProps={{ min: 1 }}
+						slotProps={{
+							htmlInput: {
+								min: 1,
+							},
+						}}
 						error={!!errors.items?.[index]?.quantity}
 						helperText={errors.items?.[index]?.quantity?.message}
 						required
@@ -245,7 +235,11 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 						type='number'
 						{...register(`items.${index}.price`, { valueAsNumber: true })}
 						sx={{ flex: 1 }}
-						inputProps={{ min: 0, step: 0.01 }}
+						slotProps={{
+							htmlInput: {
+								min: 0,
+							},
+						}}
 						error={!!errors.items?.[index]?.price}
 						helperText={errors.items?.[index]?.price?.message}
 						required
@@ -259,33 +253,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					</IconButton>
 				</Box>
 			))}
-
-			<Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-				<TextField
-					label='Remise'
-					type='number'
-					{...register('discountAmount', { valueAsNumber: true })}
-					sx={{ flex: 1 }}
-					inputProps={{ min: 0, step: 0.01 }}
-					error={!!errors.discountAmount}
-					helperText={errors.discountAmount?.message as string}
-				/>
-				<FormControl sx={{ flex: 1 }}>
-					<InputLabel>Type de remise</InputLabel>
-					<Select
-						{...register('discountType')}
-						label='Type de remise'
-						error={!!errors.discountType}
-						defaultValue='fixed'
-					>
-						{DISCOUNT_TYPES.map((type) => (
-							<MenuItem key={type} value={type}>
-								{DICT.discountType[type]}
-							</MenuItem>
-						))}
-					</Select>
-				</FormControl>
-			</Box>
 		</ResourceForm>
 	);
 }

@@ -21,5 +21,10 @@ export const RegisterDto = z.object({
 	role: z.enum(ROLES),
 });
 
+export const VerifyPasswordDto = z.object({
+	password: z.string().min(1, 'Mot de passe requis'),
+});
+
 export type LoginDtoType = z.infer<typeof LoginDto>;
 export type RegisterDtoType = z.infer<typeof RegisterDto>;
+export type VerifyPasswordDtoType = z.infer<typeof VerifyPasswordDto>;

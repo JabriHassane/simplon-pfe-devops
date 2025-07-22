@@ -154,4 +154,38 @@ export const AuthController = {
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
+
+	async verifyPassword(req: Request, res: Response) {
+		try {
+			const { userId } = req.user!;
+			const { password } = req.body;
+
+			if (!password) {
+				return res.status(400).json({ message: 'Password is required' });
+			}
+
+			const user = await prisma.user.findUnique({
+				where: { id: userId },
+			});
+
+			if (!user) {
+				return res.status(404).json({ message: 'User not found' });
+			}
+
+			// Verify password
+			const isValidPassword = await bcrypt.compare(
+				password,
+				user.password || ''
+			);
+
+			if (!isValidPassword) {
+				return res.status(401).json({ message: 'Invalid password' });
+			}
+
+			res.json({ message: 'Password verified successfully' });
+		} catch (error) {
+			console.error('Error in AuthController.verifyPassword', error);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
 };

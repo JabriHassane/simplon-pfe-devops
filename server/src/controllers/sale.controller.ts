@@ -5,8 +5,9 @@ import {
 	UpdateSaleDtoType,
 } from '../../../shared/dtos/sale.dto';
 import { getSalePaginationCondition } from '../utils/pagination';
-
-type SaleItemInput = { articleId: string; price: number; quantity: number };
+import { getNextRef } from '../utils/db.utils';
+import { TransactionType } from '../../../shared/constants';
+import { Transaction } from '@prisma/client';
 
 export const SaleController = {
 	async getPage(req: Request, res: Response) {
@@ -167,11 +168,7 @@ export const SaleController = {
 					sum + item.price * item.quantity,
 				0
 			);
-			const discount =
-				body.discountType === 'percentage'
-					? (subtotal * body.discountAmount) / 100
-					: body.discountAmount;
-			const totalPrice = subtotal - discount;
+			const totalPrice = subtotal;
 
 			const sale = await prisma.sale.create({
 				data: {
@@ -183,20 +180,32 @@ export const SaleController = {
 					totalPaid: 0,
 					totalDue: totalPrice,
 					status: body.status,
-					discountAmount: body.discountAmount,
-					discountType: body.discountType,
 					note: body.note || '',
 					agentId: userId,
-					ref: `VEN-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: await getNextRef('sales'),
 					createdById: userId,
 					items: {
-						create: body.items.map((item: SaleItemInput) => ({
+						create: body.items.map((item) => ({
 							articleId: item.articleId,
+							articleName: item.articleName,
 							price: item.price,
 							quantity: item.quantity,
-							ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 							createdById: userId,
 						})),
+					},
+					payments: {
+						create: await Promise.all(
+							body.payments.map(async (payment) => ({
+								ref: await getNextRef('transactions'),
+								date: payment.date,
+								type: 'sale' as TransactionType,
+								paymentMethod: payment.paymentMethod,
+								amount: payment.amount,
+								agentId: payment.agentId,
+								toId: payment.accountId,
+								createdById: userId,
+							}))
+						),
 					},
 				},
 				include: {
@@ -293,29 +302,16 @@ export const SaleController = {
 				}
 			}
 
-			// Calculate new totals if items or discount changed
+			// Calculate new totals if items changed
 			let totalPrice = existingSale.totalPrice;
-			if (
-				body.items ||
-				body.discountAmount !== undefined ||
-				body.discountType !== undefined
-			) {
+			if (body.items) {
 				const currentItems = body.items || existingSale.items;
-				const currentDiscountAmount =
-					body.discountAmount ?? existingSale.discountAmount;
-				const currentDiscountType =
-					body.discountType ?? existingSale.discountType;
 
-				const subtotal = currentItems.reduce(
+				totalPrice = currentItems.reduce(
 					(sum: number, item: { price: number; quantity: number }) =>
 						sum + item.price * item.quantity,
 					0
 				);
-				const discount =
-					currentDiscountType === 'percentage'
-						? (subtotal * currentDiscountAmount) / 100
-						: currentDiscountAmount;
-				totalPrice = subtotal - discount;
 			}
 
 			// Update sale

@@ -87,7 +87,7 @@ export default function ResourcePickerField({
 					fullWidth
 				/>
 				{helperText && <FormHelperText>{helperText}</FormHelperText>}
-				
+
 				{open && (
 					<ResourcePickerPopup
 						onClose={handleClose}

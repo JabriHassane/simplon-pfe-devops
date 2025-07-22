@@ -1,4 +1,10 @@
-import { TextField } from '@mui/material';
+import {
+	MenuItem,
+	FormControl,
+	Select,
+	TextField,
+	InputLabel,
+} from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -11,6 +17,11 @@ import {
 	useUpdateAccount,
 } from '../../hooks/ressources/useAccounts';
 import ResourceForm from './ResourceForm';
+import { DICT } from '../../i18n/fr';
+import {
+	PAYMENT_METHODS,
+	type PaymentMethod,
+} from '../../../../shared/constants';
 
 interface AccountFormProps {
 	init: AccountDtoType | null;
@@ -24,7 +35,10 @@ export default function AccountForm({ init, onClose }: AccountFormProps) {
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateAccountDto),
-		defaultValues: init || undefined,
+		defaultValues: {
+			name: init?.name || '',
+			paymentMethods: init?.paymentMethods || ['cash' as PaymentMethod],
+		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -55,11 +69,28 @@ export default function AccountForm({ init, onClose }: AccountFormProps) {
 				fullWidth
 				label='Nom du compte'
 				{...register('name')}
-				margin='normal'
 				error={!!errors.name}
 				helperText={errors.name?.message as string}
 				required
 			/>
+
+			<FormControl fullWidth>
+				<InputLabel>Méthodes de paiement</InputLabel>
+				<Select
+					{...register('paymentMethods')}
+					label='Méthodes de paiement'
+					error={!!errors.paymentMethods}
+					required
+					defaultValue={init?.paymentMethods || []}
+					multiple
+				>
+					{PAYMENT_METHODS.map((method) => (
+						<MenuItem key={method} value={method}>
+							{DICT.paymentMethods[method]}
+						</MenuItem>
+					))}
+				</Select>
+			</FormControl>
 		</ResourceForm>
 	);
 }

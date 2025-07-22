@@ -91,7 +91,6 @@ export default function Login() {
 							label="Nom d'utilisateur"
 							{...register('name')}
 							onKeyPress={handleKeyPress}
-							margin='normal'
 							variant='outlined'
 							error={!!errors.name}
 							helperText={errors.name?.message as string}
@@ -122,7 +121,6 @@ export default function Login() {
 							type={showPassword ? 'text' : 'password'}
 							{...register('password')}
 							onKeyPress={handleKeyPress}
-							margin='normal'
 							variant='outlined'
 							error={!!errors.password}
 							helperText={errors.password?.message as string}

@@ -55,7 +55,6 @@ export default function CategoryForm({ init, onClose }: CategoryFormProps) {
 				fullWidth
 				label='Nom de la catégorie'
 				{...register('name')}
-				margin='normal'
 				error={!!errors.name}
 				helperText={errors.name?.message as string}
 				required

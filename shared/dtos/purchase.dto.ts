@@ -1,25 +1,15 @@
 import { z } from 'zod';
-import { CreateSaleDto, SaleItemDto, SalePaymentDto } from './sale.dto';
+import { CreateOrderDto, OrderDto } from './order.dto';
 import { SupplierDto } from './supplier.dto';
-import { UserDto } from './user.dto';
 
-export const CreatePurchaseDto = z.object({
-	...CreateSaleDto.omit({
-		clientId: true,
-	}).shape,
-	supplierId: z.string().min(1, 'Fournisseur requis'),
+export const CreatePurchaseDto = CreateOrderDto.extend({
+	supplierId: z.string().optional(),
 });
 
 export const UpdatePurchaseDto = CreatePurchaseDto;
 
-export const PurchaseDto = z.object({
-	id: z.string(),
-	ref: z.string(),
-	...CreatePurchaseDto.shape,
-	agent: UserDto,
-	supplier: SupplierDto,
-	items: z.array(SaleItemDto),
-	payments: z.array(SalePaymentDto),
+export const PurchaseDto = OrderDto.extend({
+	supplier: SupplierDto.optional(),
 });
 
 export type CreatePurchaseDtoType = z.infer<typeof CreatePurchaseDto>;

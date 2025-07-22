@@ -10,8 +10,10 @@ export const DICT = {
 		paid: 'Payé',
 		cancelled: 'Annulé',
 	},
-	discountType: {
-		fixed: 'Montant fixe',
-		percentage: 'Pourcentage',
-	},
+	paymentMethods: {
+		cash: "Espèce",
+		check: "Chèque",
+		tpe: "TPE",
+		bankTransfer: "Virement",
+	}
 } as const;

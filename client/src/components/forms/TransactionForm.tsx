@@ -71,7 +71,6 @@ export default function TransactionForm({
 				label='Date'
 				type='date'
 				{...register('date')}
-				margin='normal'
 				error={!!errors.date}
 				helperText={errors.date?.message as string}
 				required
@@ -90,7 +89,7 @@ export default function TransactionForm({
 				required
 			/>
 
-			<FormControl fullWidth margin='normal'>
+			<FormControl fullWidth>
 				<InputLabel>Type</InputLabel>
 				<Select
 					{...register('type')}
@@ -112,7 +111,6 @@ export default function TransactionForm({
 				label='Montant'
 				type='number'
 				{...register('amount', { valueAsNumber: true })}
-				margin='normal'
 				error={!!errors.amount}
 				helperText={errors.amount?.message as string}
 				required

@@ -68,7 +68,6 @@ export default function ArticleForm({ init, onClose }: Props) {
 				fullWidth
 				label='Nom du article'
 				{...register('name')}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.name}
 				helperText={errors.name?.message as string}
@@ -80,7 +79,6 @@ export default function ArticleForm({ init, onClose }: Props) {
 				label='Prix'
 				type='number'
 				{...register('price', { valueAsNumber: true })}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.price}
 				helperText={errors.price?.message as string}
@@ -92,7 +90,6 @@ export default function ArticleForm({ init, onClose }: Props) {
 				label='Inventaire'
 				type='number'
 				{...register('inventory', { valueAsNumber: true })}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.inventory}
 				helperText={errors.inventory?.message as string}
@@ -103,7 +100,6 @@ export default function ArticleForm({ init, onClose }: Props) {
 				fullWidth
 				label="URL de l'image (optionnel)"
 				{...register('image')}
-				margin='normal'
 				variant='outlined'
 				error={!!errors.image}
 				helperText={errors.image?.message as string}

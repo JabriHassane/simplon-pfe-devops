@@ -104,7 +104,6 @@ export default function ResourcePickerPopup({
 						placeholder='Rechercher par nom ou référence...'
 						value={searchTerm}
 						onChange={handleSearchChange}
-						margin='normal'
 						variant='outlined'
 						slotProps={{
 							input: {

@@ -1,6 +1,9 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AuthService } from '../../services/auth.service';
-import type { LoginDtoType } from '../../../../shared/dtos/auth.dto';
+import type {
+	LoginDtoType,
+	VerifyPasswordDtoType,
+} from '../../../../shared/dtos/auth.dto';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from './useSnackbar';
 import { useContext } from 'react';
@@ -67,6 +70,22 @@ export const useConnectedUser = () => {
 				navigate('/login');
 				showError("Erreur lors de la récupération de l'utilisateur connecté");
 				return null;
+			}
+		},
+	});
+};
+
+export const useVerifyPassword = (callback: () => void) => {
+	const { showWarning } = useSnackbar();
+
+	return useMutation({
+		mutationFn: async (data: VerifyPasswordDtoType) => {
+			try {
+				await AuthService.verifyPassword(data);
+				callback();
+			} catch (error) {
+				console.error(error);
+				showWarning('Mot de passe incorrect');
 			}
 		},
 	});
