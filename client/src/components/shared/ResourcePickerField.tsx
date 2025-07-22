@@ -9,10 +9,15 @@ import {
 import { Clear } from '@mui/icons-material';
 import ResourcePickerPopup, { type ResourceType } from './ResourcePickerPopup';
 
+interface Resource {
+	id: string;
+	name?: string | null;
+}
+
 interface ResourcePickerFieldProps {
 	label: string;
-	value: string;
-	onChange: (value: string) => void;
+	value?: string | null;
+	onChange: (value: Resource) => void;
 	resourceType: ResourceType;
 	placeholder?: string;
 	error?: boolean;
@@ -37,10 +42,9 @@ export default function ResourcePickerField({
 	onClear,
 }: ResourcePickerFieldProps) {
 	const [open, setOpen] = useState(false);
-	const [selectedResource, setSelectedResource] = useState<{
-		id: string;
-		name: string;
-	} | null>(null);
+	const [selectedResource, setSelectedResource] = useState<Resource | null>(
+		null
+	);
 
 	const handleOpen = () => {
 		if (!disabled) {
@@ -52,8 +56,8 @@ export default function ResourcePickerField({
 		setOpen(false);
 	};
 
-	const handleSelect = (resource: { id: string; name: string }) => {
-		onChange(resource.id);
+	const handleSelect = (resource: Resource) => {
+		onChange(resource);
 		setSelectedResource(resource);
 		setOpen(false);
 	};
@@ -63,7 +67,7 @@ export default function ResourcePickerField({
 		if (onClear) {
 			onClear();
 		} else {
-			onChange('');
+			onChange({ id: '', name: '' });
 		}
 	};
 
@@ -78,7 +82,7 @@ export default function ResourcePickerField({
 			<FormControl fullWidth error={error} required={required}>
 				<TextField
 					label={label}
-					value={selectedResource?.name}
+					value={selectedResource?.name || value || ''}
 					placeholder={placeholder}
 					onClick={handleOpen}
 					disabled={disabled}

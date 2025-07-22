@@ -1,19 +1,17 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
-import {
-	CreateSaleDtoType,
-	UpdateSaleDtoType,
-} from '../../../shared/dtos/sale.dto';
-import { getSalePaginationCondition } from '../utils/pagination';
+import { getOrderPaginationCondition } from '../utils/pagination';
+import { SaleDtoType, UpdateSaleDtoType } from '../../../shared/dtos/sale.dto';
 import { getNextRef } from '../utils/db.utils';
-import { TransactionType } from '../../../shared/constants';
-import { Transaction } from '@prisma/client';
+import { PaymentMethod, TransactionType } from '../../../shared/constants';
+
+type SaleItemInput = { articleId: string; price: number; quantity: number };
 
 export const SaleController = {
 	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } =
-				getSalePaginationCondition(req);
+				getOrderPaginationCondition(req);
 
 			const salesPromise = prisma.sale.findMany({
 				where: whereClause,
@@ -45,10 +43,15 @@ export const SaleController = {
 				where: whereClause,
 			});
 
-			const [sales, total] = await Promise.all([
-				salesPromise,
-				salesCountPromise,
-			]);
+			let [sales, total] = await Promise.all([salesPromise, salesCountPromise]);
+
+			sales = sales.map((sale) => ({
+				...sale,
+				payments: sale.payments.map((payment) => ({
+					...payment,
+					account: payment.to,
+				})),
+			}));
 
 			const totalPages = Math.ceil(total / limit);
 
@@ -62,7 +65,7 @@ export const SaleController = {
 				},
 			});
 		} catch (error) {
-			console.error('Error in SaleController.getPage', error);
+			console.error('Error in saleController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -132,19 +135,27 @@ export const SaleController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const body = req.body as CreateSaleDtoType;
+			const {
+				date,
+				clientId,
+				receiptNumber,
+				invoiceNumber,
+				items,
+				status = 'pending',
+				note,
+			} = req.body;
 
 			// Check if client exists
 			const client = await prisma.client.findUnique({
-				where: { id: body.clientId },
+				where: { id: clientId },
 			});
 
 			if (!client) {
-				return res.status(400).json({ message: 'Client not found' });
+				return res.status(400).json({ message: 'Supplier not found' });
 			}
 
-			// Validate all articles exist and have sufficient inventory
-			for (const item of body.items) {
+			// Validate all articles exist
+			for (const item of items) {
 				const article = await prisma.article.findUnique({
 					where: { id: item.articleId },
 				});
@@ -154,16 +165,10 @@ export const SaleController = {
 						.status(400)
 						.json({ message: `Article ${item.articleId} not found` });
 				}
-
-				if (article.inventory < item.quantity) {
-					return res.status(400).json({
-						message: `Insufficient inventory for article ${article.name}`,
-					});
-				}
 			}
 
 			// Calculate totals
-			const subtotal = body.items.reduce(
+			const subtotal = items.reduce(
 				(sum: number, item: { price: number; quantity: number }) =>
 					sum + item.price * item.quantity,
 				0
@@ -172,40 +177,25 @@ export const SaleController = {
 
 			const sale = await prisma.sale.create({
 				data: {
-					date: body.date,
-					clientId: body.clientId,
-					receiptNumber: body.receiptNumber,
-					invoiceNumber: body.invoiceNumber,
+					date,
+					clientId,
+					receiptNumber,
+					invoiceNumber,
 					totalPrice,
 					totalPaid: 0,
 					totalDue: totalPrice,
-					status: body.status,
-					note: body.note || '',
+					status,
+					note: note || '',
 					agentId: userId,
 					ref: await getNextRef('sales'),
 					createdById: userId,
 					items: {
-						create: body.items.map((item) => ({
+						create: items.map((item: SaleItemInput) => ({
 							articleId: item.articleId,
-							articleName: item.articleName,
 							price: item.price,
 							quantity: item.quantity,
 							createdById: userId,
 						})),
-					},
-					payments: {
-						create: await Promise.all(
-							body.payments.map(async (payment) => ({
-								ref: await getNextRef('transactions'),
-								date: payment.date,
-								type: 'sale' as TransactionType,
-								paymentMethod: payment.paymentMethod,
-								amount: payment.amount,
-								agentId: payment.agentId,
-								toId: payment.accountId,
-								createdById: userId,
-							}))
-						),
 					},
 				},
 				include: {
@@ -223,18 +213,6 @@ export const SaleController = {
 					},
 				},
 			});
-
-			// Update article inventory
-			for (const item of body.items) {
-				await prisma.article.update({
-					where: { id: item.articleId },
-					data: {
-						inventory: {
-							decrement: item.quantity,
-						},
-					},
-				});
-			}
 
 			res.status(201).json(sale);
 		} catch (error) {
@@ -249,146 +227,118 @@ export const SaleController = {
 			const { userId } = req.user!;
 			const body = req.body as UpdateSaleDtoType;
 
-			// Check if sale exists
-			const existingSale = await prisma.sale.findUnique({
-				where: { id },
-				include: {
-					items: true,
-				},
-			});
+			const updatedSale = await prisma.$transaction(async (tx) => {
+				// Check if sale exists
+				const isExists = await tx.sale.findUnique({
+					where: { id },
+					include: { items: true },
+				});
 
-			if (!existingSale) {
-				return res.status(404).json({ message: 'Sale not found' });
-			}
+				if (!isExists) {
+					throw new Error('Sale not found');
+				}
 
-			// Check if client exists (if clientId is being updated)
-			if (body.clientId) {
-				const client = await prisma.client.findUnique({
+				// Check if client exists
+				const client = await tx.client.findUnique({
 					where: { id: body.clientId },
 				});
 
 				if (!client) {
-					return res.status(400).json({ message: 'Client not found' });
+					throw new Error('Supplier not found');
 				}
-			}
 
-			// If items are being updated, validate them
-			if (body.items) {
-				for (const item of body.items) {
-					const article = await prisma.article.findUnique({
-						where: { id: item.articleId },
-					});
+				// Validate all articles
+				const articleIds = body.items
+					.map((item) => item.articleId)
+					.filter((item) => !!item) as string[];
 
-					if (!article) {
-						return res
-							.status(400)
-							.json({ message: `Article ${item.articleId} not found` });
-					}
+				const articles = await tx.article.findMany({
+					where: { id: { in: articleIds } },
+				});
 
-					// Check inventory (considering current sale items)
-					const currentSaleItem = existingSale.items.find(
-						(si) => si.articleId === item.articleId
-					);
-					const currentQuantity = currentSaleItem
-						? currentSaleItem.quantity
-						: 0;
-					const availableInventory = article.inventory + currentQuantity;
-
-					if (availableInventory < item.quantity) {
-						return res.status(400).json({
-							message: `Insufficient inventory for article ${article.name}`,
-						});
-					}
+				if (articles.length !== articleIds.length) {
+					throw new Error('One or more articles not found');
 				}
-			}
 
-			// Calculate new totals if items changed
-			let totalPrice = existingSale.totalPrice;
-			if (body.items) {
-				const currentItems = body.items || existingSale.items;
+				// Calculate total price
+				const totalPrice = body.items.reduce((sum, item) => {
+					return sum + item.price * item.quantity;
+				}, 0);
 
-				totalPrice = currentItems.reduce(
-					(sum: number, item: { price: number; quantity: number }) =>
-						sum + item.price * item.quantity,
-					0
-				);
-			}
+				const totalPaid = body.payments.reduce((sum, payment) => {
+					return sum + payment.amount;
+				}, 0);
 
-			// Update sale
-			const { items, ...updateData } = body;
-			const sale = await prisma.sale.update({
-				where: { id },
-				data: {
-					...updateData,
-					...(totalPrice !== existingSale.totalPrice && {
+				const totalDue = totalPrice - totalPaid;
+
+				// Update sale
+				const { items, ...updateData } = body;
+				const updated = await tx.sale.update({
+					where: { id },
+					data: {
+						...updateData,
+
+						items: {
+							deleteMany: {},
+							createMany: {
+								data: body.items.map((item) => ({
+									articleId: item.articleId,
+									articleName: item.articleName,
+									price: item.price,
+									quantity: item.quantity,
+									createdById: userId,
+								})),
+							},
+						},
+
+						payments: {
+							deleteMany: {},
+							createMany: {
+								data: await Promise.all(
+									body.payments.map(async (item) => ({
+										ref: await getNextRef('sales'),
+										amount: item.amount,
+										date: item.date,
+										paymentMethod: item.paymentMethod as PaymentMethod,
+										type: 'sale' as TransactionType,
+										agentId: item.agentId,
+										fromId: item.accountId,
+										createdById: userId,
+									}))
+								),
+							},
+						},
+
 						totalPrice,
-						totalDue: totalPrice - existingSale.totalPaid,
-					}),
-					updatedAt: new Date(),
-					updatedById: userId,
-				},
-				include: {
-					client: true,
-					items: {
-						include: {
-							article: true,
+						totalDue,
+						updatedAt: new Date(),
+						updatedById: userId,
+					},
+					include: {
+						client: true,
+						items: {
+							include: {
+								article: true,
+							},
+						},
+						agent: {
+							select: {
+								id: true,
+								name: true,
+							},
 						},
 					},
-					agent: {
-						select: {
-							id: true,
-							name: true,
-						},
-					},
-				},
+				});
+
+				return updated;
 			});
 
-			// Update items if provided
-			if (body.items) {
-				// Delete existing items
-				await prisma.saleItem.deleteMany({
-					where: { saleId: id },
-				});
-
-				// Create new items
-				await prisma.saleItem.createMany({
-					data: body.items.map((item) => ({
-						saleId: id,
-						articleId: item.articleId,
-						price: item.price,
-						quantity: item.quantity,
-						ref: `OI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-						createdById: userId,
-					})),
-				});
-
-				// Update article inventory
-				for (const item of body.items) {
-					const currentSaleItem = existingSale.items.find(
-						(si) => si.articleId === item.articleId
-					);
-					const currentQuantity = currentSaleItem
-						? currentSaleItem.quantity
-						: 0;
-					const quantityDifference = item.quantity - currentQuantity;
-
-					if (quantityDifference !== 0) {
-						await prisma.article.update({
-							where: { id: item.articleId },
-							data: {
-								inventory: {
-									decrement: quantityDifference,
-								},
-							},
-						});
-					}
-				}
-			}
-
-			res.json(sale);
-		} catch (error) {
+			return res.json(updatedSale);
+		} catch (error: any) {
 			console.error('Error in SaleController.update', error);
-			res.status(500).json({ message: 'Internal server error' });
+			return res
+				.status(500)
+				.json({ message: error.message || 'Internal server error' });
 		}
 	},
 
@@ -417,18 +367,6 @@ export const SaleController = {
 			if (hasTransactions) {
 				return res.status(400).json({
 					message: 'Cannot delete sale with existing transactions',
-				});
-			}
-
-			// Restore article inventory
-			for (const item of existingSale.items) {
-				await prisma.article.update({
-					where: { id: item.articleId },
-					data: {
-						inventory: {
-							increment: item.quantity,
-						},
-					},
 				});
 			}
 

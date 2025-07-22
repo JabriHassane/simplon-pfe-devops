@@ -10,10 +10,7 @@ import useCrud from '../hooks/useCrud';
 import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
 import { DICT } from '../i18n/fr';
-import {
-	ORDER_STATUS_COLOR_MAP,
-	PAYMENT_METHODS_COLOR_MAP,
-} from '../../../shared/constants';
+import { PAYMENT_METHODS_COLOR_MAP } from '../../../shared/constants';
 
 export default function Accounts() {
 	const {

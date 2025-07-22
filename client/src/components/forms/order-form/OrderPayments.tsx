@@ -1,36 +1,57 @@
-import { Controller, useFormContext } from 'react-hook-form';
-import { useFieldArray } from 'react-hook-form';
+import { useFormContext } from 'react-hook-form';
+import { Box, Typography, Button } from '@mui/material';
+import { Add } from '@mui/icons-material';
 import {
-	Box,
-	Typography,
-	Button,
-	IconButton,
-	TextField,
-	Grid,
-} from '@mui/material';
-import { Add, Delete } from '@mui/icons-material';
-import ResourcePickerField from '../../shared/ResourcePickerField';
-import type { CreateOrderDtoType } from '../../../../../shared/dtos/order.dto';
-import { DatePicker } from '@mui/x-date-pickers';
-import dayjs from 'dayjs';
+	type CreateOrderDtoType,
+	type OrderPaymentDtoType,
+} from '../../../../../shared/dtos/order.dto';
+import ResourceTable from '../../shared/ResourceTable';
+import { formatDate } from '../../../utils/date.utils';
+import { formatPrice } from '../../../utils/price.utils';
+import OrderPaymentFormPopup from './OrderPaymentFormPopup';
+import { useEffect, useState } from 'react';
+import useCrud from '../../../hooks/useCrud';
+import ResourceDeleteConfirmation from '../../shared/ResourceDeleteConfirmation';
 
-export const OrderPayments = () => {
+interface OrderPaymentsProps {
+	init?: OrderPaymentDtoType[];
+}
+
+export const OrderPayments = ({ init }: OrderPaymentsProps) => {
+	const { setValue } = useFormContext<CreateOrderDtoType>();
+
 	const {
-		register,
-		watch,
-		setValue,
-		formState: { errors },
-		control,
-	} = useFormContext<CreateOrderDtoType>();
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedPayment,
+		selectedIndex,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<OrderPaymentDtoType>();
 
-	const { fields, remove, append } = useFieldArray({
-		control,
-		name: 'payments',
-	});
+	const [payments, setPayments] = useState<OrderPaymentDtoType[]>(init || []);
 
-	const handleAddItem = () => {
-		append({ date: '', amount: 0, accountId: '' });
+	const handleSubmit = (payment: OrderPaymentDtoType) => {
+		const newPayments = [...payments];
+		if (selectedPayment) {
+			newPayments[selectedIndex] = payment;
+		} else {
+			newPayments.push(payment);
+		}
+		setPayments(newPayments);
+		handleClosePopup();
 	};
+
+	const handleRemove = () => {
+		const newPayments = [...payments];
+		newPayments.splice(selectedIndex, 1);
+		setPayments(newPayments);
+	};
+
+	useEffect(() => {
+		setValue('payments', payments);
+	}, [payments]);
 
 	return (
 		<>
@@ -44,7 +65,7 @@ export const OrderPayments = () => {
 				<Typography variant='h6'>Paiements</Typography>
 
 				<Button
-					onClick={handleAddItem}
+					onClick={() => handleOpenFormPopup(null)}
 					variant='contained'
 					disableElevation
 					startIcon={<Add />}
@@ -53,67 +74,44 @@ export const OrderPayments = () => {
 				</Button>
 			</Box>
 
-			{fields.map((_, index) => (
-				<Grid key={index} container>
-					<Grid size={4}>
-						<Controller
-							name={`payments.${index}.date`}
-							control={control}
-							render={({ field }) => (
-								<DatePicker
-									label='Date'
-									value={dayjs(field.value)}
-									onChange={(date) => field.onChange(date?.toISOString())}
-									slotProps={{
-										textField: {
-											error: !!errors.payments?.[index]?.date,
-											helperText: errors.payments?.[index]?.date
-												?.message as string,
-										},
-									}}
-								/>
-							)}
-						/>
-					</Grid>
+			<ResourceTable
+				headers={[
+					{ id: 'ref', name: 'Ref' },
+					{ id: 'date', name: 'Date' },
+					{ id: 'agent', name: 'Agent' },
+					{ id: 'account', name: 'Compte' },
+					{ id: 'amount', name: 'Montant' },
+				]}
+				rows={payments.map((payment) => ({
+					item: payment,
+					data: {
+						ref: payment.ref,
+						date: formatDate(payment.date),
+						agent: payment.agent?.name || '-',
+						account: payment.account?.name || '-',
+						amount: formatPrice(payment.amount),
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
-					<Grid size={4}>
-						<ResourcePickerField
-							label='Compte'
-							value={watch(`payments.${index}.accountId`) || ''}
-							onChange={(value) => {
-								setValue(`payments.${index}.accountId`, value);
-							}}
-							resourceType='account'
-							error={!!errors.payments?.[index]?.accountId}
-							helperText={errors.payments?.[index]?.accountId?.message}
-							required
-						/>
-					</Grid>
+			{openFormPopup && (
+				<OrderPaymentFormPopup
+					init={selectedPayment}
+					onClose={handleClosePopup}
+					onSubmit={handleSubmit}
+				/>
+			)}
 
-					<Grid size={4}>
-						<TextField
-							label='Montant'
-							type='number'
-							{...register(`payments.${index}.amount`, { valueAsNumber: true })}
-							slotProps={{
-								htmlInput: {
-									min: 1,
-								},
-							}}
-							error={!!errors.payments?.[index]?.amount}
-							helperText={errors.payments?.[index]?.amount?.message}
-							required
-						/>
-					</Grid>
-
-					<IconButton
-						onClick={() => remove(index)}
-						disabled={fields.length === 1}
-					>
-						<Delete />
-					</IconButton>
-				</Grid>
-			))}
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={handleClosePopup}
+					title={`Supprimer ${selectedPayment?.ref}`}
+					description='Voulez-vous vraiment supprimer ce paiement ?'
+					onDelete={handleRemove}
+				/>
+			)}
 		</>
 	);
 };

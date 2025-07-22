@@ -1,22 +1,12 @@
 import {
-	Box,
 	TextField,
-	Button,
 	FormControl,
 	InputLabel,
 	Select,
 	MenuItem,
-	Typography,
-	IconButton,
 	Grid,
 } from '@mui/material';
-import {
-	useForm,
-	useFieldArray,
-	Controller,
-	useFormContext,
-	FormProvider,
-} from 'react-hook-form';
+import { useForm, Controller, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
@@ -31,7 +21,6 @@ import {
 	useCreateSale,
 	useUpdateSale,
 } from '../../../hooks/ressources/useSales';
-import { Add, Delete } from '@mui/icons-material';
 import { ORDER_STATUSES } from '../../../../../shared/constants';
 import { DICT } from '../../../i18n/fr';
 import { OrderItems } from './OrderItems';
@@ -62,7 +51,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		register,
 		handleSubmit,
 		control,
-		watch,
 		setValue,
 		formState: { errors, isValid },
 	} = methods;
@@ -130,9 +118,9 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Client'
-							value={watch('clientId') || ''}
-							onChange={(value) => {
-								setValue('clientId', value);
+							value={init?.client?.name}
+							onChange={({ id }) => {
+								setValue('clientId', id);
 							}}
 							resourceType='client'
 							error={!!errors.clientId}
@@ -143,9 +131,9 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Agent'
-							value={watch('agentId') || ''}
-							onChange={(value) => {
-								setValue('agentId', value);
+							value={init?.agent?.name}
+							onChange={({ id }) => {
+								setValue('agentId', id);
 							}}
 							resourceType='user'
 							error={!!errors.agentId}
@@ -188,9 +176,8 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				</Grid>
 
 				<OrderItems />
-				<OrderPayments />
+				<OrderPayments init={init?.payments} />
 			</ResourceForm>
 		</FormProvider>
 	);
 }
-

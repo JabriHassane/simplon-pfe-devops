@@ -96,7 +96,8 @@ export default function Sales() {
 					{ id: 'client', name: 'Client' },
 					{ id: 'articles', name: 'Articles' },
 					{ id: 'total', name: 'Total' },
-					{ id: 'remise', name: 'Remise' },
+					{ id: 'paid', name: 'Payé' },
+					{ id: 'due', name: 'Reste' },
 					{ id: 'statut', name: 'Statut' },
 				]}
 				rows={
@@ -109,6 +110,8 @@ export default function Sales() {
 							client: sale.client?.name,
 							articles: sale.items?.length,
 							total: formatPrice(sale.totalPrice),
+							paid: formatPrice(sale.totalPaid),
+							due: formatPrice(sale.totalDue),
 							statut: (
 								<Chip
 									key={sale.id}
@@ -148,6 +151,7 @@ export default function Sales() {
 					title={
 						selectedSale ? `Modifier ${selectedSale.ref}` : 'Nouvelle vente'
 					}
+					width='md'
 				>
 					<SaleForm init={selectedSale} onClose={handleClosePopup} />
 				</ResourceFormPopup>

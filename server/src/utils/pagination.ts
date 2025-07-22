@@ -34,7 +34,7 @@ export const getPaginationCondition = (
 	};
 };
 
-export const getSalePaginationCondition = (
+export const getOrderPaginationCondition = (
 	req: Request
 ): PaginationCondition => {
 	const page = parseInt(req.query.page as string) || 1;

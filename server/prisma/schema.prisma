@@ -200,7 +200,6 @@ model Article {
   name      String
   image     String
   price     Float
-  inventory Int
 
   // Relations
   categoryId    String
@@ -386,7 +385,7 @@ model Transaction {
 
   date          DateTime
   type          TransactionType
-  paymentMethod PaymentMethod?
+  paymentMethod PaymentMethod
   amount        Float
 
   // Relations

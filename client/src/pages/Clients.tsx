@@ -1,6 +1,4 @@
-import {
-	Box
-} from '@mui/material';
+import { Box } from '@mui/material';
 import { useClients, useDeleteClient } from '../hooks/ressources/useClients';
 import ClientForm from '../components/forms/ClientForm';
 import type { ClientDtoType } from '../../../shared/dtos/client.dto';
@@ -66,9 +64,7 @@ export default function Clients() {
 				<ResourceFormPopup
 					onClose={handleClosePopup}
 					title={
-						selectedClient
-							? `Modifier ${selectedClient.ref}`
-							: 'Nouveau client'
+						selectedClient ? `Modifier ${selectedClient.ref}` : 'Nouveau client'
 					}
 				>
 					<ClientForm init={selectedClient} onClose={handleClosePopup} />

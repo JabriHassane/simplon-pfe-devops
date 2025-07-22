@@ -97,7 +97,7 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 					<ResourcePickerField
 						label='Agent'
 						value={filters.agentId || ''}
-						onChange={(value) => onFiltersChange({ agentId: value })}
+						onChange={({ id }) => onFiltersChange({ agentId: id })}
 						resourceType='user'
 						placeholder='Sélectionner un agent...'
 						onClear={() => onFiltersChange({ agentId: '' })}
@@ -109,7 +109,7 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 					<ResourcePickerField
 						label='Client'
 						value={filters.clientId || ''}
-						onChange={(value) => onFiltersChange({ clientId: value })}
+						onChange={({ id }) => onFiltersChange({ clientId: id })}
 						resourceType='client'
 						placeholder='Sélectionner un client...'
 						onClear={() => onFiltersChange({ clientId: '' })}

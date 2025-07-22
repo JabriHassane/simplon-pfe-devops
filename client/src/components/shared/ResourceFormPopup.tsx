@@ -5,6 +5,7 @@ interface ResourceFormPopupProps {
 	title: string;
 	children: React.ReactNode;
 	description?: string;
+	width?: 'sm' | 'md' | 'lg';
 }
 
 function ResourceFormPopup({
@@ -12,9 +13,10 @@ function ResourceFormPopup({
 	title,
 	children,
 	description,
+	width = 'sm',
 }: ResourceFormPopupProps) {
 	return (
-		<Dialog open onClose={onClose} maxWidth='sm' fullWidth>
+		<Dialog open onClose={onClose} maxWidth={width} fullWidth>
 			<DialogTitle>
 				<Typography variant='h6' sx={{ fontWeight: 600 }}>
 					{title}

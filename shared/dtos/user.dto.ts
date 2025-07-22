@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { EntityDto } from './entity.dto';
 import { ROLES } from '../constants';
 
 export const CreateUserDto = z.object({
@@ -26,7 +25,7 @@ export const UpdateUserDto = CreateUserDto.extend({
 });
 
 export const UserDto = z.object({
-	...EntityDto.shape,
+	id: z.string(),
 	ref: z.string(),
 	...CreateUserDto.omit({ password: true }).shape,
 });

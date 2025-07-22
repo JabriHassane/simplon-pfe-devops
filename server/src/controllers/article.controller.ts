@@ -64,7 +64,7 @@ export const ArticleController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const { name, image, categoryId, price, inventory } = req.body;
+			const { name, image, categoryId, price } = req.body;
 
 			// Check if category exists
 			const category = await prisma.category.findUnique({
@@ -81,7 +81,6 @@ export const ArticleController = {
 					image: image || '',
 					categoryId,
 					price: parseFloat(price),
-					inventory: parseInt(inventory),
 					ref: `ART-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
 					createdById: userId,
 				},
@@ -101,7 +100,7 @@ export const ArticleController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const { name, image, categoryId, price, inventory } = req.body;
+			const { name, image, categoryId, price } = req.body;
 
 			// Check if article exists
 			const existingArticle = await prisma.article.findUnique({
@@ -130,7 +129,6 @@ export const ArticleController = {
 					...(image !== undefined && { image }),
 					...(categoryId && { categoryId }),
 					...(price !== undefined && { price: parseFloat(price) }),
-					...(inventory !== undefined && { inventory: parseInt(inventory) }),
 					updatedAt: new Date(),
 					updatedById: userId,
 				},

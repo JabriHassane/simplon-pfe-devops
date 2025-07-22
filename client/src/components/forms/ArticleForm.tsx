@@ -1,11 +1,4 @@
-import {
-	Box,
-	TextField,
-	FormControl,
-	InputLabel,
-	Select,
-	MenuItem,
-} from '@mui/material';
+import { TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -13,7 +6,6 @@ import {
 	type CreateArticleDtoType,
 	type ArticleDtoType,
 } from '../../../../shared/dtos/article.dto';
-import { useCategories } from '../../hooks/ressources/useCategories';
 import ResourceForm from './ResourceForm';
 import {
 	useCreateArticle,
@@ -27,8 +19,6 @@ interface Props {
 }
 
 export default function ArticleForm({ init, onClose }: Props) {
-	const { data: categories } = useCategories();
-
 	const {
 		register,
 		handleSubmit,
@@ -37,7 +27,12 @@ export default function ArticleForm({ init, onClose }: Props) {
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateArticleDto),
-		defaultValues: init || undefined,
+		defaultValues: {
+			name: init?.name || '',
+			price: init?.price || 0,
+			image: init?.image || '',
+			categoryId: init?.categoryId || '',
+		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -87,17 +82,6 @@ export default function ArticleForm({ init, onClose }: Props) {
 
 			<TextField
 				fullWidth
-				label='Inventaire'
-				type='number'
-				{...register('inventory', { valueAsNumber: true })}
-				variant='outlined'
-				error={!!errors.inventory}
-				helperText={errors.inventory?.message as string}
-				required
-			/>
-
-			<TextField
-				fullWidth
 				label="URL de l'image (optionnel)"
 				{...register('image')}
 				variant='outlined'
@@ -107,9 +91,9 @@ export default function ArticleForm({ init, onClose }: Props) {
 
 			<ResourcePickerField
 				label='Catégorie'
-				value={watch(`categoryId`) || ''}
-				onChange={(value) => {
-					setValue(`categoryId`, value);
+				value={init?.category?.name}
+				onChange={({ id }) => {
+					setValue(`categoryId`, id);
 				}}
 				resourceType='category'
 				error={!!errors.categoryId}

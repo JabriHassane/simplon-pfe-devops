@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ORDER_STATUSES } from '../constants';
+import { ORDER_STATUSES, PAYMENT_METHODS } from '../constants';
 import { UserDto } from './user.dto';
 import { ArticleDto } from './article.dto';
 import { AccountDto } from './account.dto';
@@ -15,6 +15,8 @@ export const CreateOrderPaymentDto = z.object({
 	date: z.string().min(1, 'Date requise'),
 	amount: z.number().min(0, 'Le montant doit être positif'),
 	accountId: z.string().optional(),
+	agentId: z.string().optional(),
+	paymentMethod: z.enum(PAYMENT_METHODS),
 });
 
 export const CreateOrderDto = z.object({
@@ -42,7 +44,8 @@ export const UpdateOrderDto = CreateOrderDto;
 export const OrderPaymentDto = z.object({
 	ref: z.string(),
 	...CreateOrderPaymentDto.shape,
-	account: AccountDto,
+	account: AccountDto.optional(),
+	agent: UserDto.optional(),
 });
 
 export const OrderItemDto = CreateOrderItemDto.extend({

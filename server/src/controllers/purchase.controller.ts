@@ -1,49 +1,51 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
-import { getPaginationCondition } from '../utils/pagination';
+import { getOrderPaginationCondition } from '../utils/pagination';
 import { UpdatePurchaseDtoType } from '../../../shared/dtos/purchase.dto';
 import { getNextRef } from '../utils/db.utils';
+import { PaymentMethod, TransactionType } from '../../../shared/constants';
 
 type PurchaseItemInput = { articleId: string; price: number; quantity: number };
 
 export const PurchaseController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
-				'ref',
-				'receiptNumber',
-				'invoiceNumber',
-			]);
+			const { page, limit, skip, whereClause } =
+				getOrderPaginationCondition(req);
 
-			const [purchases, total] = await Promise.all([
-				prisma.purchase.findMany({
-					where: whereClause,
-					include: {
-						supplier: true,
-						items: {
-							include: {
-								article: true,
-							},
-						},
-						payments: {
-							include: {
-								from: true,
-							},
-						},
-						agent: {
-							select: {
-								id: true,
-								name: true,
-							},
+			const purchasesPromise = prisma.purchase.findMany({
+				where: whereClause,
+				include: {
+					supplier: true,
+					items: {
+						include: {
+							article: true,
 						},
 					},
-					orderBy: { date: 'desc' },
-					skip,
-					take: limit,
-				}),
-				prisma.purchase.count({
-					where: whereClause,
-				}),
+					payments: {
+						include: {
+							to: true,
+						},
+					},
+					agent: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+				orderBy: { date: 'desc' },
+				skip,
+				take: limit,
+			});
+
+			const purchasesCountPromise = prisma.purchase.count({
+				where: whereClause,
+			});
+
+			const [purchases, total] = await Promise.all([
+				purchasesPromise,
+				purchasesCountPromise,
 			]);
 
 			const totalPages = Math.ceil(total / limit);
@@ -58,7 +60,7 @@ export const PurchaseController = {
 				},
 			});
 		} catch (error) {
-			console.error('Error in PurchaseController.getPage', error);
+			console.error('Error in purchaseController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -207,18 +209,6 @@ export const PurchaseController = {
 				},
 			});
 
-			// Update article inventory (purchases increase inventory)
-			for (const item of items) {
-				await prisma.article.update({
-					where: { id: item.articleId },
-					data: {
-						inventory: {
-							increment: item.quantity,
-						},
-					},
-				});
-			}
-
 			res.status(201).json(purchase);
 		} catch (error) {
 			console.error('Error in PurchaseController.create', error);
@@ -253,7 +243,10 @@ export const PurchaseController = {
 				}
 
 				// Validate all articles
-				const articleIds = body.items.map((item) => item.articleId);
+				const articleIds = body.items
+					.map((item) => item.articleId)
+					.filter((item) => !!item) as string[];
+
 				const articles = await tx.article.findMany({
 					where: { id: { in: articleIds } },
 				});
@@ -279,6 +272,38 @@ export const PurchaseController = {
 					where: { id },
 					data: {
 						...updateData,
+
+						items: {
+							deleteMany: {},
+							createMany: {
+								data: body.items.map((item) => ({
+									articleId: item.articleId,
+									articleName: item.articleName,
+									price: item.price,
+									quantity: item.quantity,
+									createdById: userId,
+								})),
+							},
+						},
+
+						payments: {
+							deleteMany: {},
+							createMany: {
+								data: await Promise.all(
+									body.payments.map(async (item) => ({
+										ref: await getNextRef('purchases'),
+										amount: item.amount,
+										date: item.date,
+										paymentMethod: item.paymentMethod as PaymentMethod,
+										type: 'purchase' as TransactionType,
+										agentId: item.agentId,
+										fromId: item.accountId,
+										createdById: userId,
+									}))
+								),
+							},
+						},
+
 						totalPrice,
 						totalDue,
 						updatedAt: new Date(),
@@ -299,42 +324,6 @@ export const PurchaseController = {
 						},
 					},
 				});
-
-				// Delete old items
-				await tx.purchaseItem.deleteMany({
-					where: { purchaseId: id },
-				});
-
-				// Create new items
-				await tx.purchaseItem.createMany({
-					data: body.items.map((item) => ({
-						purchaseId: id,
-						articleId: item.articleId,
-						price: item.price,
-						quantity: item.quantity,
-						createdById: userId,
-					})),
-				});
-
-				// Update article inventory
-				for (const item of body.items) {
-					const oldItem = existingPurchase.items.find(
-						(pi) => pi.articleId === item.articleId
-					);
-					const oldQty = oldItem ? oldItem.quantity : 0;
-					const diff = item.quantity - oldQty;
-
-					if (diff !== 0) {
-						await tx.article.update({
-							where: { id: item.articleId },
-							data: {
-								inventory: {
-									increment: diff,
-								},
-							},
-						});
-					}
-				}
 
 				return updated;
 			});
@@ -373,18 +362,6 @@ export const PurchaseController = {
 			if (hasTransactions) {
 				return res.status(400).json({
 					message: 'Cannot delete purchase with existing transactions',
-				});
-			}
-
-			// Reduce article inventory (purchases increase inventory, so deletion reduces it)
-			for (const item of existingPurchase.items) {
-				await prisma.article.update({
-					where: { id: item.articleId },
-					data: {
-						inventory: {
-							decrement: item.quantity,
-						},
-					},
 				});
 			}
 

@@ -51,9 +51,9 @@ export const OrderItems = () => {
 				>
 					<ResourcePickerField
 						label='Article'
-						value={watch(`items.${index}.articleId`) || ''}
-						onChange={(value) => {
-							setValue(`items.${index}.articleId`, value);
+						value={watch(`items.${index}.articleId`)}
+						onChange={({ id }) => {
+							setValue(`items.${index}.articleId`, id);
 						}}
 						resourceType='article'
 						error={!!errors.items?.[index]?.articleId}

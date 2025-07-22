@@ -12,7 +12,7 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const ORDER_STATUS_COLOR_MAP = {
 	pending: 'warning',
 	partially_paid: 'info',
-	paid: 'primary',
+	paid: 'success',
 	cancelled: 'error',
 } as const;
 

@@ -1,4 +1,4 @@
-import { Collapse, IconButton } from '@mui/material';
+import { Chip, IconButton } from '@mui/material';
 
 import {
 	Table,
@@ -18,6 +18,8 @@ import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
 import type { SaleDtoType } from '../../../../shared/dtos/sale.dto';
 import type { PurchaseDtoType } from '../../../../shared/dtos/purchase.dto';
+import { DICT } from '../../i18n/fr';
+import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
 
 interface ResourceTableHeader {
 	id: string;
@@ -40,8 +42,8 @@ interface Props {
 	itemsHeaders?: ResourceTableHeader[];
 	paymentsHeaders?: ResourceTableHeader[];
 	rows?: ResourceTableRow[];
-	onEdit: (item: any) => void;
-	onDelete: (item: any) => void;
+	onEdit: (item: any, index: number) => void;
+	onDelete: (item: any, index: number) => void;
 }
 
 function ResourceTable({ headers, rows, onEdit, onDelete }: Props) {
@@ -64,6 +66,7 @@ function ResourceTable({ headers, rows, onEdit, onDelete }: Props) {
 				{rows?.map((row, index) => (
 					<Row
 						key={index}
+						index={index}
 						headers={headers}
 						row={row}
 						onEdit={onEdit}
@@ -78,13 +81,14 @@ function ResourceTable({ headers, rows, onEdit, onDelete }: Props) {
 export default ResourceTable;
 
 interface RowProps {
+	index: number;
 	row: ResourceTableRow;
 	headers: ResourceTableHeader[];
-	onEdit: (item: any) => void;
-	onDelete: (item: any) => void;
+	onEdit: (item: any, index: number) => void;
+	onDelete: (item: any, index: number) => void;
 }
 
-function Row({ row, headers, onEdit, onDelete }: RowProps) {
+function Row({ index, row, headers, onEdit, onDelete }: RowProps) {
 	const [extension, setExtension] = useState<'items' | 'payments' | null>(null);
 
 	const handleClick = (_extension: 'items' | 'payments') => {
@@ -107,6 +111,8 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 		{ id: 'date', name: 'Date' },
 		{ id: 'amount', name: 'Montant' },
 		{ id: 'account', name: 'Compte' },
+		{ id: 'agent', name: 'Agent' },
+		{ id: 'paymentMethod', name: 'Méthode de paiement' },
 	];
 
 	const order = row.item as SaleDtoType | PurchaseDtoType;
@@ -127,7 +133,16 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 			ref: payment.ref,
 			date: formatDate(payment.date),
 			amount: formatPrice(payment.amount),
-			account: payment.from?.name || payment.to?.name,
+			account: payment.account?.name,
+			agent: payment.agent?.name,
+			paymentMethod: (
+				<Chip
+					label={DICT.paymentMethods[payment.paymentMethod]}
+					color={PAYMENT_METHODS_COLOR_MAP[payment.paymentMethod]}
+					size='small'
+					sx={{ px: 0.5 }}
+				/>
+			),
 		},
 	}));
 
@@ -161,11 +176,11 @@ function Row({ row, headers, onEdit, onDelete }: RowProps) {
 						</>
 					)}
 
-					<IconButton onClick={() => onEdit(row.item)} size='small'>
+					<IconButton onClick={() => onEdit(row.item, index)} size='small'>
 						<EditOutlined />
 					</IconButton>
 
-					<IconButton onClick={() => onDelete(row.item)} size='small'>
+					<IconButton onClick={() => onDelete(row.item, index)} size='small'>
 						<DeleteOutline />
 					</IconButton>
 				</TableCell>

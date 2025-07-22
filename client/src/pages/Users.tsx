@@ -62,9 +62,7 @@ export default function Users() {
 				<ResourceFormPopup
 					onClose={handleClosePopup}
 					title={
-						selectedUser
-							? `Modifier ${selectedUser.ref}`
-							: 'Nouvel utilisateur'
+						selectedUser ? `Modifier ${selectedUser.ref}` : 'Nouvel utilisateur'
 					}
 				>
 					<UserForm init={selectedUser} onClose={handleClosePopup} />

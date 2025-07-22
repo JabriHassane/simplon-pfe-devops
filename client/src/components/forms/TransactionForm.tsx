@@ -79,9 +79,9 @@ export default function TransactionForm({
 
 			<ResourcePickerField
 				label='Compte'
-				value={watch('fromId') || ''}
-				onChange={(value) => {
-					setValue('fromId', value);
+				value={init?.from?.name}
+				onChange={({ id }) => {
+					setValue(`fromId`, id);
 				}}
 				resourceType='account'
 				error={!!errors.fromId}

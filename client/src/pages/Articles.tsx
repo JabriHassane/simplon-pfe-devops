@@ -45,7 +45,6 @@ export default function Articles() {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'name', name: 'Nom' },
 					{ id: 'price', name: 'Prix' },
-					{ id: 'inventory', name: 'Stock' },
 				]}
 				rows={articles?.data.map((article) => ({
 					item: article,
@@ -53,7 +52,6 @@ export default function Articles() {
 						ref: article.ref,
 						name: article.name,
 						price: article.price,
-						inventory: article.inventory,
 					},
 				}))}
 				onEdit={handleOpenFormPopup}
