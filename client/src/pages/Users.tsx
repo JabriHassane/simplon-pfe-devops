@@ -33,7 +33,7 @@ export default function Users() {
 	}
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
 				title='Utilisateurs'
 				handleAdd={() => handleOpenFormPopup(null)}
@@ -77,6 +77,6 @@ export default function Users() {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }

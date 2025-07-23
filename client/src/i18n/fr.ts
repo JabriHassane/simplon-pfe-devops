@@ -2,7 +2,9 @@ export const DICT = {
 	transactionType: {
 		purchase: 'Achat',
 		sale: 'Vente',
-		transfer: 'Transfert',
+		send: 'Envoi',
+		receive: 'Réception',
+		cashing: 'Encaissement',
 	},
 	orderStatus: {
 		pending: 'En attente',
@@ -10,10 +12,10 @@ export const DICT = {
 		paid: 'Payé',
 		cancelled: 'Annulé',
 	},
-	paymentMethods: {
-		cash: "Espèce",
-		check: "Chèque",
-		tpe: "TPE",
-		bankTransfer: "Virement",
-	}
+	methods: {
+		cash: 'Espèce',
+		check: 'Chèque',
+		tpe: 'TPE',
+		bank_transfer: 'Virement',
+	},
 } as const;

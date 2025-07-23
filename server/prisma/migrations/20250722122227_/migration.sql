@@ -1,9 +1,9 @@
 /*
   Warnings:
 
-  - The `paymentMethods` column on the `accounts` table would be dropped and recreated. This will lead to data loss if there is data in the column.
+  - The `methods` column on the `accounts` table would be dropped and recreated. This will lead to data loss if there is data in the column.
 
 */
 -- AlterTable
-ALTER TABLE "accounts" DROP COLUMN "paymentMethods",
-ADD COLUMN     "paymentMethods" TEXT[];
+ALTER TABLE "accounts" DROP COLUMN "methods",
+ADD COLUMN     "methods" TEXT[];

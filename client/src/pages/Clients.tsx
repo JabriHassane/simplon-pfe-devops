@@ -33,7 +33,7 @@ export default function Clients() {
 	}
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
 				title='Clients'
 				handleAdd={() => handleOpenFormPopup(null)}
@@ -79,6 +79,6 @@ export default function Clients() {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }

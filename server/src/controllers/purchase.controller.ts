@@ -1,11 +1,12 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { getOrderPaginationCondition } from '../utils/pagination';
-import { UpdatePurchaseDtoType } from '../../../shared/dtos/purchase.dto';
+import {
+	CreatePurchaseDtoType,
+	UpdatePurchaseDtoType,
+} from '../../../shared/dtos/purchase.dto';
 import { getNextRef } from '../utils/db.utils';
-import { PaymentMethod, TransactionType } from '../../../shared/constants';
-
-type PurchaseItemInput = { articleId: string; price: number; quantity: number };
+import { TransactionMethod, TransactionType } from '../../../shared/constants';
 
 export const PurchaseController = {
 	async getPage(req: Request, res: Response) {
@@ -13,18 +14,13 @@ export const PurchaseController = {
 			const { page, limit, skip, whereClause } =
 				getOrderPaginationCondition(req);
 
-			const purchasesPromise = prisma.purchase.findMany({
+			const PurchasesPromise = prisma.purchase.findMany({
 				where: whereClause,
 				include: {
 					supplier: true,
-					items: {
-						include: {
-							article: true,
-						},
-					},
 					payments: {
 						include: {
-							to: true,
+							agent: true,
 						},
 					},
 					agent: {
@@ -39,13 +35,13 @@ export const PurchaseController = {
 				take: limit,
 			});
 
-			const purchasesCountPromise = prisma.purchase.count({
+			const PurchasesCountPromise = prisma.purchase.count({
 				where: whereClause,
 			});
 
 			const [purchases, total] = await Promise.all([
-				purchasesPromise,
-				purchasesCountPromise,
+				PurchasesPromise,
+				PurchasesCountPromise,
 			]);
 
 			const totalPages = Math.ceil(total / limit);
@@ -60,7 +56,7 @@ export const PurchaseController = {
 				},
 			});
 		} catch (error) {
-			console.error('Error in purchaseController.getPage', error);
+			console.error('Error in PurchaseController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -73,11 +69,6 @@ export const PurchaseController = {
 				where: { id },
 				include: {
 					supplier: true,
-					items: {
-						include: {
-							article: true,
-						},
-					},
 					agent: {
 						select: {
 							id: true,
@@ -88,7 +79,7 @@ export const PurchaseController = {
 			});
 
 			if (!purchase) {
-				return res.status(404).json({ message: 'Purchase not found' });
+				return res.status(404).json({ message: 'purchase not found' });
 			}
 
 			res.json(purchase);
@@ -108,8 +99,6 @@ export const PurchaseController = {
 					deletedAt: null,
 				},
 				include: {
-					from: true,
-					to: true,
 					agent: {
 						select: {
 							id: true,
@@ -130,76 +119,34 @@ export const PurchaseController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const {
-				date,
-				supplierId,
-				receiptNumber,
-				invoiceNumber,
-				items,
-				status = 'pending',
-				note,
-			} = req.body;
+			const body = req.body as CreatePurchaseDtoType;
 
-			// Check if supplier exists
-			const supplier = await prisma.supplier.findUnique({
-				where: { id: supplierId },
+			// Check if client exists
+			const client = await prisma.client.findUnique({
+				where: { id: body.supplierId },
 			});
 
-			if (!supplier) {
+			if (!client) {
 				return res.status(400).json({ message: 'Supplier not found' });
 			}
 
-			// Validate all articles exist
-			for (const item of items) {
-				const article = await prisma.article.findUnique({
-					where: { id: item.articleId },
-				});
-
-				if (!article) {
-					return res
-						.status(400)
-						.json({ message: `Article ${item.articleId} not found` });
-				}
-			}
-
-			// Calculate totals
-			const subtotal = items.reduce(
-				(sum: number, item: { price: number; quantity: number }) =>
-					sum + item.price * item.quantity,
-				0
-			);
-			const totalPrice = subtotal;
-
 			const purchase = await prisma.purchase.create({
 				data: {
-					date,
-					supplierId,
-					receiptNumber,
-					invoiceNumber,
-					totalPrice,
-					totalPaid: 0,
-					totalDue: totalPrice,
-					status,
-					note: note || '',
-					agentId: userId,
 					ref: await getNextRef('purchases'),
+					date: body.date,
+					agentId: body.agentId,
+					supplierId: body.supplierId,
+					receiptNumber: body.receiptNumber,
+					invoiceNumber: body.invoiceNumber,
+					totalPrice: body.totalPrice,
+					totalPaid: body.totalPaid,
+					totalDue: body.totalDue,
+					status: body.status,
+					note: body.note,
 					createdById: userId,
-					items: {
-						create: items.map((item: PurchaseItemInput) => ({
-							articleId: item.articleId,
-							price: item.price,
-							quantity: item.quantity,
-							createdById: userId,
-						})),
-					},
 				},
 				include: {
 					supplier: true,
-					items: {
-						include: {
-							article: true,
-						},
-					},
 					agent: {
 						select: {
 							id: true,
@@ -226,65 +173,30 @@ export const PurchaseController = {
 				// Check if purchase exists
 				const isExists = await tx.purchase.findUnique({
 					where: { id },
-					include: { items: true },
 				});
 
 				if (!isExists) {
 					throw new Error('Purchase not found');
 				}
 
-				// Check if supplier exists
-				const supplier = await tx.supplier.findUnique({
+				// Check if client exists
+				const client = await tx.client.findUnique({
 					where: { id: body.supplierId },
 				});
 
-				if (!supplier) {
+				if (!client) {
 					throw new Error('Supplier not found');
 				}
 
-				// Validate all articles
-				const articleIds = body.items
-					.map((item) => item.articleId)
-					.filter((item) => !!item) as string[];
-
-				const articles = await tx.article.findMany({
-					where: { id: { in: articleIds } },
-				});
-
-				if (articles.length !== articleIds.length) {
-					throw new Error('One or more articles not found');
-				}
-
-				// Calculate total price
-				const totalPrice = body.items.reduce((sum, item) => {
-					return sum + item.price * item.quantity;
-				}, 0);
-
-				const totalPaid = body.payments.reduce((sum, payment) => {
-					return sum + payment.amount;
-				}, 0);
-
-				const totalDue = totalPrice - totalPaid;
-
 				// Update purchase
-				const { items, ...updateData } = body;
+				const { ...updateData } = body;
 				const updated = await tx.purchase.update({
 					where: { id },
 					data: {
 						...updateData,
-
-						items: {
-							deleteMany: {},
-							createMany: {
-								data: body.items.map((item) => ({
-									articleId: item.articleId,
-									articleName: item.articleName,
-									price: item.price,
-									quantity: item.quantity,
-									createdById: userId,
-								})),
-							},
-						},
+						totalPrice: body.totalPrice,
+						totalPaid: body.totalPaid,
+						totalDue: body.totalDue,
 
 						payments: {
 							deleteMany: {},
@@ -294,28 +206,20 @@ export const PurchaseController = {
 										ref: await getNextRef('purchases'),
 										amount: item.amount,
 										date: item.date,
-										paymentMethod: item.paymentMethod as PaymentMethod,
+										method: item.method as TransactionMethod,
 										type: 'purchase' as TransactionType,
 										agentId: item.agentId,
-										fromId: item.accountId,
 										createdById: userId,
 									}))
 								),
 							},
 						},
 
-						totalPrice,
-						totalDue,
 						updatedAt: new Date(),
 						updatedById: userId,
 					},
 					include: {
 						supplier: true,
-						items: {
-							include: {
-								article: true,
-							},
-						},
 						agent: {
 							select: {
 								id: true,
@@ -346,7 +250,7 @@ export const PurchaseController = {
 			const existingPurchase = await prisma.purchase.findUnique({
 				where: { id },
 				include: {
-					items: true,
+					payments: true,
 				},
 			});
 
@@ -361,7 +265,7 @@ export const PurchaseController = {
 
 			if (hasTransactions) {
 				return res.status(400).json({
-					message: 'Cannot delete purchase with existing transactions',
+					message: 'Cannot delete Purchase with existing transactions',
 				});
 			}
 

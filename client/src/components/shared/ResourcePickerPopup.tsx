@@ -25,13 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
 
-export type ResourceType =
-	| 'user'
-	| 'client'
-	| 'supplier'
-	| 'category'
-	| 'article'
-	| 'account';
+export type ResourceType = 'user' | 'client' | 'supplier';
 
 interface Resource {
 	id: string;
@@ -96,7 +90,7 @@ export default function ResourcePickerPopup({
 	};
 
 	return (
-		<Dialog open onClose={handleClose} maxWidth='md' fullWidth>
+		<Dialog open onClose={handleClose} maxWidth='sm' fullWidth>
 			<DialogTitle>
 				<Box display='flex' justifyContent='space-between' alignItems='center'>
 					<TextField

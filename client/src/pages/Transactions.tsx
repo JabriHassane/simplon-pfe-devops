@@ -12,7 +12,11 @@ import ResourceHeader from '../components/shared/ResourceHeader';
 import { DICT } from '../i18n/fr';
 import { formatPrice } from '../utils/price.utils';
 import useCrud from '../hooks/useCrud';
-import type { TransactionType } from '../../../shared/constants';
+import {
+	PAYMENT_METHODS_COLOR_MAP,
+	TRANSACTION_TYPE_COLOR_MAP,
+	type TransactionMethod,
+} from '../../../shared/constants';
 import { formatDate } from '../utils/date.utils';
 import ResourceTable from '../components/shared/ResourceTable';
 
@@ -35,26 +39,14 @@ export default function Transactions() {
 		}
 	};
 
-	const getTypeColor = (type: TransactionType) => {
-		if (type === 'sale') {
-			return 'success';
-		}
-		if (type === 'purchase') {
-			return 'warning';
-		}
-		if (type === 'transfer') {
-			return 'info';
-		}
-	};
-
 	if (isLoading) {
 		return <ResourceLoader />;
 	}
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
-				title='Transactions'
+				title='Opérations'
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
@@ -64,9 +56,8 @@ export default function Transactions() {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
-					{ id: 'from', name: 'Compte source' },
-					{ id: 'to', name: 'Compte destination' },
-					{ id: 'type', name: 'Type' },
+					{ id: 'type', name: 'Opération' },
+					{ id: 'method', name: 'Méthode' },
 					{ id: 'amount', name: 'Montant' },
 				]}
 				rows={transactions?.data.map((transaction) => ({
@@ -75,12 +66,22 @@ export default function Transactions() {
 						ref: transaction.ref,
 						date: formatDate(transaction.date),
 						agent: transaction.agent?.name || '-',
-						from: transaction.from?.name || '-',
-						to: transaction.to?.name || '-',
 						type: (
 							<Chip
 								label={DICT.transactionType[transaction.type]}
-								color={getTypeColor(transaction.type)}
+								color={TRANSACTION_TYPE_COLOR_MAP[transaction.type]}
+								size='small'
+								sx={{ px: 0.5 }}
+							/>
+						),
+						method: (
+							<Chip
+								label={DICT.methods[transaction.method as TransactionMethod]}
+								color={
+									PAYMENT_METHODS_COLOR_MAP[
+										transaction.method as TransactionMethod
+									]
+								}
 								size='small'
 								sx={{ px: 0.5 }}
 							/>
@@ -116,6 +117,6 @@ export default function Transactions() {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }

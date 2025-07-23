@@ -11,6 +11,15 @@ export const TransactionService = {
 		return ApiService.getPaginated<TransactionDtoType>('/transactions', params);
 	},
 
+	async getPaymentMethodStats() {
+		return ApiService.get<{
+			cash: number;
+			check: number;
+			tpe: number;
+			bank_transfer: number;
+		}>('/transactions/balances');
+	},
+
 	async getById(id: string) {
 		return ApiService.get<TransactionDtoType>(`/transactions/${id}`);
 	},

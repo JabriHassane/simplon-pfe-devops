@@ -15,6 +15,7 @@ router.use(requireAgent);
 
 // CRUD operations
 router.get('/', TransactionController.getPage);
+router.get('/balances', TransactionController.getBalances);
 router.get('/:id', TransactionController.getById);
 router.post('/', validate(CreateTransactionDto), TransactionController.create);
 router.put(

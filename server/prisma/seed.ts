@@ -9,16 +9,30 @@ async function main() {
 
 	// Clear existing data (in correct sale due to foreign key constraints)
 	await prisma.transaction.deleteMany();
-	await prisma.saleItem.deleteMany();
-	await prisma.purchaseItem.deleteMany();
 	await prisma.sale.deleteMany();
 	await prisma.purchase.deleteMany();
-	await prisma.article.deleteMany();
-	await prisma.category.deleteMany();
 	await prisma.client.deleteMany();
 	await prisma.supplier.deleteMany();
-	await prisma.account.deleteMany();
 	await prisma.user.deleteMany();
+
+	await prisma.$queryRawUnsafe(
+		'CREATE SEQUENCE IF NOT EXISTS users_ref_seq START 1'
+	);
+	await prisma.$queryRawUnsafe(
+		'CREATE SEQUENCE IF NOT EXISTS clients_ref_seq START 1'
+	);
+	await prisma.$queryRawUnsafe(
+		'CREATE SEQUENCE IF NOT EXISTS suppliers_ref_seq START 1'
+	);
+	await prisma.$queryRawUnsafe(
+		'CREATE SEQUENCE IF NOT EXISTS sales_ref_seq START 1'
+	);
+	await prisma.$queryRawUnsafe(
+		'CREATE SEQUENCE IF NOT EXISTS purchases_ref_seq START 1'
+	);
+	await prisma.$queryRawUnsafe(
+		'CREATE SEQUENCE IF NOT EXISTS transactions_ref_seq START 1'
+	);
 
 	console.log('🗑️  Cleared existing data');
 
@@ -66,218 +80,6 @@ async function main() {
 	});
 
 	console.log('👥 Created users');
-
-	// Create accounts
-	const accounts = await Promise.all([
-		prisma.account.create({
-			data: {
-				ref: await getNextRef('accounts'),
-				name: 'Caisse Espèces',
-				balance: 15000,
-				paymentMethods: ['cash'],
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.account.create({
-			data: {
-				ref: await getNextRef('accounts'),
-				name: 'Caisse Chèques',
-				balance: 25000,
-				paymentMethods: ['check'],
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.account.create({
-			data: {
-				ref: await getNextRef('accounts'),
-				name: 'Banque Principale',
-				balance: 150000,
-				paymentMethods: ['bankTransfer', 'tpe'],
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.account.create({
-			data: {
-				ref: await getNextRef('accounts'),
-				name: 'Banque Secondaire',
-				balance: 75000,
-				paymentMethods: ['bankTransfer'],
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.account.create({
-			data: {
-				ref: await getNextRef('accounts'),
-				name: 'Compte Épargne',
-				balance: 200000,
-				paymentMethods: ['bankTransfer'],
-				createdById: superAdmin.id,
-			},
-		}),
-	]);
-
-	console.log('💰 Created accounts');
-
-	// Create plant categories
-	const categories = await Promise.all([
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: "Plantes d'Intérieur",
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: 'Arbres Fruitiers',
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: 'Fleurs',
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: 'Matériel de Jardinage',
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: 'Plantes Grimpantes',
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: 'Cactus et Succulentes',
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.category.create({
-			data: {
-				ref: await getNextRef('categories'),
-				name: 'Herbes Aromatiques',
-				createdById: superAdmin.id,
-			},
-		}),
-	]);
-
-	console.log('📂 Created plant categories');
-
-	// Create plants and materials
-	const articles = await Promise.all([
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Monstera Deliciosa',
-				image: 'https://via.placeholder.com/300x300?text=Monstera',
-				price: 299.99,
-				categoryId: categories[0].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Olivier 5 ans',
-				image: 'https://via.placeholder.com/300x300?text=Olivier',
-				price: 899.99,
-				categoryId: categories[1].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Rosier Rouge',
-				image: 'https://via.placeholder.com/300x300?text=Rose',
-				price: 89.99,
-				categoryId: categories[2].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Lavande',
-				image: 'https://via.placeholder.com/300x300?text=Lavande',
-				price: 49.99,
-				categoryId: categories[2].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: "Kit d'Outils de Jardinage",
-				image: 'https://via.placeholder.com/300x300?text=Outils',
-				price: 199.99,
-				categoryId: categories[3].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Terreau Premium 40L',
-				image: 'https://via.placeholder.com/300x300?text=Terreau',
-				price: 79.99,
-				categoryId: categories[3].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Jasmin Grimpant',
-				image: 'https://via.placeholder.com/300x300?text=Jasmin',
-				price: 129.99,
-				categoryId: categories[4].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Cactus Barrel',
-				image: 'https://via.placeholder.com/300x300?text=Cactus',
-				price: 69.99,
-				categoryId: categories[5].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Basilic Bio',
-				image: 'https://via.placeholder.com/300x300?text=Basilic',
-				price: 29.99,
-				categoryId: categories[6].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.article.create({
-			data: {
-				ref: await getNextRef('articles'),
-				name: 'Menthe Fraîche',
-				image: 'https://via.placeholder.com/300x300?text=Menthe',
-				price: 24.99,
-				categoryId: categories[6].id,
-				createdById: superAdmin.id,
-			},
-		}),
-	]);
-
-	console.log('🌿 Created plants and materials');
 
 	// Create clients
 	const clients = await Promise.all([
@@ -487,95 +289,6 @@ async function main() {
 
 	console.log('📋 Created sales');
 
-	// Create more sale items
-	await Promise.all([
-		// Original sale items
-		prisma.saleItem.create({
-			data: {
-				price: 299.99,
-				quantity: 1,
-				saleId: sales[0].id,
-				articleId: articles[0].id,
-				createdById: agent.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 89.99,
-				quantity: 1,
-				saleId: sales[0].id,
-				articleId: articles[2].id,
-				createdById: agent.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 49.99,
-				quantity: 2,
-				saleId: sales[1].id,
-				articleId: articles[3].id,
-				createdById: admin1.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 899.99,
-				quantity: 1,
-				saleId: sales[2].id,
-				articleId: articles[1].id,
-				createdById: agent.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 199.99,
-				quantity: 1,
-				saleId: sales[2].id,
-				articleId: articles[4].id,
-				createdById: agent.id,
-			},
-		}),
-		// Additional sale items
-		prisma.saleItem.create({
-			data: {
-				price: 129.99,
-				quantity: 2,
-				saleId: sales[3].id,
-				articleId: articles[6].id,
-				createdById: admin2.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 69.99,
-				quantity: 3,
-				saleId: sales[3].id,
-				articleId: articles[7].id,
-				createdById: admin2.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 29.99,
-				quantity: 5,
-				saleId: sales[4].id,
-				articleId: articles[8].id,
-				createdById: admin1.id,
-			},
-		}),
-		prisma.saleItem.create({
-			data: {
-				price: 24.99,
-				quantity: 10,
-				saleId: sales[4].id,
-				articleId: articles[9].id,
-				createdById: admin1.id,
-			},
-		}),
-	]);
-
-	console.log('🌿 Created sale items');
-
 	// Create more purchases
 	const purchases = await Promise.all([
 		// Original purchases
@@ -585,8 +298,8 @@ async function main() {
 				date: '2024-01-10T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-001',
 				invoiceNumber: 'ACH-INV-001',
-				totalPrice: 5000,
-				totalPaid: 5000,
+				totalPrice: 800,
+				totalPaid: 800,
 				totalDue: 0,
 				status: 'paid',
 				note: 'Stock initial plantes',
@@ -601,9 +314,9 @@ async function main() {
 				date: '2024-01-18T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-002',
 				invoiceNumber: 'ACH-INV-002',
-				totalPrice: 2000,
-				totalPaid: 1500,
-				totalDue: 500,
+				totalPrice: 600,
+				totalPaid: 400,
+				totalDue: 200,
 				status: 'partially_paid',
 				note: 'Réapprovisionnement arbres',
 				agentId: superAdmin.id,
@@ -617,9 +330,9 @@ async function main() {
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-003',
 				invoiceNumber: 'ACH-INV-003',
-				totalPrice: 3500,
-				totalPaid: 2000,
-				totalDue: 1500,
+				totalPrice: 900,
+				totalPaid: 500,
+				totalDue: 400,
 				status: 'partially_paid',
 				note: 'Commande matériel',
 				agentId: superAdmin.id,
@@ -634,8 +347,8 @@ async function main() {
 				date: '2024-02-01T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-004',
 				invoiceNumber: 'ACH-INV-004',
-				totalPrice: 4500,
-				totalPaid: 4500,
+				totalPrice: 1200,
+				totalPaid: 1200,
 				totalDue: 0,
 				status: 'paid',
 				note: 'Commande plantes exotiques',
@@ -650,9 +363,9 @@ async function main() {
 				date: '2024-02-08T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-005',
 				invoiceNumber: 'ACH-INV-005',
-				totalPrice: 6000,
+				totalPrice: 1500,
 				totalPaid: 0,
-				totalDue: 6000,
+				totalDue: 1500,
 				status: 'pending',
 				note: 'Commande saisonnière',
 				agentId: superAdmin.id,
@@ -664,86 +377,6 @@ async function main() {
 
 	console.log('🛒 Created purchases');
 
-	// Create more purchase items
-	await Promise.all([
-		// Original purchase items
-		prisma.purchaseItem.create({
-			data: {
-				price: 200,
-				quantity: 15,
-				purchaseId: purchases[0].id,
-				articleId: articles[0].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 600,
-				quantity: 5,
-				purchaseId: purchases[0].id,
-				articleId: articles[1].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 30,
-				quantity: 50,
-				purchaseId: purchases[1].id,
-				articleId: articles[2].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 150,
-				quantity: 20,
-				purchaseId: purchases[2].id,
-				articleId: articles[4].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		// Additional purchase items
-		prisma.purchaseItem.create({
-			data: {
-				price: 80,
-				quantity: 30,
-				purchaseId: purchases[3].id,
-				articleId: articles[6].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 40,
-				quantity: 50,
-				purchaseId: purchases[3].id,
-				articleId: articles[7].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 15,
-				quantity: 100,
-				purchaseId: purchases[4].id,
-				articleId: articles[8].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.purchaseItem.create({
-			data: {
-				price: 12,
-				quantity: 150,
-				purchaseId: purchases[4].id,
-				articleId: articles[9].id,
-				createdById: superAdmin.id,
-			},
-		}),
-	]);
-
-	console.log('🌿 Created purchase items');
-
 	// Create more transactions
 	await Promise.all([
 		// Original transactions
@@ -752,11 +385,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
-				paymentMethod: 'cash',
+				method: 'cash',
 				amount: 200,
 				agentId: agent.id,
 				saleId: sales[0].id,
-				toId: accounts[0].id,
 				createdById: agent.id,
 			},
 		}),
@@ -765,11 +397,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-15T00:00:00.000Z',
 				type: 'sale',
-				paymentMethod: 'bankTransfer',
+				method: 'bank_transfer',
 				amount: 189.98,
 				agentId: agent.id,
 				saleId: sales[0].id,
-				toId: accounts[2].id,
 				createdById: agent.id,
 			},
 		}),
@@ -778,11 +409,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-20T00:00:00.000Z',
 				type: 'sale',
-				paymentMethod: 'check',
+				method: 'check',
 				amount: 200,
 				agentId: admin1.id,
 				saleId: sales[1].id,
-				toId: accounts[1].id,
 				createdById: admin1.id,
 			},
 		}),
@@ -791,11 +421,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
-				paymentMethod: 'bankTransfer',
-				amount: 3000,
+				method: 'bank_transfer',
+				amount: 500,
 				agentId: superAdmin.id,
 				purchaseId: purchases[0].id,
-				fromId: accounts[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -804,11 +433,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-10T00:00:00.000Z',
 				type: 'purchase',
-				paymentMethod: 'check',
-				amount: 2000,
+				method: 'check',
+				amount: 300,
 				agentId: superAdmin.id,
 				purchaseId: purchases[0].id,
-				fromId: accounts[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -817,11 +445,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
-				paymentMethod: 'cash',
-				amount: 1000,
+				method: 'cash',
+				amount: 250,
 				agentId: superAdmin.id,
 				purchaseId: purchases[1].id,
-				fromId: accounts[0].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -830,11 +457,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-18T00:00:00.000Z',
 				type: 'purchase',
-				paymentMethod: 'bankTransfer',
-				amount: 500,
+				method: 'bank_transfer',
+				amount: 150,
 				agentId: superAdmin.id,
 				purchaseId: purchases[1].id,
-				fromId: accounts[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -843,11 +469,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-25T00:00:00.000Z',
 				type: 'purchase',
-				paymentMethod: 'bankTransfer',
-				amount: 1500,
+				method: 'bank_transfer',
+				amount: 400,
 				agentId: superAdmin.id,
 				purchaseId: purchases[2].id,
-				fromId: accounts[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -856,11 +481,10 @@ async function main() {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-25T00:00:00.000Z',
 				type: 'purchase',
-				paymentMethod: 'check',
-				amount: 500,
+				method: 'check',
+				amount: 100,
 				agentId: superAdmin.id,
 				purchaseId: purchases[2].id,
-				fromId: accounts[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -868,12 +492,166 @@ async function main() {
 			data: {
 				ref: await getNextRef('transactions'),
 				date: '2024-01-22T00:00:00.000Z',
-				type: 'transfer',
-				paymentMethod: 'bankTransfer',
-				amount: 5000,
+				type: 'cashing',
+				method: 'bank_transfer',
+				amount: 1000,
 				agentId: superAdmin.id,
-				fromId: accounts[2].id,
-				toId: accounts[0].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-01-24T00:00:00.000Z',
+				type: 'receive',
+				method: 'cash',
+				amount: 3000,
+				transferActor: 'Bank ABC',
+				agentId: superAdmin.id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-01-26T00:00:00.000Z',
+				type: 'cashing',
+				method: 'check',
+				amount: 1500,
+				agentId: superAdmin.id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-01-27T00:00:00.000Z',
+				type: 'send',
+				method: 'cash',
+				amount: 4000,
+				transferActor: 'Bank DEF',
+				agentId: superAdmin.id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-01-28T00:00:00.000Z',
+				type: 'receive',
+				method: 'cash',
+				amount: 2500,
+				transferActor: 'Bank GHI',
+				agentId: superAdmin.id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-01-29T00:00:00.000Z',
+				type: 'cashing',
+				method: 'tpe',
+				amount: 1000,
+				agentId: superAdmin.id,
+				createdById: superAdmin.id,
+			},
+		}),
+		// Missing transactions for paid sales
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'sale',
+				method: 'tpe',
+				amount: 299.97,
+				agentId: admin2.id,
+				saleId: sales[3].id,
+				createdById: admin2.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'sale',
+				method: 'cash',
+				amount: 300,
+				agentId: admin2.id,
+				saleId: sales[3].id,
+				createdById: admin2.id,
+			},
+		}),
+		// Missing transactions for partially paid sales
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-05T00:00:00.000Z',
+				type: 'sale',
+				method: 'bank_transfer',
+				amount: 250,
+				agentId: admin1.id,
+				saleId: sales[4].id,
+				createdById: admin1.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-05T00:00:00.000Z',
+				type: 'sale',
+				method: 'check',
+				amount: 150,
+				agentId: admin1.id,
+				saleId: sales[4].id,
+				createdById: admin1.id,
+			},
+		}),
+		// Missing transactions for paid purchases
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'purchase',
+				method: 'tpe',
+				amount: 500,
+				agentId: superAdmin.id,
+				purchaseId: purchases[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'purchase',
+				method: 'cash',
+				amount: 400,
+				agentId: superAdmin.id,
+				purchaseId: purchases[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'purchase',
+				method: 'bank_transfer',
+				amount: 300,
+				agentId: superAdmin.id,
+				purchaseId: purchases[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-18T00:00:00.000Z',
+				type: 'cashing',
+				method: 'tpe',
+				amount: 800,
+				agentId: superAdmin.id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -882,18 +660,6 @@ async function main() {
 	console.log('💳 Created transactions');
 
 	console.log('✅ Database seeded successfully!');
-	console.log('\n📊 Summary:');
-	console.log(`- Users: 4 (1 super admin, 2 admins, 1 agent)`);
-	console.log(`- Accounts: 5`);
-	console.log(`- Users: 3 (1 admin, 2 agents)`);
-	console.log(`- Accounts: 3`);
-	console.log(`- Plant Categories: 4`);
-	console.log(`- Plants & Materials: 6`);
-	console.log(`- Clients: 4`);
-	console.log(`- Suppliers: 3`);
-	console.log(`- Sales: 3`);
-	console.log(`- Purchases: 3`);
-	console.log(`- Transactions: 10`);
 }
 
 main()

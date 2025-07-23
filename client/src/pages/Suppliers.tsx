@@ -36,7 +36,7 @@ export default function Suppliers() {
 	}
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
 				title='Fournisseurs'
 				handleAdd={() => handleOpenFormPopup(null)}
@@ -84,6 +84,6 @@ export default function Suppliers() {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }

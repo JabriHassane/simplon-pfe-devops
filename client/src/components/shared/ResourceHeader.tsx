@@ -4,7 +4,7 @@ import { Add as AddIcon } from '@mui/icons-material';
 
 interface ResourceHeaderProps {
 	title: string;
-	handleAdd: () => void;
+	handleAdd?: () => void;
 	error: boolean;
 }
 
@@ -18,14 +18,16 @@ function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
 				mb={3}
 			>
 				<Typography variant='h4'>{title}</Typography>
-				<Button
-					variant='contained'
-					startIcon={<AddIcon />}
-					onClick={handleAdd}
-					disableElevation
-				>
-					Ajouter
-				</Button>
+				{handleAdd && (
+					<Button
+						variant='contained'
+						startIcon={<AddIcon />}
+						onClick={handleAdd}
+						disableElevation
+					>
+						Ajouter
+					</Button>
+				)}
 			</Box>
 
 			{error && (

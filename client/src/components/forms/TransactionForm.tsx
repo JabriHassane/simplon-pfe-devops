@@ -1,14 +1,12 @@
 import {
-	Box,
 	TextField,
 	FormControl,
 	InputLabel,
 	Select,
 	MenuItem,
-	Button,
 	Grid,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateTransactionDto,
@@ -18,9 +16,10 @@ import {
 import ResourceForm from './ResourceForm';
 import { useCreateTransaction } from '../../hooks/ressources/useTransactions';
 import { useUpdateTransaction } from '../../hooks/ressources/useTransactions';
-import ResourcePickerField from '../shared/ResourcePickerField';
-import { TRANSACTION_TYPES } from '../../../../shared/constants';
+import { OPERATION_TYPES } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
+import dayjs from 'dayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 
 interface TransactionFormProps {
 	init: TransactionDtoType | null;
@@ -34,8 +33,7 @@ export default function TransactionForm({
 	const {
 		register,
 		handleSubmit,
-		watch,
-		setValue,
+		control,
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateTransactionDto),
@@ -69,43 +67,36 @@ export default function TransactionForm({
 		>
 			<Grid container spacing={2}>
 				<Grid size={6}>
-					<TextField
-						fullWidth
-						label='Date'
-						type='date'
-						{...register('date')}
-						error={!!errors.date}
-						helperText={errors.date?.message as string}
-						required
-						InputLabelProps={{ shrink: true }}
+					<Controller
+						name='date'
+						control={control}
+						render={({ field }) => (
+							<DatePicker
+								sx={{ width: '100%' }}
+								label='Date'
+								value={dayjs(field.value)}
+								onChange={(date) => field.onChange(date?.toISOString())}
+								slotProps={{
+									textField: {
+										error: !!errors.date,
+										helperText: errors.date?.message as string,
+									},
+								}}
+							/>
+						)}
 					/>
 				</Grid>
 
 				<Grid size={6}>
-					<ResourcePickerField
-						label='Compte'
-						value={init?.from?.name}
-						onChange={({ id }) => {
-							setValue(`fromId`, id);
-						}}
-						resourceType='account'
-						error={!!errors.fromId}
-						helperText={errors.fromId?.message}
-						required
-					/>
-				</Grid>
-
-				<Grid size={6}>
-					<FormControl fullWidth>
+					<FormControl fullWidth required>
 						<InputLabel>Type</InputLabel>
 						<Select
 							{...register('type')}
 							label='Type'
 							error={!!errors.type}
-							required
-							defaultValue='purchase'
+							defaultValue='cashing'
 						>
-							{TRANSACTION_TYPES.map((type) => (
+							{OPERATION_TYPES.map((type) => (
 								<MenuItem key={type} value={type}>
 									{DICT.transactionType[type]}
 								</MenuItem>

@@ -10,12 +10,9 @@ import authRouter from './routers/auth.router';
 import userRouter from './routers/user.router';
 import clientRouter from './routers/client.router';
 import supplierRouter from './routers/supplier.router';
-import articleRouter from './routers/article.router';
 import saleRouter from './routers/sale.router';
 import purchaseRouter from './routers/purchase.router';
 import transactionRouter from './routers/transaction.router';
-import accountRouter from './routers/account.router';
-import CategoryRouter from './routers/category.router';
 import cookieParser from 'cookie-parser';
 
 // Load environment variables
@@ -31,7 +28,7 @@ export const prisma = new PrismaClient();
 app.use(helmet());
 app.use(
 	cors({
-		origin: 'http://localhost:5173',
+		origin: 'http://localhost:5174',
 		credentials: true,
 	})
 );
@@ -50,12 +47,9 @@ app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/clients', clientRouter);
 app.use('/api/suppliers', supplierRouter);
-app.use('/api/articles', articleRouter);
 app.use('/api/sales', saleRouter);
 app.use('/api/purchases', purchaseRouter);
 app.use('/api/transactions', transactionRouter);
-app.use('/api/accounts', accountRouter);
-app.use('/api/categories', CategoryRouter);
 
 // 404 handler
 app.use('*', (req, res) => {

@@ -18,7 +18,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SnackbarProvider } from 'notistack';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthContext, AuthProvider } from './contexts/AuthContext';
 import logo from './assets/logo.png';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
@@ -31,14 +31,13 @@ import { useLogout } from './hooks/ressources/useAuth';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Suppliers from './pages/Suppliers';
-import Articles from './pages/Articles';
 import Sales from './pages/Sales';
-import Purchases from './pages/Purchases';
 import Transactions from './pages/Transactions';
-import Accounts from './pages/Accounts';
 import Reports from './pages/Reports';
 import Users from './pages/Users';
-import Categories from './pages/Categories';
+import { AccountCircleOutlined } from '@mui/icons-material';
+import { useContext } from 'react';
+import Purchases from './pages/Purchases';
 
 const drawerWidth = 240;
 
@@ -46,6 +45,7 @@ function AppContent() {
 	const navigate = useNavigate();
 	const location = useLocation();
 	const logoutMutation = useLogout();
+	const [user] = useContext(AuthContext);
 
 	const handleNavigation = async (path: string) => {
 		if (path === '/logout') {
@@ -80,6 +80,15 @@ function AppContent() {
 						</Toolbar>
 
 						<List>
+							<ListItem>
+								<ListItemIcon>
+									<AccountCircleOutlined />
+								</ListItemIcon>
+								<ListItemText primary={user?.name} />
+							</ListItem>
+
+							<Divider sx={{ marginY: 1 }} />
+
 							{navigationItems.map((item) =>
 								item ? (
 									<ListItem key={item.name} disablePadding>
@@ -106,12 +115,9 @@ function AppContent() {
 							<Route path='/' element={<Dashboard />} />
 							<Route path='/clients' element={<Clients />} />
 							<Route path='/suppliers' element={<Suppliers />} />
-							<Route path='/categories' element={<Categories />} />
-							<Route path='/articles' element={<Articles />} />
 							<Route path='/sales' element={<Sales />} />
 							<Route path='/purchases' element={<Purchases />} />
 							<Route path='/transactions' element={<Transactions />} />
-							<Route path='/accounts' element={<Accounts />} />
 							<Route path='/reports' element={<Reports />} />
 							<Route path='/users' element={<Users />} />
 						</Routes>

@@ -1,11 +1,13 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { getOrderPaginationCondition } from '../utils/pagination';
-import { SaleDtoType, UpdateSaleDtoType } from '../../../shared/dtos/sale.dto';
+import {
+	CreateSaleDtoType,
+	SaleDtoType,
+	UpdateSaleDtoType,
+} from '../../../shared/dtos/sale.dto';
 import { getNextRef } from '../utils/db.utils';
-import { PaymentMethod, TransactionType } from '../../../shared/constants';
-
-type SaleItemInput = { articleId: string; price: number; quantity: number };
+import { TransactionMethod, TransactionType } from '../../../shared/constants';
 
 export const SaleController = {
 	async getPage(req: Request, res: Response) {
@@ -17,14 +19,9 @@ export const SaleController = {
 				where: whereClause,
 				include: {
 					client: true,
-					items: {
-						include: {
-							article: true,
-						},
-					},
 					payments: {
 						include: {
-							to: true,
+							agent: true,
 						},
 					},
 					agent: {
@@ -43,15 +40,7 @@ export const SaleController = {
 				where: whereClause,
 			});
 
-			let [sales, total] = await Promise.all([salesPromise, salesCountPromise]);
-
-			sales = sales.map((sale) => ({
-				...sale,
-				payments: sale.payments.map((payment) => ({
-					...payment,
-					account: payment.to,
-				})),
-			}));
+			const [sales, total] = await Promise.all([salesPromise, salesCountPromise]);
 
 			const totalPages = Math.ceil(total / limit);
 
@@ -78,11 +67,6 @@ export const SaleController = {
 				where: { id },
 				include: {
 					client: true,
-					items: {
-						include: {
-							article: true,
-						},
-					},
 					agent: {
 						select: {
 							id: true,
@@ -113,8 +97,6 @@ export const SaleController = {
 					deletedAt: null,
 				},
 				include: {
-					from: true,
-					to: true,
 					agent: {
 						select: {
 							id: true,
@@ -135,76 +117,34 @@ export const SaleController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const {
-				date,
-				clientId,
-				receiptNumber,
-				invoiceNumber,
-				items,
-				status = 'pending',
-				note,
-			} = req.body;
+			const body = req.body as CreateSaleDtoType;
 
 			// Check if client exists
 			const client = await prisma.client.findUnique({
-				where: { id: clientId },
+				where: { id: body.clientId },
 			});
 
 			if (!client) {
 				return res.status(400).json({ message: 'Supplier not found' });
 			}
 
-			// Validate all articles exist
-			for (const item of items) {
-				const article = await prisma.article.findUnique({
-					where: { id: item.articleId },
-				});
-
-				if (!article) {
-					return res
-						.status(400)
-						.json({ message: `Article ${item.articleId} not found` });
-				}
-			}
-
-			// Calculate totals
-			const subtotal = items.reduce(
-				(sum: number, item: { price: number; quantity: number }) =>
-					sum + item.price * item.quantity,
-				0
-			);
-			const totalPrice = subtotal;
-
 			const sale = await prisma.sale.create({
 				data: {
-					date,
-					clientId,
-					receiptNumber,
-					invoiceNumber,
-					totalPrice,
-					totalPaid: 0,
-					totalDue: totalPrice,
-					status,
-					note: note || '',
-					agentId: userId,
 					ref: await getNextRef('sales'),
+					date: body.date,
+					agentId: body.agentId,
+					clientId: body.clientId,
+					receiptNumber: body.receiptNumber,
+					invoiceNumber: body.invoiceNumber,
+					totalPrice: body.totalPrice,
+					totalPaid: body.totalPaid,
+					totalDue: body.totalDue,
+					status: body.status,
+					note: body.note,
 					createdById: userId,
-					items: {
-						create: items.map((item: SaleItemInput) => ({
-							articleId: item.articleId,
-							price: item.price,
-							quantity: item.quantity,
-							createdById: userId,
-						})),
-					},
 				},
 				include: {
 					client: true,
-					items: {
-						include: {
-							article: true,
-						},
-					},
 					agent: {
 						select: {
 							id: true,
@@ -231,7 +171,6 @@ export const SaleController = {
 				// Check if sale exists
 				const isExists = await tx.sale.findUnique({
 					where: { id },
-					include: { items: true },
 				});
 
 				if (!isExists) {
@@ -247,49 +186,15 @@ export const SaleController = {
 					throw new Error('Supplier not found');
 				}
 
-				// Validate all articles
-				const articleIds = body.items
-					.map((item) => item.articleId)
-					.filter((item) => !!item) as string[];
-
-				const articles = await tx.article.findMany({
-					where: { id: { in: articleIds } },
-				});
-
-				if (articles.length !== articleIds.length) {
-					throw new Error('One or more articles not found');
-				}
-
-				// Calculate total price
-				const totalPrice = body.items.reduce((sum, item) => {
-					return sum + item.price * item.quantity;
-				}, 0);
-
-				const totalPaid = body.payments.reduce((sum, payment) => {
-					return sum + payment.amount;
-				}, 0);
-
-				const totalDue = totalPrice - totalPaid;
-
 				// Update sale
-				const { items, ...updateData } = body;
+				const { ...updateData } = body;
 				const updated = await tx.sale.update({
 					where: { id },
 					data: {
 						...updateData,
-
-						items: {
-							deleteMany: {},
-							createMany: {
-								data: body.items.map((item) => ({
-									articleId: item.articleId,
-									articleName: item.articleName,
-									price: item.price,
-									quantity: item.quantity,
-									createdById: userId,
-								})),
-							},
-						},
+						totalPrice: body.totalPrice,
+						totalPaid: body.totalPaid,
+						totalDue: body.totalDue,
 
 						payments: {
 							deleteMany: {},
@@ -299,28 +204,20 @@ export const SaleController = {
 										ref: await getNextRef('sales'),
 										amount: item.amount,
 										date: item.date,
-										paymentMethod: item.paymentMethod as PaymentMethod,
+										method: item.method as TransactionMethod,
 										type: 'sale' as TransactionType,
 										agentId: item.agentId,
-										fromId: item.accountId,
 										createdById: userId,
 									}))
 								),
 							},
 						},
 
-						totalPrice,
-						totalDue,
 						updatedAt: new Date(),
 						updatedById: userId,
 					},
 					include: {
 						client: true,
-						items: {
-							include: {
-								article: true,
-							},
-						},
 						agent: {
 							select: {
 								id: true,
@@ -351,7 +248,7 @@ export const SaleController = {
 			const existingSale = await prisma.sale.findUnique({
 				where: { id },
 				include: {
-					items: true,
+					payments: true,
 				},
 			});
 

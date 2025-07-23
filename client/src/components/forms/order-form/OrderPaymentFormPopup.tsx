@@ -18,11 +18,10 @@ import ResourceFormPopup from '../../shared/ResourceFormPopup';
 import ResourceForm from '../ResourceForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-	PAYMENT_METHODS,
-	type PaymentMethod,
+	TRANSACTION_METHODS,
+	type TransactionMethod,
 } from '../../../../../shared/constants';
 import { DICT } from '../../../i18n/fr';
-import type { AccountDtoType } from '../../../../../shared/dtos/account.dto';
 import type { UserDtoType } from '../../../../../shared/dtos/user.dto';
 
 interface Props {
@@ -43,12 +42,10 @@ function OrderPaymentFormPopup({ init, onClose, onSubmit }: Props) {
 		defaultValues: {
 			ref: init?.ref || '',
 			date: init?.date || '',
-			accountId: init?.account?.id,
-			account: init?.account,
 			agentId: init?.agent?.id,
 			agent: init?.agent,
 			amount: init?.amount || 0,
-			paymentMethod: init?.paymentMethod as PaymentMethod,
+			method: init?.method as TransactionMethod,
 		},
 	});
 
@@ -94,32 +91,18 @@ function OrderPaymentFormPopup({ init, onClose, onSubmit }: Props) {
 					</Grid>
 
 					<Grid size={4}>
-						<ResourcePickerField
-							label='Compte'
-							value={init?.account?.name}
-							onChange={(account) => {
-								setValue('account', account as AccountDtoType);
-							}}
-							resourceType='account'
-							error={!!errors.account}
-							helperText={errors.account?.message}
-							required
-						/>
-					</Grid>
-
-					<Grid size={4}>
 						<FormControl fullWidth>
 							<InputLabel>Mode de paiement</InputLabel>
 							<Select
-								{...register('paymentMethod')}
+								{...register('method')}
 								label='Mode de paiement'
-								error={!!errors.paymentMethod}
+								error={!!errors.method}
 								required
-								defaultValue={init?.paymentMethod}
+								defaultValue={init?.method}
 							>
-								{PAYMENT_METHODS.map((method) => (
+								{TRANSACTION_METHODS.map((method) => (
 									<MenuItem key={method} value={method}>
-										{DICT.paymentMethods[method]}
+										{DICT.methods[method]}
 									</MenuItem>
 								))}
 							</Select>

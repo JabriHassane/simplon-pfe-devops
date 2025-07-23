@@ -26,7 +26,7 @@ export default function Purchases() {
 		handleClosePopup,
 	} = useCrud<PurchaseDtoType>();
 
-	const { data: Purchases, isLoading, error } = usePurchases();
+	const { data: purchases, isLoading, error } = usePurchases();
 
 	const deletePurchaseMutation = useDeletePurchase(handleClosePopup);
 
@@ -41,7 +41,7 @@ export default function Purchases() {
 	}
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
 				title='Achats'
 				handleAdd={() => handleOpenFormPopup(null)}
@@ -54,19 +54,17 @@ export default function Purchases() {
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
 					{ id: 'supplier', name: 'Fournisseur' },
-					{ id: 'articles', name: 'Articles' },
 					{ id: 'total', name: 'Total' },
 					{ id: 'statut', name: 'Statut' },
 				]}
 				rows={
-					Purchases?.data.map((purchase) => ({
+					purchases?.data.map((purchase) => ({
 						item: purchase,
 						data: {
 							ref: purchase.ref,
 							date: formatDate(purchase.date),
 							agent: purchase.agent?.name,
 							supplier: purchase.supplier?.name,
-							articles: purchase.items?.length,
 							total: formatPrice(purchase.totalPrice),
 							statut: (
 								<Chip
@@ -82,6 +80,7 @@ export default function Purchases() {
 				}
 				onEdit={handleOpenFormPopup}
 				onDelete={handleOpenDeletePopup}
+				isOrder
 			/>
 
 			{openFormPopup && (
@@ -105,6 +104,6 @@ export default function Purchases() {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }

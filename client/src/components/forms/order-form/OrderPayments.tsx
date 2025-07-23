@@ -79,7 +79,6 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
-					{ id: 'account', name: 'Compte' },
 					{ id: 'amount', name: 'Montant' },
 				]}
 				rows={payments.map((payment) => ({
@@ -88,7 +87,6 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 						ref: payment.ref,
 						date: formatDate(payment.date),
 						agent: payment.agent?.name || '-',
-						account: payment.account?.name || '-',
 						amount: formatPrice(payment.amount),
 					},
 				}))}

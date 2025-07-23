@@ -1,318 +1,100 @@
+import { Box, Card, CardContent, Typography } from '@mui/material';
+import { usePaymentMethodStats } from '../hooks/ressources/useTransactions';
+import { formatPrice } from '../utils/price.utils';
 import {
-	Typography,
-	Box,
-	Paper,
-	Card,
-	CardContent,
-	Button,
-	Alert,
-	CircularProgress,
-	Table,
-	TableBody,
-	TableCell,
-	TableContainer,
-	TableHead,
-	TableRow,
-} from '@mui/material';
-import {
-	TrendingUp as TrendingUpIcon,
-	TrendingDown as TrendingDownIcon,
-	Inventory as InventoryIcon,
-	People as PeopleIcon,
-	Add as AddIcon,
-	Visibility as ViewIcon,
-} from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
-import { useAccounts } from '../hooks/ressources/useAccounts';
-import { useTransactions } from '../hooks/ressources/useTransactions';
-import { useArticles } from '../hooks/ressources/useArticles';
-import { useClients } from '../hooks/ressources/useClients';
-import { useSuppliers } from '../hooks/ressources/useSuppliers';
+	PAYMENT_METHODS_COLOR_MAP,
+	TRANSACTION_METHODS,
+	type TransactionMethod,
+} from '../../../shared/constants';
+import { DICT } from '../i18n/fr';
+import ResourceHeader from '../components/shared/ResourceHeader';
 
-export default function Dashboard() {
-	const navigate = useNavigate();
+const PaymentMethodCard = ({
+	title,
+	amount,
+	color,
+	type,
+}: {
+	title: string;
+	amount: number;
+	color: string;
+	type: TransactionMethod;
+}) => (
+	<Card
+		sx={{
+			height: '100%',
+			display: 'flex',
+			flexDirection: 'column',
+			borderColor: color,
+		}}
+		variant='outlined'
+	>
+		<CardContent sx={{ flexGrow: 1, textAlign: 'center', p: 3 }}>
+			<img
+				src={`/${type}.png`}
+				alt={title}
+				style={{ width: '100px', height: '100px' }}
+			/>
 
-	// TanStack Query hooks
-	const {
-		data: accounts,
-		isLoading: accountsLoading,
-		error: accountsError,
-	} = useAccounts();
-	const {
-		data: transactions,
-		isLoading: transactionsLoading,
-		error: transactionsError,
-	} = useTransactions();
-	const {
-		data: articles,
-		isLoading: articlesLoading,
-		error: articlesError,
-	} = useArticles();
-	const {
-		data: clients,
-		isLoading: clientsLoading,
-		error: clientsError,
-	} = useClients();
-	const {
-		data: suppliers,
-		isLoading: suppliersLoading,
-		error: suppliersError,
-	} = useSuppliers();
+			<Typography variant='h4' color={color} fontWeight='bold' mt={1}>
+				{formatPrice(amount)}
+			</Typography>
+			<Typography variant='h5' color={color} fontWeight='bold' mt={1}>
+				{DICT.methods[type]}
+			</Typography>
+		</CardContent>
+	</Card>
+);
 
-	const isLoading =
-		accountsLoading ||
-		transactionsLoading ||
-		articlesLoading ||
-		clientsLoading ||
-		suppliersLoading;
-	const error =
-		accountsError ||
-		transactionsError ||
-		articlesError ||
-		clientsError ||
-		suppliersError;
-
-	// Calculate dashboard stats
-	const totalRevenue = transactions!.data
-		.filter((t) => t.type === 'sale')
-		.reduce((sum, t) => sum + t.amount, 0);
-
-	const totalExpenses = transactions!.data
-		.filter((t) => t.type === 'purchase')
-		.reduce((sum, t) => sum + t.amount, 0);
-
-	const recentTransactions = transactions?.data.slice(0, 5).map((t) => ({
-		id: t.id,
-		type: t.type,
-		amount: t.amount,
-		date: t.date,
-	}));
-
-	const formatCurrency = (amount: number) => {
-		return new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: 'USD',
-		}).format(amount);
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString();
-	};
+function Dashboard() {
+	const { data: paymentStats, isLoading, error } = usePaymentMethodStats();
 
 	if (isLoading) {
 		return (
-			<Box
-				display='flex'
-				justifyContent='center'
-				alignItems='center'
-				minHeight='400px'
-			>
-				<CircularProgress />
+			<Box sx={{ p: 3 }}>
+				<Typography variant='h4' gutterBottom>
+					Tableau de bord
+				</Typography>
+				<Typography>Chargement...</Typography>
+			</Box>
+		);
+	}
+
+	if (error) {
+		return (
+			<Box sx={{ p: 3 }}>
+				<Typography variant='h4' gutterBottom>
+					Tableau de bord
+				</Typography>
+				<Typography color='error'>
+					Erreur lors du chargement des données
+				</Typography>
 			</Box>
 		);
 	}
 
 	return (
-		<Box>
-			<Typography variant='h4' gutterBottom>
-				Tableau de bord
-			</Typography>
+		<>
+			<ResourceHeader title='Opérations' error={!!error} />
 
-			{error && (
-				<Alert severity='error' sx={{ mb: 2 }}>
-					Échec du chargement des données du tableau de bord
-				</Alert>
-			)}
-
-			{/* Quick Actions */}
-			<Paper sx={{ p: 3, mb: 3 }} variant='outlined'>
-				<Typography variant='h6' gutterBottom>
-					Actions rapides
-				</Typography>
-				<Box
-					sx={{
-						display: 'grid',
-						gridTemplateColumns: {
-							xs: '1fr',
-							sm: '1fr 1fr',
-							md: '1fr 1fr 1fr 1fr',
-						},
-						gap: 2,
-					}}
-				>
-					<Button
-						variant='outlined'
-						startIcon={<AddIcon />}
-						onClick={() => navigate('/clients')}
-						fullWidth
-					>
-						Ajouter un client
-					</Button>
-					<Button
-						variant='outlined'
-						startIcon={<AddIcon />}
-						onClick={() => navigate('/articles')}
-						fullWidth
-					>
-						Ajouter un article
-					</Button>
-					<Button
-						variant='outlined'
-						startIcon={<AddIcon />}
-						onClick={() => navigate('/transactions')}
-						fullWidth
-					>
-						Ajouter une transaction
-					</Button>
-					<Button
-						variant='outlined'
-						startIcon={<AddIcon />}
-						onClick={() => navigate('/sales')}
-						fullWidth
-					>
-						Nouvelle vente
-					</Button>
-				</Box>
-			</Paper>
-
-			{/* Stats Cards */}
 			<Box
 				sx={{
 					display: 'grid',
-					gridTemplateColumns: {
-						xs: '1fr',
-						sm: '1fr 1fr',
-						md: '1fr 1fr 1fr 1fr',
-					},
+					gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' },
 					gap: 3,
-					mb: 3,
 				}}
 			>
-				<Card variant='outlined'>
-					<CardContent>
-						<Box
-							display='flex'
-							alignItems='center'
-							justifyContent='space-between'
-						>
-							<Box>
-								<Typography color='textSecondary' gutterBottom>
-									Total Revenue
-								</Typography>
-								<Typography variant='h4' color='success.main'>
-									{formatCurrency(totalRevenue)}
-								</Typography>
-							</Box>
-							<TrendingUpIcon color='success' sx={{ fontSize: 40 }} />
-						</Box>
-					</CardContent>
-				</Card>
-
-				<Card variant='outlined'>
-					<CardContent>
-						<Box
-							display='flex'
-							alignItems='center'
-							justifyContent='space-between'
-						>
-							<Box>
-								<Typography color='textSecondary' gutterBottom>
-									Total Expenses
-								</Typography>
-								<Typography variant='h4' color='error.main'>
-									{formatCurrency(totalExpenses)}
-								</Typography>
-							</Box>
-							<TrendingDownIcon color='error' sx={{ fontSize: 40 }} />
-						</Box>
-					</CardContent>
-				</Card>
-
-				<Card variant='outlined'>
-					<CardContent>
-						<Box
-							display='flex'
-							alignItems='center'
-							justifyContent='space-between'
-						>
-							<Box>
-								<Typography color='textSecondary' gutterBottom>
-									Active Articles
-								</Typography>
-								<Typography variant='h4' color='primary.main'>
-									{articles?.data.length}
-								</Typography>
-							</Box>
-							<InventoryIcon color='primary' sx={{ fontSize: 40 }} />
-						</Box>
-					</CardContent>
-				</Card>
-
-				<Card variant='outlined'>
-					<CardContent>
-						<Box
-							display='flex'
-							alignItems='center'
-							justifyContent='space-between'
-						>
-							<Box>
-								<Typography color='textSecondary' gutterBottom>
-									Active Clients
-								</Typography>
-								<Typography variant='h4' color='info.main'>
-									{clients?.data.length}
-								</Typography>
-							</Box>
-							<PeopleIcon color='info' sx={{ fontSize: 40 }} />
-						</Box>
-					</CardContent>
-				</Card>
+				{TRANSACTION_METHODS.map((method) => (
+					<PaymentMethodCard
+						title={method}
+						amount={paymentStats?.[method] || 0}
+						color={PAYMENT_METHODS_COLOR_MAP[method]}
+						type={method}
+					/>
+				))}
 			</Box>
-
-			<Box
-				display='flex'
-				justifyContent='space-between'
-				alignItems='center'
-				mb={2}
-			>
-				<Typography variant='h6'>Recent Transactions</Typography>
-				<Button
-					variant='outlined'
-					startIcon={<ViewIcon />}
-					onClick={() => navigate('/transactions')}
-				>
-					View All
-				</Button>
-			</Box>
-
-			<TableContainer>
-				<Table size='small'>
-					<TableHead>
-						<TableRow>
-							<TableCell>Date</TableCell>
-							<TableCell align='right'>Type</TableCell>
-							<TableCell align='right'>Montant</TableCell>
-						</TableRow>
-					</TableHead>
-					<TableBody>
-						{recentTransactions?.map((transaction) => (
-							<TableRow key={transaction.id}>
-								<TableCell>{formatDate(transaction.date.toString())}</TableCell>
-								<TableCell align='right'>
-									{transaction.type === 'sale'
-										? 'Vente'
-										: transaction.type === 'purchase'
-										? 'Achat'
-										: 'Transfert'}
-								</TableCell>
-								<TableCell align='right'>
-									{formatCurrency(transaction.amount)}
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-			</TableContainer>
-		</Box>
+		</>
 	);
 }
+
+export default Dashboard;

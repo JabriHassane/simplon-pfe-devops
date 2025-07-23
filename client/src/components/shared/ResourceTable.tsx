@@ -10,8 +10,9 @@ import {
 import {
 	DeleteOutline,
 	EditOutlined,
-	FormatListBulleted,
 	HistoryOutlined,
+	PaidOutlined,
+	PointOfSaleOutlined,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
@@ -20,6 +21,7 @@ import type { SaleDtoType } from '../../../../shared/dtos/sale.dto';
 import type { PurchaseDtoType } from '../../../../shared/dtos/purchase.dto';
 import { DICT } from '../../i18n/fr';
 import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
+import type { OrderPaymentDtoType } from '../../../../shared/dtos/order.dto';
 
 interface ResourceTableHeader {
 	id: string;
@@ -44,9 +46,18 @@ interface Props {
 	rows?: ResourceTableRow[];
 	onEdit: (item: any, index: number) => void;
 	onDelete: (item: any, index: number) => void;
+	isOrder?: boolean;
+	isPayment?: boolean;
 }
 
-function ResourceTable({ headers, rows, onEdit, onDelete }: Props) {
+function ResourceTable({
+	headers,
+	rows,
+	onEdit,
+	onDelete,
+	isOrder,
+	isPayment,
+}: Props) {
 	if (!rows || rows.length === 0) return null;
 
 	return (
@@ -71,6 +82,8 @@ function ResourceTable({ headers, rows, onEdit, onDelete }: Props) {
 						row={row}
 						onEdit={onEdit}
 						onDelete={onDelete}
+						isOrder={isOrder}
+						isPayment={isPayment}
 					/>
 				))}
 			</TableBody>
@@ -86,65 +99,57 @@ interface RowProps {
 	headers: ResourceTableHeader[];
 	onEdit: (item: any, index: number) => void;
 	onDelete: (item: any, index: number) => void;
+	isOrder?: boolean;
+	isPayment?: boolean;
 }
 
-function Row({ index, row, headers, onEdit, onDelete }: RowProps) {
-	const [extension, setExtension] = useState<'items' | 'payments' | null>(null);
-
-	const handleClick = (_extension: 'items' | 'payments') => {
-		if (extension === _extension) {
-			setExtension(null);
-		} else {
-			setExtension(_extension);
-		}
-	};
-
-	const itemsHeaders = [
-		{ id: 'ref', name: 'Ref' },
-		{ id: 'name', name: 'Nom' },
-		{ id: 'quantity', name: 'Quantité' },
-		{ id: 'price', name: 'Prix' },
-	];
+function Row({
+	index,
+	row,
+	headers,
+	onEdit,
+	onDelete,
+	isOrder,
+	isPayment,
+}: RowProps) {
+	const [showPayments, setShowPayments] = useState(false);
 
 	const paymentsHeaders = [
 		{ id: 'ref', name: 'Ref' },
 		{ id: 'date', name: 'Date' },
 		{ id: 'amount', name: 'Montant' },
-		{ id: 'account', name: 'Compte' },
 		{ id: 'agent', name: 'Agent' },
-		{ id: 'paymentMethod', name: 'Méthode de paiement' },
+		{ id: 'method', name: 'Méthode de paiement' },
 	];
 
 	const order = row.item as SaleDtoType | PurchaseDtoType;
 
-	const items = order.items?.map((item) => ({
-		item: item,
-		data: {
-			ref: item.article?.ref || '',
-			name: item.article?.name || '',
-			quantity: item.quantity,
-			price: formatPrice(item.price),
-		},
-	}));
+	let payments: ResourceTableRow[] = [];
 
-	const payments = order.payments?.map((payment) => ({
-		item: payment,
-		data: {
-			ref: payment.ref,
-			date: formatDate(payment.date),
-			amount: formatPrice(payment.amount),
-			account: payment.account?.name,
-			agent: payment.agent?.name,
-			paymentMethod: (
-				<Chip
-					label={DICT.paymentMethods[payment.paymentMethod]}
-					color={PAYMENT_METHODS_COLOR_MAP[payment.paymentMethod]}
-					size='small'
-					sx={{ px: 0.5 }}
-				/>
-			),
-		},
-	}));
+	if (isOrder) {
+		payments = order.payments.map((payment) => ({
+			item: payment,
+			data: {
+				ref: payment.ref,
+				date: formatDate(payment.date),
+				amount: formatPrice(payment.amount),
+				agent: payment.agent?.name,
+				method: (
+					<Chip
+						label={DICT.methods[payment.method]}
+						color={PAYMENT_METHODS_COLOR_MAP[payment.method]}
+						size='small'
+						sx={{ px: 0.5 }}
+					/>
+				),
+			},
+		}));
+	}
+
+	const payment = row.item as OrderPaymentDtoType;
+
+	const showCashing =
+		isPayment && payment.method !== 'cash' && !payment.isCashed;
 
 	return (
 		<>
@@ -154,26 +159,21 @@ function Row({ index, row, headers, onEdit, onDelete }: RowProps) {
 				))}
 
 				<TableCell align='right'>
-					{(items || payments) && (
-						<>
-							<IconButton
-								onClick={() => handleClick('items')}
-								size='small'
-								color={extension === 'items' ? 'info' : 'default'}
-								disabled={items.length === 0}
-							>
-								<FormatListBulleted />
-							</IconButton>
+					{showCashing && (
+						<IconButton onClick={() => null} size='small'>
+							<PaidOutlined />
+						</IconButton>
+					)}
 
-							<IconButton
-								onClick={() => handleClick('payments')}
-								size='small'
-								color={extension === 'payments' ? 'info' : 'default'}
-								disabled={payments.length === 0}
-							>
-								<HistoryOutlined />
-							</IconButton>
-						</>
+					{isOrder && (
+						<IconButton
+							onClick={() => setShowPayments(!showPayments)}
+							size='small'
+							color={showPayments ? 'info' : 'default'}
+							disabled={payments.length === 0}
+						>
+							<HistoryOutlined />
+						</IconButton>
 					)}
 
 					<IconButton onClick={() => onEdit(row.item, index)} size='small'>
@@ -186,15 +186,16 @@ function Row({ index, row, headers, onEdit, onDelete }: RowProps) {
 				</TableCell>
 			</TableRow>
 
-			{items && payments && extension && (
+			{isOrder && showPayments && (
 				<TableRow>
-					<TableCell sx={{ py: 0, pr: 0, pl: 10 }} colSpan={12}>
-						{extension && (
+					<TableCell sx={{ py: 0, pr: 0, px: 11 }} colSpan={12}>
+						{showPayments && (
 							<ResourceTable
-								headers={extension === 'items' ? itemsHeaders : paymentsHeaders}
-								rows={extension === 'items' ? items : payments}
+								headers={paymentsHeaders}
+								rows={payments}
 								onEdit={onEdit}
 								onDelete={onDelete}
+								isPayment
 							/>
 						)}
 					</TableCell>

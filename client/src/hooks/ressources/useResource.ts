@@ -1,9 +1,6 @@
 import { useClients } from '../../hooks/ressources/useClients';
 import { useUsers } from '../../hooks/ressources/useUsers';
 import { useSuppliers } from '../../hooks/ressources/useSuppliers';
-import { useArticles } from '../../hooks/ressources/useArticles';
-import { useAccounts } from '../../hooks/ressources/useAccounts';
-import { useCategories } from '../../hooks/ressources/useCategories';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { ResourceType } from '../../components/shared/ResourcePickerPopup';
 import type { PaginationParams } from '../../services/api.service';
@@ -19,12 +16,6 @@ export const useResource = (
 			return useUsers(params);
 		case 'supplier':
 			return useSuppliers(params);
-		case 'category':
-			return useCategories(params);
-		case 'article':
-			return useArticles(params);
-		case 'account':
-			return useAccounts(params);
 		default:
 			return {
 				data: {

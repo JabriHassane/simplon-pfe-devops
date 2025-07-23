@@ -16,26 +16,6 @@ enum Role {
   agent
 }
 
-enum SaleStatus {
-  pending
-  partially_paid
-  paid
-  cancelled
-}
-
-enum PaymentMethod {
-  cash
-  check
-  tpe
-  bankTransfer
-}
-
-enum TransactionType {
-  purchase
-  sale
-  transfer
-}
-
 model User {
   id        String    @id @default(cuid())
   ref       String    @unique
@@ -60,10 +40,6 @@ model User {
   updatedPurchases Purchase[] @relation("PurchaseUpdatedBy")
   deletedPurchases Purchase[] @relation("PurchaseDeletedBy")
 
-  createdAccounts Account[] @relation("AccountCreatedBy")
-  updatedAccounts Account[] @relation("AccountUpdatedBy")
-  deletedAccounts Account[] @relation("AccountDeletedBy")
-
   createdTransactions Transaction[] @relation("TransactionCreatedBy")
   updatedTransactions Transaction[] @relation("TransactionUpdatedBy")
   deletedTransactions Transaction[] @relation("TransactionDeletedBy")
@@ -75,22 +51,6 @@ model User {
   createdSuppliers Supplier[] @relation("SupplierCreatedBy")
   updatedSuppliers Supplier[] @relation("SupplierUpdatedBy")
   deletedSuppliers Supplier[] @relation("SupplierDeletedBy")
-
-  createdCategories Category[] @relation("CategoryCreatedBy")
-  updatedCategories Category[] @relation("CategoryUpdatedBy")
-  deletedCategories Category[] @relation("CategoryDeletedBy")
-
-  createdArticles Article[] @relation("ArticleCreatedBy")
-  updatedArticles Article[] @relation("ArticleUpdatedBy")
-  deletedArticles Article[] @relation("ArticleDeletedBy")
-
-  createdSaleItems SaleItem[] @relation("SaleItemCreatedBy")
-  updatedSaleItems SaleItem[] @relation("SaleItemUpdatedBy")
-  deletedSaleItems SaleItem[] @relation("SaleItemDeletedBy")
-
-  createdPurchaseItems PurchaseItem[] @relation("PurchaseItemCreatedBy")
-  updatedPurchaseItems PurchaseItem[] @relation("PurchaseItemUpdatedBy")
-  deletedPurchaseItems PurchaseItem[] @relation("PurchaseItemDeletedBy")
 
   createdUsers User[] @relation("UserCreatedBy")
   updatedUsers User[] @relation("UserUpdatedBy")
@@ -168,53 +128,11 @@ model Supplier {
   @@map("suppliers")
 }
 
-model Category {
-  id        String    @id @default(cuid())
-  ref       String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  name String
-
-  // Relations
-  articles Article[]
-
-  createdById String?
-  createdBy   User?   @relation("CategoryCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("CategoryUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("CategoryDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("categories")
-}
-
-model Article {
-  id        String    @id @default(cuid())
-  ref       String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  name      String
-  image     String
-  price     Float
-
-  // Relations
-  categoryId    String?
-  category      Category?      @relation(fields: [categoryId], references: [id])
-  saleItems     SaleItem[]
-  purchaseItems PurchaseItem[]
-
-  createdById String?
-  createdBy   User?   @relation("ArticleCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("ArticleUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("ArticleDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("articles")
+enum OrderStatus {
+  pending
+  partially_paid
+  paid
+  cancelled
 }
 
 model Sale {
@@ -233,7 +151,7 @@ model Sale {
   totalPaid  Float
   totalDue   Float
 
-  status SaleStatus
+  status OrderStatus
   note   String?
 
   // Relations
@@ -243,7 +161,6 @@ model Sale {
   clientId String?
   client   Client? @relation(fields: [clientId], references: [id])
 
-  items    SaleItem[]
   payments Transaction[]
 
   createdById String?
@@ -254,34 +171,6 @@ model Sale {
   deletedBy   User?   @relation("SaleDeletedBy", fields: [deletedById], references: [id])
 
   @@map("sales")
-}
-
-model SaleItem {
-  id        String    @id @default(cuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  price    Float
-  quantity Int
-
-  // Relations
-  saleId String
-  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
-
-  articleId String?
-  article   Article? @relation(fields: [articleId], references: [id])
-
-  articleName String?
-
-  createdById String?
-  createdBy   User?   @relation("SaleItemCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("SaleItemUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("SaleItemDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("sale_items")
 }
 
 model Purchase {
@@ -300,7 +189,7 @@ model Purchase {
   totalPaid  Float
   totalDue   Float
 
-  status SaleStatus
+  status OrderStatus
   note   String?
 
   // Relations
@@ -310,7 +199,6 @@ model Purchase {
   supplierId String?
   supplier   Supplier? @relation(fields: [supplierId], references: [id])
 
-  items    PurchaseItem[]
   payments Transaction[]
 
   createdById String?
@@ -323,57 +211,19 @@ model Purchase {
   @@map("purchases")
 }
 
-model PurchaseItem {
-  id        String    @id @default(cuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  price    Float
-  quantity Int
-
-  // Relations
-  purchaseId String
-  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-
-  articleId String?
-  article   Article? @relation(fields: [articleId], references: [id])
-
-  articleName String?
-
-  createdById String?
-  createdBy   User?   @relation("PurchaseItemCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("PurchaseItemUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("PurchaseItemDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("purchase_items")
+enum TransactionMethod {
+  cash
+  check
+  tpe
+  bank_transfer
 }
 
-model Account {
-  id        String    @id @default(cuid())
-  ref       String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  name    String
-  balance Float
-  paymentMethods String[]
-
-  // Relations
-  transactionsFrom Transaction[] @relation("AccountFrom")
-  transactionsTo   Transaction[] @relation("AccountTo")
-
-  createdById String?
-  createdBy   User?   @relation("AccountCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("AccountUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("AccountDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("accounts")
+enum TransactionType {
+  purchase
+  sale
+  send
+  receive
+  cashing
 }
 
 model Transaction {
@@ -385,8 +235,10 @@ model Transaction {
 
   date          DateTime
   type          TransactionType
-  paymentMethod PaymentMethod
+  method        TransactionMethod
+  transferActor String?
   amount        Float
+  isCashed     Boolean           @default(false)
 
   // Relations
   agentId String?
@@ -397,12 +249,6 @@ model Transaction {
 
   purchaseId String?
   purchase   Purchase? @relation(fields: [purchaseId], references: [id])
-
-  fromId String?
-  from   Account? @relation("AccountFrom", fields: [fromId], references: [id])
-
-  toId String?
-  to   Account? @relation("AccountTo", fields: [toId], references: [id])
 
   createdById String?
   createdBy   User?   @relation("TransactionCreatedBy", fields: [createdById], references: [id])

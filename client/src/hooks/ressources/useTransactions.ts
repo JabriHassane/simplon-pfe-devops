@@ -34,6 +34,29 @@ export const useTransactions = (params?: PaginationParams) => {
 	});
 };
 
+// Get payment method statistics
+export const usePaymentMethodStats = () => {
+	const { showError } = useSnackbar();
+
+	return useQuery({
+		queryKey: [...transactionKeys.lists(), 'balances'],
+		queryFn: async () => {
+			try {
+				return await TransactionService.getPaymentMethodStats();
+			} catch (error) {
+				console.error(error);
+				showError('Erreur lors de la récupération des statistiques');
+				return {
+					cash: 0,
+					check: 0,
+					tpe: 0,
+					bank_transfer: 0,
+				};
+			}
+		},
+	});
+};
+
 export const useTransaction = (id: string) => {
 	const { showError } = useSnackbar();
 

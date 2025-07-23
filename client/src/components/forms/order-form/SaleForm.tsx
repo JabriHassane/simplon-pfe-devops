@@ -23,7 +23,6 @@ import {
 } from '../../../hooks/ressources/useSales';
 import { ORDER_STATUSES } from '../../../../../shared/constants';
 import { DICT } from '../../../i18n/fr';
-import { OrderItems } from './OrderItems';
 import { OrderPayments } from './OrderPayments';
 
 interface SaleFormProps {
@@ -38,9 +37,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 			date: init?.date || '',
 			agentId: init?.agentId || '',
 			clientId: init?.client?.id || '',
-			items: init?.items || [
-				{ articleId: '', articleName: '', quantity: 1, price: 0 },
-			],
 			payments: init?.payments || [],
 			note: init?.note || '',
 			status: init?.status || 'pending',
@@ -181,8 +177,6 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					</Grid>
 				</Grid>
 
-				<OrderItems init={init?.items} />
-				
 				<OrderPayments init={init?.payments} />
 			</ResourceForm>
 		</FormProvider>

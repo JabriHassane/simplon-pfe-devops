@@ -7,16 +7,6 @@ import type {
 import { useSnackbar } from './useSnackbar';
 import type { PaginationParams } from '../../services/api.service';
 
-export interface SaleItem {
-	id: string;
-	article: {
-		id: string;
-		name: string;
-	};
-	quantity: number;
-	price: number;
-}
-
 // Query keys
 export const saleKeys = {
 	lists: () => ['sales'],

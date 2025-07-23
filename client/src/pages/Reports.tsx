@@ -1,8 +1,6 @@
-import React from 'react';
 import {
 	Typography,
 	Box,
-	Paper,
 	Grid,
 	Card,
 	CardContent,
@@ -18,37 +16,24 @@ import {
 import {
 	TrendingUp as TrendingUpIcon,
 	TrendingDown as TrendingDownIcon,
-	AccountBalance as AccountBalanceIcon,
 	ShoppingCart as ShoppingCartIcon,
 	Inventory as InventoryIcon,
 	People as PeopleIcon,
 } from '@mui/icons-material';
-import { useAccounts } from '../hooks/ressources/useAccounts';
 import { useTransactions } from '../hooks/ressources/useTransactions';
-import { useArticles } from '../hooks/ressources/useArticles';
 import { useClients } from '../hooks/ressources/useClients';
 import { useSuppliers } from '../hooks/ressources/useSuppliers';
 import { useSales } from '../hooks/ressources/useSales';
 import { usePurchases } from '../hooks/ressources/usePurchases';
-import { formatDate, formatDateTime } from '../utils/date.utils';
+import { formatDate } from '../utils/date.utils';
 
 export default function Reports() {
 	// TanStack Query hooks
-	const {
-		data: accounts,
-		isLoading: accountsLoading,
-		error: accountsError,
-	} = useAccounts();
 	const {
 		data: transactions,
 		isLoading: transactionsLoading,
 		error: transactionsError,
 	} = useTransactions();
-	const {
-		data: articles,
-		isLoading: articlesLoading,
-		error: articlesError,
-	} = useArticles();
 	const {
 		data: clients,
 		isLoading: clientsLoading,
@@ -71,17 +56,13 @@ export default function Reports() {
 	} = usePurchases();
 
 	const isLoading =
-		accountsLoading ||
 		transactionsLoading ||
-		articlesLoading ||
 		clientsLoading ||
 		suppliersLoading ||
 		salesLoading ||
 		purchasesLoading;
 	const error =
-		accountsError ||
 		transactionsError ||
-		articlesError ||
 		clientsError ||
 		suppliersError ||
 		salesError ||
@@ -105,7 +86,6 @@ export default function Reports() {
 		purchases?.data.reduce((sum, purchase) => sum + purchase.totalPrice, 0) ||
 		0;
 
-	const activeArticles = articles?.data.length || 0;
 	const activeClients = clients?.data.length || 0;
 	const activeSuppliers = suppliers?.data.length || 0;
 
@@ -225,7 +205,7 @@ export default function Reports() {
 						>
 							<Box>
 								<Typography color='textSecondary' gutterBottom>
-									Total Purchases
+									Total purchases
 								</Typography>
 								<Typography variant='h4' color='warning.main'>
 									{formatCurrency(totalPurchases)}
@@ -239,28 +219,6 @@ export default function Reports() {
 
 			{/* Additional Stats */}
 			<Grid container spacing={3} sx={{ mb: 4 }}>
-				<Grid>
-					<Card variant='outlined'>
-						<CardContent>
-							<Box
-								display='flex'
-								alignItems='center'
-								justifyContent='space-between'
-							>
-								<Box>
-									<Typography color='textSecondary' gutterBottom>
-										Active Articles
-									</Typography>
-									<Typography variant='h4' color='primary.main'>
-										{activeArticles}
-									</Typography>
-								</Box>
-								<InventoryIcon color='primary' sx={{ fontSize: 40 }} />
-							</Box>
-						</CardContent>
-					</Card>
-				</Grid>
-
 				<Grid>
 					<Card variant='outlined'>
 						<CardContent>

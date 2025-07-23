@@ -5,6 +5,8 @@ import {
 	UpdateTransactionDtoType,
 } from '../../../shared/dtos/transaction.dto';
 import { getPaginationCondition } from '../utils/pagination';
+import { getNextRef } from '../utils/db.utils';
+import { TransactionMethod, TransactionType } from '../../../shared/constants';
 
 export const TransactionController = {
 	async getPage(req: Request, res: Response) {
@@ -15,12 +17,15 @@ export const TransactionController = {
 
 			const [transactions, total] = await Promise.all([
 				prisma.transaction.findMany({
-					where: whereClause,
+					where: {
+						...whereClause,
+						type: {
+							notIn: ['sale', 'purchase'],
+						},
+					},
 					include: {
 						purchase: true,
 						sale: true,
-						from: true,
-						to: true,
 						agent: {
 							select: {
 								id: true,
@@ -33,7 +38,12 @@ export const TransactionController = {
 					take: limit,
 				}),
 				prisma.transaction.count({
-					where: whereClause,
+					where: {
+						...whereClause,
+						type: {
+							notIn: ['sale', 'purchase'],
+						},
+					},
 				}),
 			]);
 
@@ -63,8 +73,6 @@ export const TransactionController = {
 				include: {
 					purchase: true,
 					sale: true,
-					from: true,
-					to: true,
 					agent: {
 						select: {
 							id: true,
@@ -109,37 +117,16 @@ export const TransactionController = {
 				}
 			}
 
-			if (body.fromId) {
-				const fromAccount = await prisma.account.findUnique({
-					where: { id: body.fromId },
-				});
-				if (!fromAccount) {
-					return res.status(400).json({ message: 'Source account not found' });
-				}
-			}
-
-			if (body.toId) {
-				const toAccount = await prisma.account.findUnique({
-					where: { id: body.toId },
-				});
-				if (!toAccount) {
-					return res
-						.status(400)
-						.json({ message: 'Destination account not found' });
-				}
-			}
-
 			const transaction = await prisma.transaction.create({
 				data: {
 					...body,
-					ref: `TRA-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: await getNextRef('transactions'),
+					method: body.method as TransactionMethod,
 					createdById: userId,
 				},
 				include: {
 					purchase: true,
 					sale: true,
-					from: true,
-					to: true,
 					agent: {
 						select: {
 							id: true,
@@ -148,27 +135,6 @@ export const TransactionController = {
 					},
 				},
 			});
-
-			// Update account balances for transfers
-			if (body.type === 'transfer' && body.fromId && body.toId) {
-				await prisma.account.update({
-					where: { id: body.fromId },
-					data: {
-						balance: {
-							decrement: body.amount,
-						},
-					},
-				});
-
-				await prisma.account.update({
-					where: { id: body.toId },
-					data: {
-						balance: {
-							increment: body.amount,
-						},
-					},
-				});
-			}
 
 			res.status(201).json(transaction);
 		} catch (error) {
@@ -192,37 +158,6 @@ export const TransactionController = {
 				return res.status(404).json({ message: 'Transaction not found' });
 			}
 
-			// For transfers, we need to reverse the previous balance changes
-			if (
-				existingTransaction.type === 'transfer' &&
-				body.amount !== undefined
-			) {
-				const oldAmount = existingTransaction.amount;
-				const newAmount = body.amount;
-
-				if (existingTransaction.fromId) {
-					await prisma.account.update({
-						where: { id: existingTransaction.fromId },
-						data: {
-							balance: {
-								increment: oldAmount - newAmount,
-							},
-						},
-					});
-				}
-
-				if (existingTransaction.toId) {
-					await prisma.account.update({
-						where: { id: existingTransaction.toId },
-						data: {
-							balance: {
-								decrement: oldAmount - newAmount,
-							},
-						},
-					});
-				}
-			}
-
 			const transaction = await prisma.transaction.update({
 				where: { id },
 				data: {
@@ -233,8 +168,6 @@ export const TransactionController = {
 				include: {
 					purchase: true,
 					sale: true,
-					from: true,
-					to: true,
 					agent: {
 						select: {
 							id: true,
@@ -265,31 +198,6 @@ export const TransactionController = {
 				return res.status(404).json({ message: 'Transaction not found' });
 			}
 
-			// For transfers, we need to reverse the balance changes
-			if (existingTransaction.type === 'transfer') {
-				if (existingTransaction.fromId) {
-					await prisma.account.update({
-						where: { id: existingTransaction.fromId },
-						data: {
-							balance: {
-								increment: existingTransaction.amount,
-							},
-						},
-					});
-				}
-
-				if (existingTransaction.toId) {
-					await prisma.account.update({
-						where: { id: existingTransaction.toId },
-						data: {
-							balance: {
-								decrement: existingTransaction.amount,
-							},
-						},
-					});
-				}
-			}
-
 			// Soft delete
 			await prisma.transaction.update({
 				where: { id },
@@ -305,4 +213,92 @@ export const TransactionController = {
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
+
+	async getBalances(req: Request, res: Response) {
+		try {
+			const cashPositiveBalance = await prisma.transaction.aggregate({
+				_sum: {
+					amount: true,
+				},
+				where: {
+					deletedAt: null,
+					OR: [
+						{
+							method: 'cash',
+							type: {
+								in: ['sale', 'receive'],
+							},
+						},
+						{
+							type: 'cashing',
+						},
+					],
+				},
+			});
+
+			const cashNegativeBalance = await prisma.transaction.aggregate({
+				_sum: {
+					amount: true,
+				},
+				where: {
+					deletedAt: null,
+					method: 'cash',
+					type: {
+						in: ['purchase', 'send'],
+					},
+				},
+			});
+
+			const cashBalance =
+				(cashPositiveBalance._sum.amount || 0) -
+				(cashNegativeBalance._sum.amount || 0);
+
+			const [checkBalance, bankTransferBalance, tpeBalance] = await Promise.all(
+				[getBalance('check'), getBalance('bank_transfer'), getBalance('tpe')]
+			);
+
+			res.json({
+				cash: cashBalance,
+				check: checkBalance,
+				bank_transfer: bankTransferBalance,
+				tpe: tpeBalance,
+			});
+		} catch (error) {
+			console.error('Error in TransactionController.getBalances', error);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
+};
+
+const getBalance = async (method: TransactionMethod) => {
+	const positiveBalance = await prisma.transaction.aggregate({
+		_sum: {
+			amount: true,
+		},
+		where: {
+			deletedAt: null,
+			method,
+			type: {
+				in: ['sale', 'receive'],
+			},
+		},
+	});
+
+	const negativeBalance = await prisma.transaction.aggregate({
+		_sum: {
+			amount: true,
+		},
+		where: {
+			deletedAt: null,
+			method,
+			type: {
+				in: ['purchase', 'send', 'cashing'],
+			},
+		},
+	});
+
+	const balance =
+		(positiveBalance._sum.amount || 0) - (negativeBalance._sum.amount || 0);
+
+	return balance;
 };

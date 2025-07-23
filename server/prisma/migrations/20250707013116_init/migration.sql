@@ -5,7 +5,7 @@ CREATE TYPE "Role" AS ENUM ('super_admin', 'admin', 'agent');
 CREATE TYPE "SaleStatus" AS ENUM ('pending', 'partially_paid', 'paid', 'cancelled');
 
 -- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('cash', 'check', 'tpe', 'bankTransfer');
+CREATE TYPE "TransactionMethod" AS ENUM ('cash', 'check', 'tpe', 'bank_transfer');
 
 -- CreateEnum
 CREATE TYPE "TransactionType" AS ENUM ('purchase', 'order', 'transfer');
@@ -211,7 +211,7 @@ CREATE TABLE "transactions" (
     "deletedBy" TEXT,
     "date" TIMESTAMP(3) NOT NULL,
     "type" "TransactionType" NOT NULL,
-    "paymentMethod" "PaymentMethod",
+    "method" "TransactionMethod",
     "amount" DOUBLE PRECISION NOT NULL,
     "agentId" TEXT NOT NULL,
     "orderId" TEXT,

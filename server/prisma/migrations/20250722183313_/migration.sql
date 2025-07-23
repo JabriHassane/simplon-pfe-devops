@@ -1,7 +1,7 @@
 /*
   Warnings:
 
-  - Made the column `paymentMethod` on table `transactions` required. This step will fail if there are existing NULL values in that column.
+  - Made the column `method` on table `transactions` required. This step will fail if there are existing NULL values in that column.
 
 */
 -- AlterTable
@@ -15,4 +15,4 @@ ALTER COLUMN "invoiceNumber" DROP NOT NULL,
 ALTER COLUMN "note" DROP NOT NULL;
 
 -- AlterTable
-ALTER TABLE "transactions" ALTER COLUMN "paymentMethod" SET NOT NULL;
+ALTER TABLE "transactions" ALTER COLUMN "method" SET NOT NULL;

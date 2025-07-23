@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "accounts" ADD COLUMN     "paymentMethods" "PaymentMethod"[];
+ALTER TABLE "accounts" ADD COLUMN     "methods" "TransactionMethod"[];

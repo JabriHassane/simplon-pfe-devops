@@ -79,7 +79,7 @@ export default function Sales() {
 	}
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
 				title='Ventes'
 				handleAdd={() => handleOpenFormPopup(null)}
@@ -94,7 +94,6 @@ export default function Sales() {
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
 					{ id: 'client', name: 'Client' },
-					{ id: 'articles', name: 'Articles' },
 					{ id: 'total', name: 'Total' },
 					{ id: 'paid', name: 'Payé' },
 					{ id: 'due', name: 'Reste' },
@@ -108,7 +107,6 @@ export default function Sales() {
 							date: formatDate(sale.date),
 							agent: sale.agent?.name,
 							client: sale.client?.name,
-							articles: sale.items?.length,
 							total: formatPrice(sale.totalPrice),
 							paid: formatPrice(sale.totalPaid),
 							due: formatPrice(sale.totalDue),
@@ -126,6 +124,7 @@ export default function Sales() {
 				}
 				onEdit={handleOpenFormPopup}
 				onDelete={handleOpenDeletePopup}
+				isOrder
 			/>
 
 			{sales?.pagination && (
@@ -165,6 +164,6 @@ export default function Sales() {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }
