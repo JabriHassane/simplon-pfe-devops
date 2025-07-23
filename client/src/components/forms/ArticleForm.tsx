@@ -1,4 +1,4 @@
-import { TextField } from '@mui/material';
+import { Grid, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -59,47 +59,56 @@ export default function ArticleForm({ init, onClose }: Props) {
 				createArticleMutation.isPending || updateArticleMutation.isPending
 			}
 		>
-			<TextField
-				fullWidth
-				label='Nom du article'
-				{...register('name')}
-				variant='outlined'
-				error={!!errors.name}
-				helperText={errors.name?.message as string}
-				required
-			/>
+			<Grid container spacing={2}>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label="Nom de l'article"
+						{...register('name')}
+						variant='outlined'
+						error={!!errors.name}
+						helperText={errors.name?.message as string}
+						required
+					/>
+				</Grid>
 
-			<TextField
-				fullWidth
-				label='Prix'
-				type='number'
-				{...register('price', { valueAsNumber: true })}
-				variant='outlined'
-				error={!!errors.price}
-				helperText={errors.price?.message as string}
-				required
-			/>
+				<Grid size={6}>
+					<ResourcePickerField
+						label='Catégorie'
+						value={init?.category?.name}
+						onChange={({ id }) => {
+							setValue(`categoryId`, id);
+						}}
+						resourceType='category'
+						error={!!errors.categoryId}
+						helperText={errors.categoryId?.message as string}
+					/>
+				</Grid>
 
-			<TextField
-				fullWidth
-				label="URL de l'image (optionnel)"
-				{...register('image')}
-				variant='outlined'
-				error={!!errors.image}
-				helperText={errors.image?.message as string}
-			/>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Prix'
+						type='number'
+						{...register('price', { valueAsNumber: true })}
+						variant='outlined'
+						error={!!errors.price}
+						helperText={errors.price?.message as string}
+						required
+					/>
+				</Grid>
 
-			<ResourcePickerField
-				label='Catégorie'
-				value={init?.category?.name}
-				onChange={({ id }) => {
-					setValue(`categoryId`, id);
-				}}
-				resourceType='category'
-				error={!!errors.categoryId}
-				helperText={errors.categoryId?.message as string}
-				required
-			/>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label="URL de l'image (optionnel)"
+						{...register('image')}
+						variant='outlined'
+						error={!!errors.image}
+						helperText={errors.image?.message as string}
+					/>
+				</Grid>
+			</Grid>
 		</ResourceForm>
 	);
 }

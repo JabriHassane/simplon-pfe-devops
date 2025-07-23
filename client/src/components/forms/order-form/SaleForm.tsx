@@ -76,7 +76,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 				isValid={isValid}
 				isLoading={createSaleMutation.isPending || updateSaleMutation.isPending}
 			>
-				<Grid container spacing={2} my={3}>
+				<Grid container spacing={2}>
 					<Grid size={6}>
 						<Controller
 							name='date'
@@ -97,6 +97,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							)}
 						/>
 					</Grid>
+
 					<Grid size={6}>
 						<FormControl fullWidth>
 							<InputLabel>Statut</InputLabel>
@@ -115,6 +116,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							</Select>
 						</FormControl>
 					</Grid>
+
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Client'
@@ -128,6 +130,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							required
 						/>
 					</Grid>
+
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Agent'
@@ -141,6 +144,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							required
 						/>
 					</Grid>
+
 					<Grid size={6}>
 						<TextField
 							fullWidth
@@ -151,6 +155,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							helperText={errors.receiptNumber?.message as string}
 						/>
 					</Grid>
+
 					<Grid size={6}>
 						<TextField
 							fullWidth
@@ -161,6 +166,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							helperText={errors.invoiceNumber?.message as string}
 						/>
 					</Grid>
+
 					<Grid size={12}>
 						<TextField
 							fullWidth
@@ -175,7 +181,8 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					</Grid>
 				</Grid>
 
-				<OrderItems />
+				<OrderItems init={init?.items} />
+				
 				<OrderPayments init={init?.payments} />
 			</ResourceForm>
 		</FormProvider>

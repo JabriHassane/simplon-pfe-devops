@@ -6,6 +6,7 @@ import {
 	Select,
 	MenuItem,
 	Button,
+	Grid,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -66,61 +67,71 @@ export default function TransactionForm({
 				updateTransactionMutation.isPending
 			}
 		>
-			<TextField
-				fullWidth
-				label='Date'
-				type='date'
-				{...register('date')}
-				error={!!errors.date}
-				helperText={errors.date?.message as string}
-				required
-				InputLabelProps={{ shrink: true }}
-			/>
+			<Grid container spacing={2}>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Date'
+						type='date'
+						{...register('date')}
+						error={!!errors.date}
+						helperText={errors.date?.message as string}
+						required
+						InputLabelProps={{ shrink: true }}
+					/>
+				</Grid>
 
-			<ResourcePickerField
-				label='Compte'
-				value={init?.from?.name}
-				onChange={({ id }) => {
-					setValue(`fromId`, id);
-				}}
-				resourceType='account'
-				error={!!errors.fromId}
-				helperText={errors.fromId?.message}
-				required
-			/>
+				<Grid size={6}>
+					<ResourcePickerField
+						label='Compte'
+						value={init?.from?.name}
+						onChange={({ id }) => {
+							setValue(`fromId`, id);
+						}}
+						resourceType='account'
+						error={!!errors.fromId}
+						helperText={errors.fromId?.message}
+						required
+					/>
+				</Grid>
 
-			<FormControl fullWidth>
-				<InputLabel>Type</InputLabel>
-				<Select
-					{...register('type')}
-					label='Type'
-					error={!!errors.type}
-					required
-					defaultValue='purchase'
-				>
-					{TRANSACTION_TYPES.map((type) => (
-						<MenuItem key={type} value={type}>
-							{DICT.transactionType[type]}
-						</MenuItem>
-					))}
-				</Select>
-			</FormControl>
+				<Grid size={6}>
+					<FormControl fullWidth>
+						<InputLabel>Type</InputLabel>
+						<Select
+							{...register('type')}
+							label='Type'
+							error={!!errors.type}
+							required
+							defaultValue='purchase'
+						>
+							{TRANSACTION_TYPES.map((type) => (
+								<MenuItem key={type} value={type}>
+									{DICT.transactionType[type]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
 
-			<TextField
-				fullWidth
-				label='Montant'
-				type='number'
-				{...register('amount', { valueAsNumber: true })}
-				error={!!errors.amount}
-				helperText={errors.amount?.message as string}
-				required
-				slotProps={{
-					htmlInput: {
-						min: 0,
-						step: 1,
-					},
-				}}
-			/>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Montant'
+						type='number'
+						{...register('amount', { valueAsNumber: true })}
+						error={!!errors.amount}
+						helperText={errors.amount?.message as string}
+						required
+						slotProps={{
+							htmlInput: {
+								min: 0,
+								step: 1,
+							},
+						}}
+					/>
+				</Grid>
+			</Grid>
 		</ResourceForm>
 	);
 }

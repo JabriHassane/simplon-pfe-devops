@@ -48,7 +48,7 @@ export default function Accounts() {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'name', name: 'Nom' },
 					{ id: 'balance', name: 'Solde' },
-					{ id: 'paymentMethods', name: 'Méthodes de paiement' },
+					{ id: 'paymentMethods', name: 'Modes de paiements' },
 				]}
 				rows={accounts?.data.map((account) => ({
 					item: account,

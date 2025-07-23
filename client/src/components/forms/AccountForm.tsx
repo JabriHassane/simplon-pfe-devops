@@ -4,6 +4,7 @@ import {
 	Select,
 	TextField,
 	InputLabel,
+	Grid,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -65,32 +66,38 @@ export default function AccountForm({ init, onClose }: AccountFormProps) {
 				createAccountMutation.isPending || updateAccountMutation.isPending
 			}
 		>
-			<TextField
-				fullWidth
-				label='Nom du compte'
-				{...register('name')}
-				error={!!errors.name}
-				helperText={errors.name?.message as string}
-				required
-			/>
+			<Grid container spacing={2}>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Nom du compte'
+						{...register('name')}
+						error={!!errors.name}
+						helperText={errors.name?.message as string}
+						required
+					/>
+				</Grid>
 
-			<FormControl fullWidth>
-				<InputLabel>Méthodes de paiement</InputLabel>
-				<Select
-					{...register('paymentMethods')}
-					label='Méthodes de paiement'
-					error={!!errors.paymentMethods}
-					required
-					defaultValue={init?.paymentMethods || []}
-					multiple
-				>
-					{PAYMENT_METHODS.map((method) => (
-						<MenuItem key={method} value={method}>
-							{DICT.paymentMethods[method]}
-						</MenuItem>
-					))}
-				</Select>
-			</FormControl>
+				<Grid size={6}>
+					<FormControl fullWidth>
+						<InputLabel>Modes de paiements</InputLabel>
+						<Select
+							{...register('paymentMethods')}
+							label='Modes de paiements'
+							error={!!errors.paymentMethods}
+							required
+							defaultValue={init?.paymentMethods || []}
+							multiple
+						>
+							{PAYMENT_METHODS.map((method) => (
+								<MenuItem key={method} value={method}>
+									{DICT.paymentMethods[method]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
+			</Grid>
 		</ResourceForm>
 	);
 }

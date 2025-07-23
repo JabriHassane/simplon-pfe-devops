@@ -7,7 +7,7 @@ export const CreateArticleDto = z.object({
 		.min(2, 'Le nom du article doit contenir au moins 2 caractères')
 		.max(100, 'Le nom du article ne peut pas dépasser 100 caractères'),
 	image: z.string().url("L'image doit être une URL valide").optional(),
-	categoryId: z.string().min(1, 'Catégorie requise'),
+	categoryId: z.string().optional(),
 	price: z
 		.number()
 		.min(0, 'Le prix doit être positif')
@@ -20,7 +20,7 @@ export const ArticleDto = z.object({
 	id: z.string(),
 	ref: z.string(),
 	...CreateArticleDto.shape,
-	category: CategoryDto,
+	category: CategoryDto.optional(),
 });
 
 export type CreateArticleDtoType = z.infer<typeof CreateArticleDto>;

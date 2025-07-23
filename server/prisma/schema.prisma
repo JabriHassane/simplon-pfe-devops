@@ -202,8 +202,8 @@ model Article {
   price     Float
 
   // Relations
-  categoryId    String
-  category      Category       @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+  category      Category?      @relation(fields: [categoryId], references: [id])
   saleItems     SaleItem[]
   purchaseItems PurchaseItem[]
 

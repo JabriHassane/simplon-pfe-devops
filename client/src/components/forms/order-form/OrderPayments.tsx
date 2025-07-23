@@ -60,7 +60,7 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 				gap={2}
 				alignItems='center'
 				justifyContent='space-between'
-				mb={2}
+				my={2}
 			>
 				<Typography variant='h6'>Paiements</Typography>
 
@@ -99,8 +99,8 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 			{openFormPopup && (
 				<OrderPaymentFormPopup
 					init={selectedPayment}
-					onClose={handleClosePopup}
 					onSubmit={handleSubmit}
+					onClose={handleClosePopup}
 				/>
 			)}
 

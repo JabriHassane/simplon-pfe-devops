@@ -18,7 +18,7 @@ function ResourceForm({
 		<Box component='form' onSubmit={onSubmit}>
 			<Divider sx={{ mb: 1 }} />
 
-			<Box sx={{ px: 2 }}>{children}</Box>
+			<Box sx={{ px: 2, pt: 2, pb: 1 }}>{children}</Box>
 
 			<Divider sx={{ mt: 1.5 }} />
 
@@ -27,7 +27,7 @@ function ResourceForm({
 					type='submit'
 					variant='contained'
 					startIcon={<Save />}
-					disabled={isLoading || !isValid}
+					// disabled={isLoading || !isValid}
 					fullWidth
 					size='large'
 					disableElevation

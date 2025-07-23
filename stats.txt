@@ -32,3 +32,7 @@ Peak sales periods (time of day, day of week, month)
 KPI Cards: Total revenue, orders today, pending payments
 Charts: Revenue trends, top articles, payment method distribution
 Tables: Top customers, best-selling articles, recent transactions
+
+- compte societe
+- compte nabil
+- compte 

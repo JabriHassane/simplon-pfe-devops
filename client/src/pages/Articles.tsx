@@ -8,6 +8,7 @@ import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
 import useCrud from '../hooks/useCrud';
 import ResourceTable from '../components/shared/ResourceTable';
+import { formatPrice } from '../utils/price.utils';
 
 export default function Articles() {
 	const {
@@ -44,6 +45,7 @@ export default function Articles() {
 				headers={[
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'name', name: 'Nom' },
+					{ id: 'category', name: 'Catégorie' },
 					{ id: 'price', name: 'Prix' },
 				]}
 				rows={articles?.data.map((article) => ({
@@ -51,7 +53,8 @@ export default function Articles() {
 					data: {
 						ref: article.ref,
 						name: article.name,
-						price: article.price,
+						category: article.category?.name,
+						price: formatPrice(article.price),
 					},
 				}))}
 				onEdit={handleOpenFormPopup}

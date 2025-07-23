@@ -1,4 +1,4 @@
-import { Box, TextField } from '@mui/material';
+import { Grid, TextField } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -51,37 +51,42 @@ export default function SupplierForm({ init, onClose }: SupplierFormProps) {
 				createSupplierMutation.isPending || updateSupplierMutation.isPending
 			}
 		>
-			<TextField
-				fullWidth
-				label='Nom du fournisseur'
-				{...register('name')}
-				variant='outlined'
-				error={!!errors.name}
-				helperText={errors.name?.message as string}
-				required
-			/>
-
-			<TextField
-				fullWidth
-				label='Téléphone'
-				{...register('phone')}
-				variant='outlined'
-				error={!!errors.phone}
-				helperText={errors.phone?.message as string}
-				required
-			/>
-
-			<TextField
-				fullWidth
-				label='Adresse'
-				{...register('address')}
-				variant='outlined'
-				multiline
-				rows={3}
-				error={!!errors.address}
-				helperText={errors.address?.message as string}
-				required
-			/>
+			<Grid container spacing={2}>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Nom du client'
+						{...register('name')}
+						variant='outlined'
+						error={!!errors.name}
+						helperText={errors.name?.message as string}
+						required
+					/>
+				</Grid>
+				<Grid size={6}>
+					<TextField
+						fullWidth
+						label='Téléphone'
+						{...register('phone')}
+						variant='outlined'
+						error={!!errors.phone}
+						helperText={errors.phone?.message as string}
+						required
+					/>
+				</Grid>
+				<Grid size={12}>
+					<TextField
+						fullWidth
+						label='Adresse'
+						{...register('address')}
+						variant='outlined'
+						multiline
+						rows={3}
+						error={!!errors.address}
+						helperText={errors.address?.message as string}
+					/>
+				</Grid>
+			</Grid>
 		</ResourceForm>
 	);
 }

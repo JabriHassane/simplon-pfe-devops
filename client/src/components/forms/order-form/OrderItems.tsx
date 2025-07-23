@@ -1,27 +1,55 @@
 import { useFormContext } from 'react-hook-form';
-import { useFieldArray } from 'react-hook-form';
-import { Box, Typography, Button, IconButton, TextField } from '@mui/material';
-import { Add, Delete } from '@mui/icons-material';
-import ResourcePickerField from '../../shared/ResourcePickerField';
-import type { CreateOrderDtoType } from '../../../../../shared/dtos/order.dto';
+import { Box, Typography, Button } from '@mui/material';
+import { Add } from '@mui/icons-material';
+import type {
+	CreateOrderDtoType,
+	OrderItemDtoType,
+} from '../../../../../shared/dtos/order.dto';
+import { useEffect, useState } from 'react';
+import useCrud from '../../../hooks/useCrud';
+import ResourceTable from '../../shared/ResourceTable';
+import { formatPrice } from '../../../utils/price.utils';
+import ResourceDeleteConfirmation from '../../shared/ResourceDeleteConfirmation';
+import OrderItemFormPopup from './OrderItemFormPopup';
+interface OrderItemsProps {
+	init?: OrderItemDtoType[];
+}
 
-export const OrderItems = () => {
+export const OrderItems = ({ init }: OrderItemsProps) => {
+	const { setValue } = useFormContext<CreateOrderDtoType>();
+
 	const {
-		register,
-		watch,
-		setValue,
-		formState: { errors },
-		control,
-	} = useFormContext<CreateOrderDtoType>();
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedItem,
+		selectedIndex,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = useCrud<OrderItemDtoType>();
 
-	const { fields, remove, append } = useFieldArray({
-		control,
-		name: 'items',
-	});
+	const [items, setItems] = useState<OrderItemDtoType[]>(init || []);
 
-	const handleAddItem = () => {
-		append({ articleId: '', articleName: '', quantity: 1, price: 0 });
+	const handleSubmit = (item: OrderItemDtoType) => {
+		const newItems = [...items];
+		if (selectedItem) {
+			newItems[selectedIndex] = item;
+		} else {
+			newItems.push(item);
+		}
+		setItems(newItems);
+		handleClosePopup();
 	};
+
+	const handleRemove = () => {
+		const newItems = [...items];
+		newItems.splice(selectedIndex, 1);
+		setItems(newItems);
+	};
+
+	useEffect(() => {
+		setValue('items', items);
+	}, [items]);
 
 	return (
 		<>
@@ -30,12 +58,12 @@ export const OrderItems = () => {
 				gap={2}
 				alignItems='center'
 				justifyContent='space-between'
-				mb={2}
+				my={2}
 			>
 				<Typography variant='h6'>Articles</Typography>
 
 				<Button
-					onClick={handleAddItem}
+					onClick={() => handleOpenFormPopup(null)}
 					variant='contained'
 					disableElevation
 					startIcon={<Add />}
@@ -44,61 +72,40 @@ export const OrderItems = () => {
 				</Button>
 			</Box>
 
-			{fields.map((_, index) => (
-				<Box
-					key={index}
-					sx={{ display: 'flex', gap: 2, mb: 2, alignItems: 'center' }}
-				>
-					<ResourcePickerField
-						label='Article'
-						value={watch(`items.${index}.articleId`)}
-						onChange={({ id }) => {
-							setValue(`items.${index}.articleId`, id);
-						}}
-						resourceType='article'
-						error={!!errors.items?.[index]?.articleId}
-						helperText={errors.items?.[index]?.articleId?.message}
-						required
-					/>
+			<ResourceTable
+				headers={[
+					{ id: 'article', name: 'Article' },
+					{ id: 'quantity', name: 'Quantité' },
+					{ id: 'price', name: 'Prix' },
+				]}
+				rows={items.map((item) => ({
+					item: item,
+					data: {
+						article: item.article?.name || '',
+						quantity: item.quantity,
+						price: formatPrice(item.price),
+					},
+				}))}
+				onEdit={handleOpenFormPopup}
+				onDelete={handleOpenDeletePopup}
+			/>
 
-					<TextField
-						label='Quantité'
-						type='number'
-						{...register(`items.${index}.quantity`, { valueAsNumber: true })}
-						sx={{ flex: 1 }}
-						slotProps={{
-							htmlInput: {
-								min: 1,
-							},
-						}}
-						error={!!errors.items?.[index]?.quantity}
-						helperText={errors.items?.[index]?.quantity?.message}
-						required
-					/>
+			{openFormPopup && (
+				<OrderItemFormPopup
+					init={selectedItem}
+					onSubmit={handleSubmit}
+					onClose={handleClosePopup}
+				/>
+			)}
 
-					<TextField
-						label='Prix'
-						type='number'
-						{...register(`items.${index}.price`, { valueAsNumber: true })}
-						sx={{ flex: 1 }}
-						slotProps={{
-							htmlInput: {
-								min: 0,
-							},
-						}}
-						error={!!errors.items?.[index]?.price}
-						helperText={errors.items?.[index]?.price?.message}
-						required
-					/>
-
-					<IconButton
-						onClick={() => remove(index)}
-						disabled={fields.length === 1}
-					>
-						<Delete />
-					</IconButton>
-				</Box>
-			))}
+			{openDeletePopup && (
+				<ResourceDeleteConfirmation
+					onClose={handleClosePopup}
+					title={`Supprimer ${selectedItem?.article?.ref}`}
+					description='Voulez-vous vraiment supprimer cet article ?'
+					onDelete={handleRemove}
+				/>
+			)}
 		</>
 	);
 };
