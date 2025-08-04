@@ -1,6 +1,11 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { getPaginationCondition } from '../utils/pagination';
+import { getNextRef } from '../utils/db.utils';
+import {
+	CreateSupplierDtoType,
+	UpdateSupplierDtoType,
+} from '../../../shared/dtos/supplier.dto';
 
 export const SupplierController = {
 	async getPage(req: Request, res: Response) {
@@ -59,28 +64,14 @@ export const SupplierController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const { name, phone, address } = req.body;
-
-			// Check if supplier with same phone already exists
-			const existingSupplier = await prisma.supplier.findFirst({
-				where: {
-					phone,
-					deletedAt: null,
-				},
-			});
-
-			if (existingSupplier) {
-				return res
-					.status(400)
-					.json({ message: 'Supplier with this phone number already exists' });
-			}
+			const body = req.body as CreateSupplierDtoType;
 
 			const supplier = await prisma.supplier.create({
 				data: {
-					name,
-					phone,
-					address,
-					ref: `FOU-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					name: body.name,
+					phone: body.phone,
+					address: body.address,
+					ref: await getNextRef('suppliers'),
 					createdById: userId,
 				},
 			});
@@ -96,7 +87,7 @@ export const SupplierController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const { name, phone, address } = req.body;
+			const body = req.body as UpdateSupplierDtoType;
 
 			// Check if supplier exists
 			const existingSupplier = await prisma.supplier.findUnique({
@@ -107,31 +98,12 @@ export const SupplierController = {
 				return res.status(404).json({ message: 'Supplier not found' });
 			}
 
-			// Check if phone already exists (if phone is being updated)
-			if (phone && phone !== existingSupplier.phone) {
-				const duplicateSupplier = await prisma.supplier.findFirst({
-					where: {
-						phone,
-						deletedAt: null,
-						NOT: { id },
-					},
-				});
-
-				if (duplicateSupplier) {
-					return res
-						.status(400)
-						.json({
-							message: 'Supplier with this phone number already exists',
-						});
-				}
-			}
-
 			const supplier = await prisma.supplier.update({
 				where: { id },
 				data: {
-					...(name && { name }),
-					...(phone && { phone }),
-					...(address && { address }),
+					name: body.name,
+					phone: body.phone,
+					address: body.address,
 					updatedAt: new Date(),
 					updatedById: userId,
 				},

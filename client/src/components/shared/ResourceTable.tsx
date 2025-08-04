@@ -58,8 +58,6 @@ function ResourceTable({
 	isOrder,
 	isPayment,
 }: Props) {
-	if (!rows || rows.length === 0) return null;
-
 	return (
 		<Table size='small'>
 			<TableHead sx={{ backgroundColor: 'background.default' }}>

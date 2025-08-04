@@ -15,24 +15,34 @@ async function main() {
 	await prisma.supplier.deleteMany();
 	await prisma.user.deleteMany();
 
-	await prisma.$queryRawUnsafe(
-		'CREATE SEQUENCE IF NOT EXISTS users_ref_seq START 1'
-	);
-	await prisma.$queryRawUnsafe(
-		'CREATE SEQUENCE IF NOT EXISTS clients_ref_seq START 1'
-	);
-	await prisma.$queryRawUnsafe(
-		'CREATE SEQUENCE IF NOT EXISTS suppliers_ref_seq START 1'
-	);
-	await prisma.$queryRawUnsafe(
-		'CREATE SEQUENCE IF NOT EXISTS sales_ref_seq START 1'
-	);
-	await prisma.$queryRawUnsafe(
-		'CREATE SEQUENCE IF NOT EXISTS purchases_ref_seq START 1'
-	);
-	await prisma.$queryRawUnsafe(
-		'CREATE SEQUENCE IF NOT EXISTS transactions_ref_seq START 1'
-	);
+	const sequences = [
+		'users',
+		'clients',
+		'suppliers',
+		'sales',
+		'purchases',
+		'transactions',
+	];
+
+	for (const sequence of sequences) {
+		await prisma.$executeRawUnsafe(
+			`DROP SEQUENCE IF EXISTS ${sequence}_ref_seq`
+		);
+		await prisma.$queryRawUnsafe(
+			`CREATE SEQUENCE IF NOT EXISTS ${sequence}_ref_seq START 1`
+		);
+	}
+
+	const x = await bcrypt.hash('123456', 10);
+	const y = await prisma.user.create({
+		data: {
+			ref: await getNextRef('users'),
+			name: 'PPP',
+			password: x,
+			role: 'super_admin',
+		},
+	});
+	return;
 
 	console.log('🗑️  Cleared existing data');
 

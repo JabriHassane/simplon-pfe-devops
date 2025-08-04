@@ -5,6 +5,7 @@ import {
 	UpdateClientDtoType,
 } from '../../../shared/dtos/client.dto';
 import { getPaginationCondition } from '../utils/pagination';
+import { getNextRef } from '../utils/db.utils';
 
 export const ClientController = {
 	async getPage(req: Request, res: Response) {
@@ -65,26 +66,12 @@ export const ClientController = {
 			const { userId } = req.user!;
 			const body = req.body as CreateClientDtoType;
 
-			// Check if client with same phone already exists
-			const existingClient = await prisma.client.findFirst({
-				where: {
-					phone: body.phone,
-					deletedAt: null,
-				},
-			});
-
-			if (existingClient) {
-				return res
-					.status(400)
-					.json({ message: 'Client with this phone number already exists' });
-			}
-
 			const client = await prisma.client.create({
 				data: {
 					name: body.name,
 					phone: body.phone,
 					address: body.address,
-					ref: `CLI-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+					ref: await getNextRef('clients'),
 					createdById: userId,
 				},
 			});
@@ -111,29 +98,12 @@ export const ClientController = {
 				return res.status(404).json({ message: 'Client not found' });
 			}
 
-			// Check if phone already exists (if phone is being updated)
-			if (body?.phone && body.phone !== existingClient.phone) {
-				const duplicateClient = await prisma.client.findFirst({
-					where: {
-						phone: body.phone,
-						deletedAt: null,
-						NOT: { id },
-					},
-				});
-
-				if (duplicateClient) {
-					return res
-						.status(400)
-						.json({ message: 'Client with this phone number already exists' });
-				}
-			}
-
 			const client = await prisma.client.update({
 				where: { id },
 				data: {
-					...(body?.name && { name: body.name }),
-					...(body?.phone && { phone: body.phone }),
-					...(body?.address && { address: body.address }),
+					name: body.name,
+					phone: body.phone,
+					address: body.address,
 					updatedAt: new Date(),
 					updatedById: userId,
 				},

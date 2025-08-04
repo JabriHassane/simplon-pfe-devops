@@ -1,12 +1,8 @@
 import { z } from 'zod';
 
 export const CreateClientDto = z.object({
-	name: z
-		.string()
-		.min(1, 'Le nom du client ne doit pas être vide'),
-	phone: z
-		.string()
-		.min(8, 'Le numéro de téléphone doit contenir au moins 8 caractères'),
+	name: z.string().min(1, 'Le nom du client ne doit pas être vide'),
+	phone: z.string().optional(),
 	address: z.string().optional(),
 });
 

@@ -71,7 +71,6 @@ export default function SupplierForm({ init, onClose }: SupplierFormProps) {
 						variant='outlined'
 						error={!!errors.phone}
 						helperText={errors.phone?.message as string}
-						required
 					/>
 				</Grid>
 				<Grid size={12}>

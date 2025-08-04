@@ -88,7 +88,7 @@ model Client {
   deletedAt DateTime?
 
   name    String
-  phone   String
+  phone   String?
   address String? @default("")
 
   // Relations
@@ -112,7 +112,7 @@ model Supplier {
   deletedAt DateTime?
 
   name    String
-  phone   String
+  phone   String?
   address String? @default("")
 
   // Relations
