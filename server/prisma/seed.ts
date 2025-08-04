@@ -11,8 +11,8 @@ async function main() {
 	await prisma.transaction.deleteMany();
 	await prisma.sale.deleteMany();
 	await prisma.purchase.deleteMany();
-	await prisma.client.deleteMany();
-	await prisma.supplier.deleteMany();
+	await prisma.contact.deleteMany();
+	await prisma.contact.deleteMany();
 	await prisma.user.deleteMany();
 
 	const sequences = [
@@ -33,21 +33,10 @@ async function main() {
 		);
 	}
 
-	const x = await bcrypt.hash('123456', 10);
-	const y = await prisma.user.create({
-		data: {
-			ref: await getNextRef('users'),
-			name: 'PPP',
-			password: x,
-			role: 'super_admin',
-		},
-	});
-	return;
-
 	console.log('🗑️  Cleared existing data');
 
 	// Create super admin user
-	const hashedPassword = await bcrypt.hash('admin123', 10);
+	const hashedPassword = await bcrypt.hash('123456', 10);
 	const superAdmin = await prisma.user.create({
 		data: {
 			ref: await getNextRef('users'),
@@ -93,63 +82,70 @@ async function main() {
 
 	// Create clients
 	const clients = await Promise.all([
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Mohammed Alami',
 				phone: '0612345678',
 				address: '123 Rue Hassan II, Casablanca',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Amina Benjelloun',
 				phone: '0623456789',
 				address: '456 Avenue Mohammed V, Rabat',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Karim Tazi',
 				phone: '0634567890',
 				address: '789 Boulevard Al Massira, Marrakech',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Sara El Fassi',
 				phone: '0645678901',
 				address: '321 Rue Ibn Batouta, Fès',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Hassan Berrada',
 				phone: '0656789012',
 				address: '567 Avenue des FAR, Tanger',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Leila Kadiri',
 				phone: '0667890123',
 				address: '890 Rue Zerktouni, Meknès',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.client.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('clients'),
+				type: 'client',
 				name: 'Youssef Chraibi',
 				phone: '0678901234',
 				address: '234 Boulevard Moulay Ismail, Tétouan',
@@ -162,45 +158,50 @@ async function main() {
 
 	// Create suppliers
 	const suppliers = await Promise.all([
-		prisma.supplier.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('suppliers'),
+				type: 'supplier',
 				name: 'Pépinière Atlas',
 				phone: '0522345678',
 				address: '100 Route de Marrakech, Benslimane',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.supplier.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('suppliers'),
+				type: 'supplier',
 				name: 'Jardins du Souss',
 				phone: '0523456789',
 				address: '200 Zone Industrielle, Agadir',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.supplier.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('suppliers'),
+				type: 'supplier',
 				name: 'GardenTools Pro',
 				phone: '0524567890',
 				address: '300 Quartier Industriel, Tanger',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.supplier.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('suppliers'),
+				type: 'supplier',
 				name: 'Fleurs du Rif',
 				phone: '0525678901',
 				address: '400 Zone Artisanale, Al Hoceima',
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.supplier.create({
+		prisma.contact.create({
 			data: {
 				ref: await getNextRef('suppliers'),
+				type: 'supplier',
 				name: 'Bio Plantes Maroc',
 				phone: '0526789012',
 				address: '500 Route Principale, Khemisset',
@@ -226,7 +227,7 @@ async function main() {
 				status: 'paid',
 				note: 'Livraison à domicile',
 				agentId: agent.id,
-				clientId: clients[0].id,
+				contactId: clients[0].id,
 				createdById: agent.id,
 			},
 		}),
@@ -242,7 +243,7 @@ async function main() {
 				status: 'partially_paid',
 				note: 'Paiement en plusieurs fois',
 				agentId: admin1.id,
-				clientId: clients[1].id,
+				contactId: clients[1].id,
 				createdById: admin1.id,
 			},
 		}),
@@ -258,7 +259,7 @@ async function main() {
 				status: 'pending',
 				note: 'Commande en attente de paiement',
 				agentId: agent.id,
-				clientId: clients[2].id,
+				contactId: clients[2].id,
 				createdById: agent.id,
 			},
 		}),
@@ -275,7 +276,7 @@ async function main() {
 				status: 'paid',
 				note: 'Paiement comptant',
 				agentId: admin2.id,
-				clientId: clients[4].id,
+				contactId: clients[4].id,
 				createdById: admin2.id,
 			},
 		}),
@@ -291,7 +292,7 @@ async function main() {
 				status: 'partially_paid',
 				note: 'Paiement échelonné',
 				agentId: admin1.id,
-				clientId: clients[5].id,
+				contactId: clients[5].id,
 				createdById: admin1.id,
 			},
 		}),
@@ -314,7 +315,7 @@ async function main() {
 				status: 'paid',
 				note: 'Stock initial plantes',
 				agentId: superAdmin.id,
-				supplierId: suppliers[0].id,
+				contactId: suppliers[0].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -330,7 +331,7 @@ async function main() {
 				status: 'partially_paid',
 				note: 'Réapprovisionnement arbres',
 				agentId: superAdmin.id,
-				supplierId: suppliers[1].id,
+				contactId: suppliers[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -346,7 +347,7 @@ async function main() {
 				status: 'partially_paid',
 				note: 'Commande matériel',
 				agentId: superAdmin.id,
-				supplierId: suppliers[2].id,
+				contactId: suppliers[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -363,7 +364,7 @@ async function main() {
 				status: 'paid',
 				note: 'Commande plantes exotiques',
 				agentId: superAdmin.id,
-				supplierId: suppliers[3].id,
+				contactId: suppliers[3].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -379,7 +380,7 @@ async function main() {
 				status: 'pending',
 				note: 'Commande saisonnière',
 				agentId: superAdmin.id,
-				supplierId: suppliers[4].id,
+				contactId: suppliers[4].id,
 				createdById: superAdmin.id,
 			},
 		}),

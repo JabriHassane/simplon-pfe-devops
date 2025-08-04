@@ -8,8 +8,7 @@ import { PrismaClient } from '@prisma/client';
 // Import routes
 import authRouter from './routers/auth.router';
 import userRouter from './routers/user.router';
-import clientRouter from './routers/client.router';
-import supplierRouter from './routers/supplier.router';
+import contactRouter from './routers/contact.router';
 import saleRouter from './routers/sale.router';
 import purchaseRouter from './routers/purchase.router';
 import transactionRouter from './routers/transaction.router';
@@ -45,8 +44,7 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
-app.use('/api/clients', clientRouter);
-app.use('/api/suppliers', supplierRouter);
+app.use('/api/contacts', contactRouter);
 app.use('/api/sales', saleRouter);
 app.use('/api/purchases', purchaseRouter);
 app.use('/api/transactions', transactionRouter);

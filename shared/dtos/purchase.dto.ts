@@ -1,15 +1,15 @@
 import { z } from 'zod';
 import { CreateOrderDto, OrderDto } from './order.dto';
-import { SupplierDto } from './supplier.dto';
+import { ContactDto } from './contact.dto';
 
 export const CreatePurchaseDto = CreateOrderDto.extend({
-	supplierId: z.string().optional(),
+	contactId: z.string().optional(),
 });
 
 export const UpdatePurchaseDto = CreatePurchaseDto;
 
 export const PurchaseDto = OrderDto.extend({
-	supplier: SupplierDto.optional(),
+	contact: ContactDto.optional(),
 });
 
 export type CreatePurchaseDtoType = z.infer<typeof CreatePurchaseDto>;

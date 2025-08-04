@@ -25,7 +25,7 @@ import {
 } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
 
-export type ResourceType = 'user' | 'client' | 'supplier';
+export type ResourceType = 'user' | 'contact';
 
 interface Resource {
 	id: string;

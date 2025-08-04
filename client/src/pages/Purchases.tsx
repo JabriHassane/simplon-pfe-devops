@@ -53,7 +53,7 @@ export default function Purchases() {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
-					{ id: 'supplier', name: 'Fournisseur' },
+					{ id: 'contact', name: 'Contact' },
 					{ id: 'total', name: 'Total' },
 					{ id: 'statut', name: 'Statut' },
 				]}
@@ -64,7 +64,7 @@ export default function Purchases() {
 							ref: purchase.ref,
 							date: formatDate(purchase.date),
 							agent: purchase.agent?.name,
-							supplier: purchase.supplier?.name,
+							contact: purchase.contact?.name,
 							total: formatPrice(purchase.totalPrice),
 							statut: (
 								<Chip

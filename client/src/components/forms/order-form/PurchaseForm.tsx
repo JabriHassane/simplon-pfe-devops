@@ -36,7 +36,7 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 		defaultValues: {
 			date: init?.date || '',
 			agentId: init?.agentId || '',
-			supplierId: init?.supplier?.id || '',
+			contactId: init?.contact?.id || '',
 			payments: init?.payments || [],
 			note: init?.note || '',
 			status: init?.status || 'pending',
@@ -117,14 +117,14 @@ export default function PurchaseForm({ init, onClose }: PurchaseFormProps) {
 
 					<Grid size={6}>
 						<ResourcePickerField
-							label='Fournisseur'
-							value={init?.supplier?.name}
+							label='Contact'
+							value={init?.contact?.name}
 							onChange={({ id }) => {
-								setValue('supplierId', id);
+								setValue('contactId', id);
 							}}
-							resourceType='supplier'
-							error={!!errors.supplierId}
-							helperText={errors.supplierId?.message as string}
+							resourceType='contact'
+							error={!!errors.contactId}
+							helperText={errors.contactId?.message as string}
 							required
 						/>
 					</Grid>

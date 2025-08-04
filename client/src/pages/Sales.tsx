@@ -42,7 +42,7 @@ export default function Sales() {
 		dateFrom: filters.dateFrom,
 		dateTo: filters.dateTo,
 		agentId: filters.agentId,
-		clientId: filters.clientId,
+		contactId: filters.contactId,
 		status: filters.status,
 	});
 
@@ -93,7 +93,7 @@ export default function Sales() {
 					{ id: 'ref', name: 'Ref' },
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
-					{ id: 'client', name: 'Client' },
+					{ id: 'contact', name: 'Contact' },
 					{ id: 'total', name: 'Total' },
 					{ id: 'paid', name: 'Payé' },
 					{ id: 'due', name: 'Reste' },
@@ -106,7 +106,7 @@ export default function Sales() {
 							ref: sale.ref,
 							date: formatDate(sale.date),
 							agent: sale.agent?.name,
-							client: sale.client?.name,
+							contact: sale.contact?.name,
 							total: formatPrice(sale.totalPrice),
 							paid: formatPrice(sale.totalPaid),
 							due: formatPrice(sale.totalDue),

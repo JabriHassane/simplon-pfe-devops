@@ -1,6 +1,5 @@
-import { useClients } from '../../hooks/ressources/useClients';
+import { useContacts } from '../../hooks/ressources/useContacts';
 import { useUsers } from '../../hooks/ressources/useUsers';
-import { useSuppliers } from '../../hooks/ressources/useSuppliers';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { ResourceType } from '../../components/shared/ResourcePickerPopup';
 import type { PaginationParams } from '../../services/api.service';
@@ -10,12 +9,10 @@ export const useResource = (
 	params?: PaginationParams
 ): UseQueryResult<any, Error> => {
 	switch (resourceType) {
-		case 'client':
-			return useClients(params);
+		case 'contact':
+			return useContacts(params);
 		case 'user':
 			return useUsers(params);
-		case 'supplier':
-			return useSuppliers(params);
 		default:
 			return {
 				data: {

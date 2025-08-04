@@ -36,7 +36,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		defaultValues: {
 			date: init?.date || '',
 			agentId: init?.agentId || '',
-			clientId: init?.client?.id || '',
+			contactId: init?.contact?.id || '',
 			payments: init?.payments || [],
 			note: init?.note || '',
 			status: init?.status || 'pending',
@@ -115,14 +115,14 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 
 					<Grid size={6}>
 						<ResourcePickerField
-							label='Client'
-							value={init?.client?.name}
+							label='Contact'
+							value={init?.contact?.name}
 							onChange={({ id }) => {
-								setValue('clientId', id);
+								setValue('contactId', id);
 							}}
-							resourceType='client'
-							error={!!errors.clientId}
-							helperText={errors.clientId?.message as string}
+							resourceType='contact'
+							error={!!errors.contactId}
+							helperText={errors.contactId?.message as string}
 							required
 						/>
 					</Grid>

@@ -20,7 +20,7 @@ export interface OrderFiltersData {
 	dateFrom?: string;
 	dateTo?: string;
 	agentId?: string;
-	clientId?: string;
+	contactId?: string;
 	status?: string;
 }
 
@@ -107,12 +107,12 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 
 				<Grid size={2}>
 					<ResourcePickerField
-						label='Client'
-						value={filters.clientId || ''}
-						onChange={({ id }) => onFiltersChange({ clientId: id })}
-						resourceType='client'
-						placeholder='Sélectionner un client...'
-						onClear={() => onFiltersChange({ clientId: '' })}
+						label='Contact'
+						value={filters.contactId || ''}
+						onChange={({ id }) => onFiltersChange({ contactId: id })}
+						resourceType='contact'
+						placeholder='Sélectionner un contact...'
+						onClear={() => onFiltersChange({ contactId: '' })}
 						showClearButton
 					/>
 				</Grid>

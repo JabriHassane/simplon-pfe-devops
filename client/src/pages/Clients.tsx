@@ -1,4 +1,3 @@
-import { Box } from '@mui/material';
 import { useClients, useDeleteClient } from '../hooks/ressources/useClients';
 import ClientForm from '../components/forms/ClientForm';
 import type { ClientDtoType } from '../../../shared/dtos/client.dto';

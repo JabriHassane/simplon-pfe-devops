@@ -17,7 +17,7 @@ export const PurchaseController = {
 			const PurchasesPromise = prisma.purchase.findMany({
 				where: whereClause,
 				include: {
-					supplier: true,
+					contact: true,
 					payments: {
 						include: {
 							agent: true,
@@ -68,7 +68,7 @@ export const PurchaseController = {
 			const purchase = await prisma.purchase.findUnique({
 				where: { id },
 				include: {
-					supplier: true,
+					contact: true,
 					agent: {
 						select: {
 							id: true,
@@ -121,13 +121,13 @@ export const PurchaseController = {
 			const { userId } = req.user!;
 			const body = req.body as CreatePurchaseDtoType;
 
-			// Check if client exists
-			const client = await prisma.client.findUnique({
-				where: { id: body.supplierId },
+			// Check if contact exists
+			const contact = await prisma.contact.findUnique({
+				where: { id: body.contactId },
 			});
 
-			if (!client) {
-				return res.status(400).json({ message: 'Supplier not found' });
+			if (!contact) {
+				return res.status(400).json({ message: 'contact not found' });
 			}
 
 			const purchase = await prisma.purchase.create({
@@ -135,7 +135,7 @@ export const PurchaseController = {
 					ref: await getNextRef('purchases'),
 					date: body.date,
 					agentId: body.agentId,
-					supplierId: body.supplierId,
+					contactId: body.contactId,
 					receiptNumber: body.receiptNumber,
 					invoiceNumber: body.invoiceNumber,
 					totalPrice: body.totalPrice,
@@ -146,7 +146,7 @@ export const PurchaseController = {
 					createdById: userId,
 				},
 				include: {
-					supplier: true,
+					contact: true,
 					agent: {
 						select: {
 							id: true,
@@ -169,70 +169,67 @@ export const PurchaseController = {
 			const { userId } = req.user!;
 			const body = req.body as UpdatePurchaseDtoType;
 
-			const updatedPurchase = await prisma.$transaction(async (tx) => {
-				// Check if purchase exists
-				const isExists = await tx.purchase.findUnique({
-					where: { id },
-				});
-
-				if (!isExists) {
-					throw new Error('Purchase not found');
-				}
-
-				// Check if client exists
-				const client = await tx.client.findUnique({
-					where: { id: body.supplierId },
-				});
-
-				if (!client) {
-					throw new Error('Supplier not found');
-				}
-
-				// Update purchase
-				const { ...updateData } = body;
-				const updated = await tx.purchase.update({
-					where: { id },
-					data: {
-						...updateData,
-						totalPrice: body.totalPrice,
-						totalPaid: body.totalPaid,
-						totalDue: body.totalDue,
-
-						payments: {
-							deleteMany: {},
-							createMany: {
-								data: await Promise.all(
-									body.payments.map(async (item) => ({
-										ref: await getNextRef('purchases'),
-										amount: item.amount,
-										date: item.date,
-										method: item.method as TransactionMethod,
-										type: 'purchase' as TransactionType,
-										agentId: item.agentId,
-										createdById: userId,
-									}))
-								),
-							},
-						},
-
-						updatedAt: new Date(),
-						updatedById: userId,
-					},
-					include: {
-						supplier: true,
-						agent: {
-							select: {
-								id: true,
-								name: true,
-							},
-						},
-					},
-				});
-
-				return updated;
+			// Check if purchase exists
+			const isExists = await prisma.purchase.findUnique({
+				where: { id },
 			});
 
-			return res.json(updatedPurchase);
+			if (!isExists) {
+				throw new Error('Purchase not found');
+			}
+
+			// Check if contact exists
+			const contact = await prisma.contact.findUnique({
+				where: { id: body.contactId },
+			});
+
+			if (!contact) {
+				throw new Error('contact not found');
+			}
+
+			// Generate refs for payments before transaction
+			const paymentRefs = await Promise.all(
+				body.payments.map(() => getNextRef('transactions'))
+			);
+
+			const purchase = await prisma.purchase.update({
+				where: { id },
+				data: {
+					...body,
+					totalPrice: body.totalPrice,
+					totalPaid: body.totalPaid,
+					totalDue: body.totalDue,
+
+					payments: {
+						deleteMany: {},
+						createMany: {
+							data: body.payments.map((item, index) => ({
+								ref: paymentRefs[index],
+								amount: item.amount,
+								date: item.date,
+								method: item.method as TransactionMethod,
+								type: 'purchase' as TransactionType,
+								agentId: item.agentId,
+								createdById: userId,
+							})),
+						},
+					},
+
+					updatedAt: new Date(),
+					updatedById: userId,
+				},
+				include: {
+					contact: true,
+					agent: {
+						select: {
+							id: true,
+							name: true,
+						},
+					},
+				},
+			});
+
+			return res.json(purchase);
 		} catch (error: any) {
 			console.error('Error in PurchaseController.update', error);
 			return res

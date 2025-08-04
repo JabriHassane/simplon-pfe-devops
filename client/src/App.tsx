@@ -29,8 +29,7 @@ import { navigationItems } from './config/navigation';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useLogout } from './hooks/ressources/useAuth';
 import Dashboard from './pages/Dashboard';
-import Clients from './pages/Clients';
-import Suppliers from './pages/Suppliers';
+import Contacts from './pages/Contacts';
 import Sales from './pages/Sales';
 import Transactions from './pages/Transactions';
 import Reports from './pages/Reports';
@@ -113,8 +112,7 @@ function AppContent() {
 					>
 						<Routes>
 							<Route path='/' element={<Dashboard />} />
-							<Route path='/clients' element={<Clients />} />
-							<Route path='/suppliers' element={<Suppliers />} />
+							<Route path='/contacts' element={<Contacts />} />
 							<Route path='/sales' element={<Sales />} />
 							<Route path='/purchases' element={<Purchases />} />
 							<Route path='/transactions' element={<Transactions />} />

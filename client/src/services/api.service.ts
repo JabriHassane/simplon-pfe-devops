@@ -7,7 +7,7 @@ export interface PaginationParams {
 	dateFrom?: string;
 	dateTo?: string;
 	agentId?: string;
-	clientId?: string;
+	contactId?: string;
 	status?: string;
 }
 

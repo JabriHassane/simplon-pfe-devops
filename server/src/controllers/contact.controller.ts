@@ -1,13 +1,13 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
+import {
+	CreateContactDtoType,
+	UpdateContactDtoType,
+} from '../../../shared/dtos/contact.dto';
 import { getPaginationCondition } from '../utils/pagination';
 import { getNextRef } from '../utils/db.utils';
-import {
-	CreateSupplierDtoType,
-	UpdateSupplierDtoType,
-} from '../../../shared/dtos/supplier.dto';
 
-export const SupplierController = {
+export const ContactController = {
 	async getPage(req: Request, res: Response) {
 		try {
 			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
@@ -16,19 +16,26 @@ export const SupplierController = {
 				'phone',
 			]);
 
+			// Add type filter if provided
+			const type = req.query.type as string;
+			const finalWhereClause = {
+				...whereClause,
+				...(type && { type }),
+			};
+
 			// Get total count for pagination
-			const total = await prisma.supplier.count({ where: whereClause });
+			const total = await prisma.contact.count({ where: finalWhereClause });
 
 			// Get paginated results
-			const suppliers = await prisma.supplier.findMany({
-				where: whereClause,
+			const contacts = await prisma.contact.findMany({
+				where: finalWhereClause,
 				orderBy: { createdAt: 'desc' },
 				skip,
 				take: limit,
 			});
 
 			res.json({
-				data: suppliers,
+				data: contacts,
 				pagination: {
 					page,
 					limit,
@@ -37,7 +44,7 @@ export const SupplierController = {
 				},
 			});
 		} catch (error) {
-			console.error('Error in SupplierController.getPage', error);
+			console.error('Error in ContactController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -46,17 +53,17 @@ export const SupplierController = {
 		try {
 			const { id } = req.params;
 
-			const supplier = await prisma.supplier.findUnique({
+			const contact = await prisma.contact.findUnique({
 				where: { id },
 			});
 
-			if (!supplier) {
-				return res.status(404).json({ message: 'Supplier not found' });
+			if (!contact) {
+				return res.status(404).json({ message: 'Contact not found' });
 			}
 
-			res.json(supplier);
+			res.json(contact);
 		} catch (error) {
-			console.error('Error in SupplierController.getById', error);
+			console.error('Error in ContactController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -64,21 +71,24 @@ export const SupplierController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const body = req.body as CreateSupplierDtoType;
+			const body = req.body as CreateContactDtoType;
 
-			const supplier = await prisma.supplier.create({
+			const contact = await prisma.contact.create({
 				data: {
 					name: body.name,
 					phone: body.phone,
 					address: body.address,
-					ref: await getNextRef('suppliers'),
+					type: body.type,
+					ref: await getNextRef(
+						body.type === 'client' ? 'clients' : 'suppliers'
+					),
 					createdById: userId,
 				},
 			});
 
-			res.status(201).json(supplier);
+			res.status(201).json(contact);
 		} catch (error) {
-			console.error('Error in SupplierController.create', error);
+			console.error('Error in ContactController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -87,31 +97,32 @@ export const SupplierController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const body = req.body as UpdateSupplierDtoType;
+			const body = req.body as UpdateContactDtoType;
 
-			// Check if supplier exists
-			const existingSupplier = await prisma.supplier.findUnique({
+			// Check if contact exists
+			const existingContact = await prisma.contact.findUnique({
 				where: { id },
 			});
 
-			if (!existingSupplier) {
-				return res.status(404).json({ message: 'Supplier not found' });
+			if (!existingContact) {
+				return res.status(404).json({ message: 'Contact not found' });
 			}
 
-			const supplier = await prisma.supplier.update({
+			const contact = await prisma.contact.update({
 				where: { id },
 				data: {
 					name: body.name,
 					phone: body.phone,
 					address: body.address,
+					type: body.type,
 					updatedAt: new Date(),
 					updatedById: userId,
 				},
 			});
 
-			res.json(supplier);
+			res.json(contact);
 		} catch (error) {
-			console.error('Error in SupplierController.update', error);
+			console.error('Error in ContactController.update', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -121,28 +132,32 @@ export const SupplierController = {
 			const { id } = req.params;
 			const { userId } = req.user!;
 
-			// Check if supplier exists
-			const existingSupplier = await prisma.supplier.findUnique({
+			// Check if contact exists
+			const existingContact = await prisma.contact.findUnique({
 				where: { id },
 			});
 
-			if (!existingSupplier) {
-				return res.status(404).json({ message: 'Supplier not found' });
+			if (!existingContact) {
+				return res.status(404).json({ message: 'Contact not found' });
 			}
 
-			// Check if supplier has purchases
-			const hasPurchases = await prisma.purchase.findFirst({
-				where: { supplierId: id },
+			// Check if contact has sales or purchases
+			const hasSales = await prisma.sale.findFirst({
+				where: { contactId: id },
 			});
 
-			if (hasPurchases) {
+			const hasPurchases = await prisma.purchase.findFirst({
+				where: { contactId: id },
+			});
+
+			if (hasSales || hasPurchases) {
 				return res.status(400).json({
-					message: 'Cannot delete supplier with existing purchases',
+					message: 'Cannot delete contact with existing sales or purchases',
 				});
 			}
 
 			// Soft delete
-			await prisma.supplier.update({
+			await prisma.contact.update({
 				where: { id },
 				data: {
 					deletedAt: new Date(),
@@ -150,9 +165,9 @@ export const SupplierController = {
 				},
 			});
 
-			res.json({ message: 'Supplier deleted successfully' });
+			res.json({ message: 'Contact deleted successfully' });
 		} catch (error) {
-			console.error('Error in SupplierController.delete', error);
+			console.error('Error in ContactController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},

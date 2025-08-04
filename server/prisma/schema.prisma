@@ -44,13 +44,9 @@ model User {
   updatedTransactions Transaction[] @relation("TransactionUpdatedBy")
   deletedTransactions Transaction[] @relation("TransactionDeletedBy")
 
-  createdClients Client[] @relation("ClientCreatedBy")
-  updatedClients Client[] @relation("ClientUpdatedBy")
-  deletedClients Client[] @relation("ClientDeletedBy")
-
-  createdSuppliers Supplier[] @relation("SupplierCreatedBy")
-  updatedSuppliers Supplier[] @relation("SupplierUpdatedBy")
-  deletedSuppliers Supplier[] @relation("SupplierDeletedBy")
+  createdContacts Contact[] @relation("ContactCreatedBy")
+  updatedContacts Contact[] @relation("ContactUpdatedBy")
+  deletedContacts Contact[] @relation("ContactDeletedBy")
 
   createdUsers User[] @relation("UserCreatedBy")
   updatedUsers User[] @relation("UserUpdatedBy")
@@ -80,7 +76,7 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-model Client {
+model Contact {
   id        String    @id @default(cuid())
   ref       String    @unique
   createdAt DateTime  @default(now())
@@ -90,42 +86,20 @@ model Client {
   name    String
   phone   String?
   address String? @default("")
+  type    String // 'client' or 'supplier'
 
   // Relations
-  sales Sale[]
-
-  createdById String?
-  createdBy   User?   @relation("ClientCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("ClientUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("ClientDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("clients")
-}
-
-model Supplier {
-  id        String    @id @default(cuid())
-  ref       String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  name    String
-  phone   String?
-  address String? @default("")
-
-  // Relations
+  sales     Sale[]
   purchases Purchase[]
 
   createdById String?
-  createdBy   User?   @relation("SupplierCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?   @relation("ContactCreatedBy", fields: [createdById], references: [id])
   updatedById String?
-  updatedBy   User?   @relation("SupplierUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?   @relation("ContactUpdatedBy", fields: [updatedById], references: [id])
   deletedById String?
-  deletedBy   User?   @relation("SupplierDeletedBy", fields: [deletedById], references: [id])
+  deletedBy   User?   @relation("ContactDeletedBy", fields: [deletedById], references: [id])
 
-  @@map("suppliers")
+  @@map("contacts")
 }
 
 enum OrderStatus {
@@ -158,8 +132,8 @@ model Sale {
   agentId String?
   agent   User?   @relation("SaleAgent", fields: [agentId], references: [id])
 
-  clientId String?
-  client   Client? @relation(fields: [clientId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
 
   payments Transaction[]
 
@@ -196,8 +170,8 @@ model Purchase {
   agentId String?
   agent   User?   @relation("PurchaseAgent", fields: [agentId], references: [id])
 
-  supplierId String?
-  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  contactId String?
+  contact   Contact? @relation(fields: [contactId], references: [id])
 
   payments Transaction[]
 
@@ -238,7 +212,7 @@ model Transaction {
   method        TransactionMethod
   transferActor String?
   amount        Float
-  isCashed     Boolean           @default(false)
+  isCashed      Boolean           @default(false)
 
   // Relations
   agentId String?
