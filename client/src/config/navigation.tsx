@@ -12,7 +12,8 @@ import {
 
 export const navigationItems = [
 	{ name: 'Tableau de bord', icon: <DashboardOutlined />, path: '/' },
-	{ name: 'Contacts', icon: <PersonOutline />, path: '/contacts' },
+	{ name: 'Clients', icon: <PersonOutline />, path: '/clients' },
+	{ name: 'Fournisseurs', icon: <PersonOutline />, path: '/suppliers' },
 	{ name: 'Ventes', icon: <ShoppingBagOutlined />, path: '/sales' },
 	{ name: 'Achats', icon: <LocalShippingOutlined />, path: '/purchases' },
 	{ name: 'Opérations', icon: <SyncAltOutlined />, path: '/transactions' },

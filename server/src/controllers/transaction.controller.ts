@@ -11,9 +11,10 @@ import { TransactionMethod, TransactionType } from '../../../shared/constants';
 export const TransactionController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
-				'ref',
-			]);
+			const { page, pageSize, skip, whereClause } = getPaginationCondition(
+				req,
+				['ref']
+			);
 
 			const [transactions, total] = await Promise.all([
 				prisma.transaction.findMany({
@@ -24,8 +25,7 @@ export const TransactionController = {
 						},
 					},
 					include: {
-						purchase: true,
-						sale: true,
+						order: true,
 						agent: {
 							select: {
 								id: true,
@@ -35,7 +35,7 @@ export const TransactionController = {
 					},
 					orderBy: { date: 'desc' },
 					skip,
-					take: limit,
+					take: pageSize,
 				}),
 				prisma.transaction.count({
 					where: {
@@ -47,13 +47,13 @@ export const TransactionController = {
 				}),
 			]);
 
-			const totalPages = Math.ceil(total / limit);
+			const totalPages = Math.ceil(total / pageSize);
 
 			res.json({
 				data: transactions,
 				pagination: {
 					page,
-					limit,
+					pageSize,
 					total,
 					totalPages,
 				},
@@ -71,8 +71,7 @@ export const TransactionController = {
 			const transaction = await prisma.transaction.findUnique({
 				where: { id },
 				include: {
-					purchase: true,
-					sale: true,
+					order: true,
 					agent: {
 						select: {
 							id: true,
@@ -99,21 +98,12 @@ export const TransactionController = {
 			const { userId } = req.user!;
 
 			// Validate related entities exist
-			if (body.purchaseId) {
-				const purchase = await prisma.purchase.findUnique({
-					where: { id: body.purchaseId },
+			if (body.orderId) {
+				const order = await prisma.order.findUnique({
+					where: { id: body.orderId },
 				});
-				if (!purchase) {
-					return res.status(400).json({ message: 'Purchase not found' });
-				}
-			}
-
-			if (body.saleId) {
-				const sale = await prisma.sale.findUnique({
-					where: { id: body.saleId },
-				});
-				if (!sale) {
-					return res.status(400).json({ message: 'Sale not found' });
+				if (!order) {
+					return res.status(400).json({ message: 'Order not found' });
 				}
 			}
 
@@ -125,8 +115,7 @@ export const TransactionController = {
 					createdById: userId,
 				},
 				include: {
-					purchase: true,
-					sale: true,
+					order: true,
 					agent: {
 						select: {
 							id: true,
@@ -166,8 +155,7 @@ export const TransactionController = {
 					updatedById: userId,
 				},
 				include: {
-					purchase: true,
-					sale: true,
+					order: true,
 					agent: {
 						select: {
 							id: true,

@@ -2,7 +2,7 @@ import { Request } from 'express';
 
 export interface PaginationCondition {
 	page: number;
-	limit: number;
+	pageSize: number;
 	skip: number;
 	search: string;
 	whereClause: any;
@@ -13,9 +13,9 @@ export const getPaginationCondition = (
 	searchFields: string[]
 ): PaginationCondition => {
 	const page = parseInt(req.query.page as string) || 1;
-	const limit = parseInt(req.query.limit as string) || 10;
+	const pageSize = parseInt(req.query.pageSize as string) || 10;
 	const search = (req.query.search as string) || '';
-	const skip = (page - 1) * limit;
+	const skip = (page - 1) * pageSize;
 
 	// Build where clause for search
 	const whereClause: any = { deletedAt: null };
@@ -27,7 +27,7 @@ export const getPaginationCondition = (
 
 	return {
 		page,
-		limit,
+		pageSize,
 		skip,
 		search,
 		whereClause,
@@ -38,9 +38,9 @@ export const getOrderPaginationCondition = (
 	req: Request
 ): PaginationCondition => {
 	const page = parseInt(req.query.page as string) || 1;
-	const limit = parseInt(req.query.limit as string) || 10;
+	const pageSize = parseInt(req.query.pageSize as string) || 10;
 	const search = (req.query.search as string) || '';
-	const skip = (page - 1) * limit;
+	const skip = (page - 1) * pageSize;
 
 	// Build where clause for search and filters
 	const whereClause: any = { deletedAt: null };
@@ -86,7 +86,7 @@ export const getOrderPaginationCondition = (
 
 	return {
 		page,
-		limit,
+		pageSize,
 		skip,
 		search,
 		whereClause,

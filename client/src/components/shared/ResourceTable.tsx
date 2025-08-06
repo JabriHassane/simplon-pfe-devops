@@ -1,4 +1,4 @@
-import { Chip, IconButton } from '@mui/material';
+import { Chip, IconButton, TablePagination } from '@mui/material';
 
 import {
 	Table,
@@ -8,20 +8,20 @@ import {
 	TableHead,
 } from '@mui/material';
 import {
+	AccountBalanceOutlined,
 	DeleteOutline,
 	EditOutlined,
 	HistoryOutlined,
 	PaidOutlined,
-	PointOfSaleOutlined,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
-import type { SaleDtoType } from '../../../../shared/dtos/sale.dto';
-import type { PurchaseDtoType } from '../../../../shared/dtos/purchase.dto';
+import type { OrderDtoType } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
 import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
-import type { OrderPaymentDtoType } from '../../../../shared/dtos/order.dto';
+import type { PaymentDtoType } from '../../../../shared/dtos/order.dto';
+import type { Pagination } from '../../types/pagination.types';
 
 interface ResourceTableHeader {
 	id: string;
@@ -48,6 +48,9 @@ interface Props {
 	onDelete: (item: any, index: number) => void;
 	isOrder?: boolean;
 	isPayment?: boolean;
+	pagination?: Pagination;
+	onPageChange?: (page: number) => void;
+	onRowsPerPageChange?: (pageSize: number) => void;
 }
 
 function ResourceTable({
@@ -57,35 +60,59 @@ function ResourceTable({
 	onDelete,
 	isOrder,
 	isPayment,
+	pagination,
+	onPageChange,
+	onRowsPerPageChange,
 }: Props) {
 	return (
-		<Table size='small'>
-			<TableHead sx={{ backgroundColor: 'background.default' }}>
-				<TableRow>
-					{headers.map((header) => (
-						<TableCell key={header.id} sx={{ fontWeight: 'bold' }}>
-							{header.name}
-						</TableCell>
-					))}
-					<TableCell></TableCell>
-				</TableRow>
-			</TableHead>
+		<>
+			<Table size='small'>
+				<TableHead sx={{ backgroundColor: 'background.default' }}>
+					<TableRow>
+						{headers.map((header) => (
+							<TableCell key={header.id} sx={{ fontWeight: 'bold' }}>
+								{header.name}
+							</TableCell>
+						))}
+						<TableCell></TableCell>
+					</TableRow>
+				</TableHead>
 
-			<TableBody>
-				{rows?.map((row, index) => (
-					<Row
-						key={index}
-						index={index}
-						headers={headers}
-						row={row}
-						onEdit={onEdit}
-						onDelete={onDelete}
-						isOrder={isOrder}
-						isPayment={isPayment}
-					/>
-				))}
-			</TableBody>
-		</Table>
+				<TableBody>
+					{rows?.map((row, index) => (
+						<Row
+							key={index}
+							index={index}
+							headers={headers}
+							row={row}
+							onEdit={onEdit}
+							onDelete={onDelete}
+							isOrder={isOrder}
+							isPayment={isPayment}
+						/>
+					))}
+				</TableBody>
+			</Table>
+
+			{pagination && (
+				<TablePagination
+					component='div'
+					count={pagination.total}
+					page={pagination.page}
+					onPageChange={(_, newPage) => onPageChange?.(newPage)}
+					rowsPerPage={pagination.pageSize}
+					onRowsPerPageChange={(event) =>
+						onRowsPerPageChange?.(parseInt(event.target.value))
+					}
+					rowsPerPageOptions={[5, 10, 25, 50]}
+					labelRowsPerPage='Lignes par page:'
+					labelDisplayedRows={({ from, to, count }) =>
+						`${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
+					}
+					sx={{ mt: 2 }}
+				/>
+			)}
+		</>
 	);
 }
 
@@ -120,7 +147,7 @@ function Row({
 		{ id: 'method', name: 'Méthode de paiement' },
 	];
 
-	const order = row.item as SaleDtoType | PurchaseDtoType;
+	const order = row.item as OrderDtoType;
 
 	let payments: ResourceTableRow[] = [];
 
@@ -144,7 +171,7 @@ function Row({
 		}));
 	}
 
-	const payment = row.item as OrderPaymentDtoType;
+	const payment = row.item as PaymentDtoType;
 
 	const showCashing =
 		isPayment && payment.method !== 'cash' && !payment.isCashed;
@@ -158,9 +185,14 @@ function Row({
 
 				<TableCell align='right'>
 					{showCashing && (
-						<IconButton onClick={() => null} size='small'>
-							<PaidOutlined />
-						</IconButton>
+						<>
+							<IconButton onClick={() => null} size='small'>
+								<AccountBalanceOutlined />
+							</IconButton>
+							<IconButton onClick={() => null} size='small'>
+								<PaidOutlined />
+							</IconButton>
+						</>
 					)}
 
 					{isOrder && (

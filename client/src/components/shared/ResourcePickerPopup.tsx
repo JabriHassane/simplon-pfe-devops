@@ -24,19 +24,24 @@ import {
 	Check as CheckIcon,
 } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
+import type { UserDtoType } from '../../../../shared/dtos/user.dto';
+import type { ContactDtoType } from '../../../../shared/dtos/contact.dto';
+import type { OrderDtoType } from '../../../../shared/dtos/order.dto';
+import type { TransactionDtoType } from '../../../../shared/dtos/transaction.dto';
 
-export type ResourceType = 'user' | 'contact';
-
-interface Resource {
-	id: string;
-	ref: string;
-	name: string;
-}
+export type ResourceType = 'user' | 'contact' | 'order' | 'transaction';
+export type PickableResourceType = 'user' | 'contact';
+export type Resource =
+	| UserDtoType
+	| ContactDtoType
+	| OrderDtoType
+	| TransactionDtoType;
+export type PickableResource = UserDtoType | ContactDtoType;
 
 interface ResourcePickerProps {
 	onClose: () => void;
-	resourceType: ResourceType;
-	onSelect: (resource: Resource) => void;
+	resourceType: PickableResourceType;
+	onSelect: (resource: PickableResource) => void;
 	pageSize?: number;
 }
 
@@ -55,19 +60,18 @@ export default function ResourcePickerPopup({
 		error,
 	} = useResource(resourceType, {
 		page: page + 1, // API uses 1-based pagination
-		limit: pageSize,
-		search: searchTerm.trim() || undefined,
+		pageSize: pageSize,
+		search: searchTerm.trim(),
 	});
 
-	const resources = resourceData?.data || [];
+	const resources = (resourceData?.data || []) as PickableResource[];
 	const pagination = resourceData?.pagination || {
 		page: 1,
-		limit: 10,
+		pageSize: 10,
 		total: 0,
-		totalPages: 0,
 	};
 
-	const handleSelect = (resource: Resource) => {
+	const handleSelect = (resource: PickableResource) => {
 		onSelect(resource);
 		onClose();
 		setSearchTerm('');
@@ -146,7 +150,7 @@ export default function ResourcePickerPopup({
 								</TableHead>
 
 								<TableBody>
-									{resources.map((resource: Resource) => (
+									{resources.map((resource) => (
 										<TableRow key={resource.id} hover>
 											<TableCell>{resource.ref}</TableCell>
 											<TableCell>{resource.name}</TableCell>

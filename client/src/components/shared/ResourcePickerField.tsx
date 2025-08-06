@@ -7,7 +7,9 @@ import {
 	Box,
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';
-import ResourcePickerPopup, { type ResourceType } from './ResourcePickerPopup';
+import ResourcePickerPopup, {
+	type PickableResourceType,
+} from './ResourcePickerPopup';
 
 interface Resource {
 	id: string;
@@ -16,21 +18,20 @@ interface Resource {
 
 interface ResourcePickerFieldProps {
 	label: string;
-	value?: string | null;
+	init?: string | null;
 	onChange: (value: Resource) => void;
-	resourceType: ResourceType;
+	resourceType: PickableResourceType;
 	placeholder?: string;
 	error?: boolean;
 	helperText?: string;
 	required?: boolean;
 	disabled?: boolean;
 	showClearButton?: boolean;
-	onClear?: () => void;
 }
 
 export default function ResourcePickerField({
 	label,
-	value,
+	init,
 	onChange,
 	resourceType,
 	placeholder = 'Cliquez pour sélectionner...',
@@ -39,7 +40,6 @@ export default function ResourcePickerField({
 	required = false,
 	disabled = false,
 	showClearButton = false,
-	onClear,
 }: ResourcePickerFieldProps) {
 	const [open, setOpen] = useState(false);
 	const [selectedResource, setSelectedResource] = useState<Resource | null>(
@@ -62,19 +62,15 @@ export default function ResourcePickerField({
 		setOpen(false);
 	};
 
-	const handleClear = (e: React.MouseEvent) => {
-		e.stopPropagation();
-		if (onClear) {
-			onClear();
-		} else {
-			onChange({ id: '', name: '' });
-		}
+	const handleClear = () => {
+		setSelectedResource(null);
+		onChange({ id: '', name: '' });
 	};
 
 	return (
 		<Box display='flex' alignItems='center' gap={1}>
 			{showClearButton && (
-				<IconButton size='small' onClick={handleClear} disabled={!value}>
+				<IconButton size='small' onClick={handleClear} disabled={!init}>
 					<Clear />
 				</IconButton>
 			)}
@@ -82,7 +78,7 @@ export default function ResourcePickerField({
 			<FormControl fullWidth error={error} required={required}>
 				<TextField
 					label={label}
-					value={selectedResource?.name || value || ''}
+					value={selectedResource?.name || init || ''}
 					placeholder={placeholder}
 					onClick={handleOpen}
 					disabled={disabled}

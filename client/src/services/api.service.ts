@@ -1,28 +1,11 @@
 import { Axios } from '../config/axios.config';
-
-export interface PaginationParams {
-	page?: number;
-	limit?: number;
-	search?: string;
-	dateFrom?: string;
-	dateTo?: string;
-	agentId?: string;
-	contactId?: string;
-	status?: string;
-}
-
-export interface PaginatedResponse<T> {
-	data: T[];
-	pagination: {
-		page: number;
-		limit: number;
-		total: number;
-		totalPages: number;
-	};
-}
+import type {
+	PaginatedResponse,
+	PaginationParams,
+} from '../types/pagination.types';
 
 export const ApiService = {
-	async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+	async get<T>(endpoint: string, params?: Record<string, any>) {
 		const searchParams = new URLSearchParams();
 		if (params) {
 			Object.entries(params).forEach(([key, value]) => {
@@ -41,22 +24,22 @@ export const ApiService = {
 
 	async getPaginated<T>(
 		endpoint: string,
-		params?: PaginationParams
-	): Promise<PaginatedResponse<T>> {
+		params?: PaginationParams & Record<string, any>
+	) {
 		return this.get<PaginatedResponse<T>>(endpoint, params);
 	},
 
-	async post<T, Dto = any>(endpoint: string, data?: Dto): Promise<T> {
+	async post<T, Dto = any>(endpoint: string, data?: Dto) {
 		const response = await Axios.post<T>(endpoint, data);
 		return response.data;
 	},
 
-	async put<T, Dto = any>(endpoint: string, data?: Dto): Promise<T> {
+	async put<T, Dto = any>(endpoint: string, data?: Dto) {
 		const response = await Axios.put<T>(endpoint, data);
 		return response.data;
 	},
 
-	async delete<T>(endpoint: string): Promise<T> {
+	async delete<T>(endpoint: string) {
 		const response = await Axios.delete<T>(endpoint);
 		return response.data;
 	},

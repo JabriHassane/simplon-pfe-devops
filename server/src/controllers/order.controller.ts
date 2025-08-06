@@ -2,20 +2,28 @@ import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { getOrderPaginationCondition } from '../utils/pagination';
 import {
-	CreatePurchaseDtoType,
-	UpdatePurchaseDtoType,
-} from '../../../shared/dtos/purchase.dto';
+	CreateOrderDtoType,
+	OrderDtoType,
+	UpdateOrderDtoType,
+} from '../../../shared/dtos/order.dto';
 import { getNextRef } from '../utils/db.utils';
 import { TransactionMethod, TransactionType } from '../../../shared/constants';
 
-export const PurchaseController = {
+export const OrderController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } =
+			const { page, pageSize, skip, whereClause } =
 				getOrderPaginationCondition(req);
 
-			const PurchasesPromise = prisma.purchase.findMany({
-				where: whereClause,
+			// Add type filter if provided
+			const type = req.query.type as string;
+			const finalWhereClause = {
+				...whereClause,
+				...(type && { type }),
+			};
+
+			const ordersPromise = prisma.order.findMany({
+				where: finalWhereClause,
 				include: {
 					contact: true,
 					payments: {
@@ -32,31 +40,31 @@ export const PurchaseController = {
 				},
 				orderBy: { date: 'desc' },
 				skip,
-				take: limit,
+				take: pageSize,
 			});
 
-			const PurchasesCountPromise = prisma.purchase.count({
-				where: whereClause,
+			const ordersCountPromise = prisma.order.count({
+				where: finalWhereClause,
 			});
 
-			const [purchases, total] = await Promise.all([
-				PurchasesPromise,
-				PurchasesCountPromise,
+			const [orders, total] = await Promise.all([
+				ordersPromise,
+				ordersCountPromise,
 			]);
 
-			const totalPages = Math.ceil(total / limit);
+			const totalPages = Math.ceil(total / pageSize);
 
 			res.json({
-				data: purchases,
+				data: orders,
 				pagination: {
 					page,
-					limit,
+					pageSize,
 					total,
 					totalPages,
 				},
 			});
 		} catch (error) {
-			console.error('Error in PurchaseController.getPage', error);
+			console.error('Error in orderController.getPage', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -65,7 +73,7 @@ export const PurchaseController = {
 		try {
 			const { id } = req.params;
 
-			const purchase = await prisma.purchase.findUnique({
+			const order = await prisma.order.findUnique({
 				where: { id },
 				include: {
 					contact: true,
@@ -78,13 +86,13 @@ export const PurchaseController = {
 				},
 			});
 
-			if (!purchase) {
-				return res.status(404).json({ message: 'purchase not found' });
+			if (!order) {
+				return res.status(404).json({ message: 'Order not found' });
 			}
 
-			res.json(purchase);
+			res.json(order);
 		} catch (error) {
-			console.error('Error in PurchaseController.getById', error);
+			console.error('Error in OrderController.getById', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -95,7 +103,7 @@ export const PurchaseController = {
 
 			const transactions = await prisma.transaction.findMany({
 				where: {
-					purchaseId: id,
+					orderId: id,
 					deletedAt: null,
 				},
 				include: {
@@ -111,7 +119,7 @@ export const PurchaseController = {
 
 			res.json(transactions);
 		} catch (error) {
-			console.error('Error in PurchaseController.getTransactions', error);
+			console.error('Error in OrderController.getTransactions', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -119,7 +127,7 @@ export const PurchaseController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const body = req.body as CreatePurchaseDtoType;
+			const body = req.body as CreateOrderDtoType;
 
 			// Check if contact exists
 			const contact = await prisma.contact.findUnique({
@@ -127,12 +135,12 @@ export const PurchaseController = {
 			});
 
 			if (!contact) {
-				return res.status(400).json({ message: 'contact not found' });
+				return res.status(400).json({ message: 'Contact not found' });
 			}
 
-			const purchase = await prisma.purchase.create({
+			const order = await prisma.order.create({
 				data: {
-					ref: await getNextRef('purchases'),
+					ref: await getNextRef('orders'),
 					date: body.date,
 					agentId: body.agentId,
 					contactId: body.contactId,
@@ -143,6 +151,7 @@ export const PurchaseController = {
 					totalDue: body.totalDue,
 					status: body.status,
 					note: body.note,
+					type: body.type,
 					createdById: userId,
 				},
 				include: {
@@ -156,9 +165,9 @@ export const PurchaseController = {
 				},
 			});
 
-			res.status(201).json(purchase);
+			res.status(201).json(order);
 		} catch (error) {
-			console.error('Error in PurchaseController.create', error);
+			console.error('Error in OrderController.create', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},
@@ -167,15 +176,15 @@ export const PurchaseController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const body = req.body as UpdatePurchaseDtoType;
+			const body = req.body as UpdateOrderDtoType;
 
-			// Check if purchase exists
-			const isExists = await prisma.purchase.findUnique({
+			// Check if order exists
+			const isExists = await prisma.order.findUnique({
 				where: { id },
 			});
 
 			if (!isExists) {
-				throw new Error('Purchase not found');
+				throw new Error('Order not found');
 			}
 
 			// Check if contact exists
@@ -184,7 +193,7 @@ export const PurchaseController = {
 			});
 
 			if (!contact) {
-				throw new Error('contact not found');
+				throw new Error('Contact not found');
 			}
 
 			// Generate refs for payments before transaction
@@ -192,7 +201,7 @@ export const PurchaseController = {
 				body.payments.map(() => getNextRef('transactions'))
 			);
 
-			const purchase = await prisma.purchase.update({
+			const order = await prisma.order.update({
 				where: { id },
 				data: {
 					...body,
@@ -208,7 +217,7 @@ export const PurchaseController = {
 								amount: item.amount,
 								date: item.date,
 								method: item.method as TransactionMethod,
-								type: 'purchase' as TransactionType,
+								type: body.type as TransactionType,
 								agentId: item.agentId,
 								createdById: userId,
 							})),
@@ -229,9 +238,9 @@ export const PurchaseController = {
 				},
 			});
 
-			return res.json(purchase);
+			return res.json(order);
 		} catch (error: any) {
-			console.error('Error in PurchaseController.update', error);
+			console.error('Error in OrderController.update', error);
 			return res
 				.status(500)
 				.json({ message: error.message || 'Internal server error' });
@@ -243,31 +252,31 @@ export const PurchaseController = {
 			const { id } = req.params;
 			const { userId } = req.user!;
 
-			// Check if purchase exists
-			const existingPurchase = await prisma.purchase.findUnique({
+			// Check if order exists
+			const existingOrder = await prisma.order.findUnique({
 				where: { id },
 				include: {
 					payments: true,
 				},
 			});
 
-			if (!existingPurchase) {
-				return res.status(404).json({ message: 'Purchase not found' });
+			if (!existingOrder) {
+				return res.status(404).json({ message: 'Order not found' });
 			}
 
-			// Check if purchase has transactions
+			// Check if order has transactions
 			const hasTransactions = await prisma.transaction.findFirst({
-				where: { purchaseId: id },
+				where: { orderId: id },
 			});
 
 			if (hasTransactions) {
 				return res.status(400).json({
-					message: 'Cannot delete Purchase with existing transactions',
+					message: 'Cannot delete order with existing transactions',
 				});
 			}
 
 			// Soft delete
-			await prisma.purchase.update({
+			await prisma.order.update({
 				where: { id },
 				data: {
 					deletedAt: new Date(),
@@ -275,9 +284,9 @@ export const PurchaseController = {
 				},
 			});
 
-			res.json({ message: 'Purchase deleted successfully' });
+			res.json({ message: 'Order deleted successfully' });
 		} catch (error) {
-			console.error('Error in PurchaseController.delete', error);
+			console.error('Error in OrderController.delete', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},

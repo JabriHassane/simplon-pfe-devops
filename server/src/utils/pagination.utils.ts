@@ -2,9 +2,9 @@ import { Request } from 'express';
 
 export function getPaginationCondition(req: Request) {
 	const page = parseInt(req.query.page as string) || 1;
-	const limit = parseInt(req.query.limit as string) || 10;
+	const pageSize = parseInt(req.query.pageSize as string) || 10;
 	const search = (req.query.search as string) || '';
-	const skip = (page - 1) * limit;
+	const skip = (page - 1) * pageSize;
 
 	// Build where clause for search
 	const whereClause: any = { deletedAt: null };
@@ -15,5 +15,5 @@ export function getPaginationCondition(req: Request) {
 			{ phone: { contains: search, mode: 'insensitive' } },
 		];
 	}
-	return { whereClause, skip, limit, page };
+	return { whereClause, skip, pageSize, page };
 }

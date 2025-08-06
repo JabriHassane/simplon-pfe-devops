@@ -96,7 +96,7 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 				<Grid size={2}>
 					<ResourcePickerField
 						label='Agent'
-						value={filters.agentId || ''}
+						init={filters.agentId || ''}
 						onChange={({ id }) => onFiltersChange({ agentId: id })}
 						resourceType='user'
 						placeholder='Sélectionner un agent...'
@@ -108,7 +108,7 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 				<Grid size={2}>
 					<ResourcePickerField
 						label='Contact'
-						value={filters.contactId || ''}
+						init={filters.contactId || ''}
 						onChange={({ id }) => onFiltersChange({ contactId: id })}
 						resourceType='contact'
 						placeholder='Sélectionner un contact...'

@@ -19,7 +19,7 @@ import {
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginDto } from '../../../shared/dtos/auth.dto';
-import { useLogin } from '../hooks/ressources/useAuth';
+import { useLogin } from '../hooks/useAuth';
 
 export default function Login() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -152,7 +152,7 @@ export default function Login() {
 										bsaleColor: '#166C6B',
 									},
 								},
-								mt: 2
+								mt: 2,
 							}}
 						/>
 

@@ -3,9 +3,14 @@ import { UserService } from '../../services/user.service';
 import type {
 	CreateUserDtoType,
 	UpdateUserDtoType,
+	UserDtoType,
 } from '../../../../shared/dtos/user.dto';
-import { useSnackbar } from './useSnackbar';
-import type { PaginationParams } from '../../services/api.service';
+import { useSnackbar } from '../useSnackbar';
+import type { PaginationParams } from '../../types/pagination.types';
+
+export interface UserFilters {
+	search?: string;
+}
 
 // Query keys
 export const userKeys = {
@@ -15,7 +20,7 @@ export const userKeys = {
 };
 
 // Get paginated users
-export const useUsers = (params?: PaginationParams) => {
+export const useUsers = (params?: PaginationParams & UserFilters) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
@@ -27,8 +32,8 @@ export const useUsers = (params?: PaginationParams) => {
 				console.error(error);
 				showError('Erreur lors de la récupération des utilisateurs');
 				return {
-					data: [],
-					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+					data: [] as UserDtoType[],
+					pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
 				};
 			}
 		},

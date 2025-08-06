@@ -10,11 +10,10 @@ import { getNextRef } from '../utils/db.utils';
 export const ContactController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
-				'name',
-				'ref',
-				'phone',
-			]);
+			const { page, pageSize, skip, whereClause } = getPaginationCondition(
+				req,
+				['name', 'ref', 'phone']
+			);
 
 			// Add type filter if provided
 			const type = req.query.type as string;
@@ -31,16 +30,16 @@ export const ContactController = {
 				where: finalWhereClause,
 				orderBy: { createdAt: 'desc' },
 				skip,
-				take: limit,
+				take: pageSize,
 			});
 
 			res.json({
 				data: contacts,
 				pagination: {
 					page,
-					limit,
+					pageSize,
 					total,
-					totalPages: Math.ceil(total / limit),
+					totalPages: Math.ceil(total / pageSize),
 				},
 			});
 		} catch (error) {

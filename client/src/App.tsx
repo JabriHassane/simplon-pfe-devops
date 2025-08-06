@@ -27,16 +27,15 @@ import ProtectedRoute from './components/ProtectedRoute';
 import { theme } from './theme';
 import { navigationItems } from './config/navigation';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { useLogout } from './hooks/ressources/useAuth';
+import { useLogout } from './hooks/useAuth';
 import Dashboard from './pages/Dashboard';
-import Contacts from './pages/Contacts';
-import Sales from './pages/Sales';
 import Transactions from './pages/Transactions';
 import Reports from './pages/Reports';
 import Users from './pages/Users';
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { useContext } from 'react';
-import Purchases from './pages/Purchases';
+import Orders from './pages/Orders';
+import Contacts from './pages/Contacts';
 
 const drawerWidth = 240;
 
@@ -88,9 +87,9 @@ function AppContent() {
 
 							<Divider sx={{ marginY: 1 }} />
 
-							{navigationItems.map((item) =>
+							{navigationItems.map((item, index) =>
 								item ? (
-									<ListItem key={item.name} disablePadding>
+									<ListItem key={index} disablePadding>
 										<ListItemButton
 											onClick={() => handleNavigation(item.path)}
 											selected={location.pathname === item.path}
@@ -112,9 +111,10 @@ function AppContent() {
 					>
 						<Routes>
 							<Route path='/' element={<Dashboard />} />
-							<Route path='/contacts' element={<Contacts />} />
-							<Route path='/sales' element={<Sales />} />
-							<Route path='/purchases' element={<Purchases />} />
+							<Route path='/clients' element={<Contacts type='client' />} />
+							<Route path='/suppliers' element={<Contacts type='supplier' />} />
+							<Route path='/sales' element={<Orders type='sale' />} />
+							<Route path='/purchases' element={<Orders type='purchase' />} />
 							<Route path='/transactions' element={<Transactions />} />
 							<Route path='/reports' element={<Reports />} />
 							<Route path='/users' element={<Users />} />

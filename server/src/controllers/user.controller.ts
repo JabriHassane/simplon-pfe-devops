@@ -8,10 +8,10 @@ import { getNextRef } from '../utils/db.utils';
 export const UserController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, limit, skip, whereClause } = getPaginationCondition(req, [
-				'name',
-				'ref',
-			]);
+			const { page, pageSize, skip, whereClause } = getPaginationCondition(
+				req,
+				['name', 'ref']
+			);
 
 			// Get total count for pagination
 			const total = await prisma.user.count({ where: whereClause });
@@ -21,16 +21,16 @@ export const UserController = {
 				where: whereClause,
 				orderBy: { createdAt: 'desc' },
 				skip,
-				take: limit,
+				take: pageSize,
 			});
 
 			res.json({
 				data: users,
 				pagination: {
 					page,
-					limit,
+					pageSize,
 					total,
-					totalPages: Math.ceil(total / limit),
+					totalPages: Math.ceil(total / pageSize),
 				},
 			});
 		} catch (error) {

@@ -3,18 +3,18 @@ import { Box, Typography, Button } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import {
 	type CreateOrderDtoType,
-	type OrderPaymentDtoType,
+	type PaymentDtoType,
 } from '../../../../../shared/dtos/order.dto';
 import ResourceTable from '../../shared/ResourceTable';
 import { formatDate } from '../../../utils/date.utils';
 import { formatPrice } from '../../../utils/price.utils';
-import OrderPaymentFormPopup from './OrderPaymentFormPopup';
+import PaymentFormPopup from './OrderPaymentFormPopup';
 import { useEffect, useState } from 'react';
-import useCrud from '../../../hooks/useCrud';
+import usePopups from '../../../hooks/useCrud';
 import ResourceDeleteConfirmation from '../../shared/ResourceDeleteConfirmation';
 
 interface OrderPaymentsProps {
-	init?: OrderPaymentDtoType[];
+	init?: PaymentDtoType[];
 }
 
 export const OrderPayments = ({ init }: OrderPaymentsProps) => {
@@ -28,11 +28,11 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = useCrud<OrderPaymentDtoType>();
+	} = usePopups<PaymentDtoType>();
 
-	const [payments, setPayments] = useState<OrderPaymentDtoType[]>(init || []);
+	const [payments, setPayments] = useState<PaymentDtoType[]>(init || []);
 
-	const handleSubmit = (payment: OrderPaymentDtoType) => {
+	const handleSubmit = (payment: PaymentDtoType) => {
 		const newPayments = [...payments];
 		if (selectedPayment) {
 			newPayments[selectedIndex] = payment;
@@ -95,7 +95,7 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 			/>
 
 			{openFormPopup && (
-				<OrderPaymentFormPopup
+				<PaymentFormPopup
 					init={selectedPayment}
 					onSubmit={handleSubmit}
 					onClose={handleClosePopup}

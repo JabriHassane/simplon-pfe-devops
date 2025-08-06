@@ -1,11 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ContactService } from '../../services/contact.service';
 import type {
+	ContactType,
 	CreateContactDtoType,
 	UpdateContactDtoType,
 } from '../../../../shared/dtos/contact.dto';
-import { useSnackbar } from './useSnackbar';
-import type { PaginationParams } from '../../services/api.service';
+import { useSnackbar } from '../useSnackbar';
+import type { PaginationParams } from '../../types/pagination.types';
+
+export interface ContactFilters {
+	type?: ContactType;
+	search?: string;
+}
 
 // Query keys
 export const contactKeys = {
@@ -18,7 +24,7 @@ export const contactKeys = {
 };
 
 // Get paginated contacts
-export const useContacts = (params?: PaginationParams & { type?: string }) => {
+export const useContacts = (params?: PaginationParams & ContactFilters) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
@@ -31,7 +37,7 @@ export const useContacts = (params?: PaginationParams & { type?: string }) => {
 				showError('Erreur lors de la récupération des contacts');
 				return {
 					data: [],
-					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+					pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
 				};
 			}
 		},

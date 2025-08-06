@@ -20,6 +20,9 @@ import { OPERATION_TYPES } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import ResourcePickerField from '../shared/ResourcePickerField';
+import { useContext } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
 
 interface TransactionFormProps {
 	init: TransactionDtoType | null;
@@ -30,14 +33,24 @@ export default function TransactionForm({
 	init,
 	onClose,
 }: TransactionFormProps) {
+	const [user] = useContext(AuthContext);
+
 	const {
 		register,
 		handleSubmit,
 		control,
+		setValue,
 		formState: { errors, isValid },
 	} = useForm({
 		resolver: zodResolver(CreateTransactionDto),
-		defaultValues: init || undefined,
+		defaultValues: {
+			date: init?.date || '',
+			agentId: init?.agentId || user?.id || '',
+			amount: init?.amount || 0,
+			type: init?.type || 'cashing',
+			method: init?.method || 'cash',
+			orderId: init?.orderId || '',
+		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
@@ -103,6 +116,19 @@ export default function TransactionForm({
 							))}
 						</Select>
 					</FormControl>
+				</Grid>
+
+				<Grid size={6}>
+					<ResourcePickerField
+						label='Agent'
+						init={init?.agent?.name}
+						onChange={({ id }) => {
+							setValue('agentId', id);
+						}}
+						resourceType='user'
+						error={!!errors.agentId}
+						helperText={errors.agentId?.message as string}
+					/>
 				</Grid>
 
 				<Grid size={6}>

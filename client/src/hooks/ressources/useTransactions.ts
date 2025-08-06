@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TransactionService } from '../../services/transaction.service';
-import { useSnackbar } from './useSnackbar';
+import { useSnackbar } from '../useSnackbar';
 import type {
 	CreateTransactionDtoType,
 	UpdateTransactionDtoType,
@@ -27,7 +27,7 @@ export const useTransactions = (params?: PaginationParams) => {
 				showError('Erreur lors de la récupération des transactions');
 				return {
 					data: [],
-					pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
+					pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
 				};
 			}
 		},

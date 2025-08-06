@@ -7,22 +7,13 @@ const prisma = new PrismaClient();
 async function main() {
 	console.log('🌱 Starting database seed...');
 
-	// Clear existing data (in correct sale due to foreign key constraints)
+	// Clear existing data (in correct order due to foreign key constraints)
 	await prisma.transaction.deleteMany();
-	await prisma.sale.deleteMany();
-	await prisma.purchase.deleteMany();
-	await prisma.contact.deleteMany();
+	await prisma.order.deleteMany();
 	await prisma.contact.deleteMany();
 	await prisma.user.deleteMany();
 
-	const sequences = [
-		'users',
-		'clients',
-		'suppliers',
-		'sales',
-		'purchases',
-		'transactions',
-	];
+	const sequences = ['users', 'contacts', 'orders', 'transactions'];
 
 	for (const sequence of sequences) {
 		await prisma.$executeRawUnsafe(
@@ -84,7 +75,7 @@ async function main() {
 	const clients = await Promise.all([
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Mohammed Alami',
 				phone: '0612345678',
@@ -94,7 +85,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Amina Benjelloun',
 				phone: '0623456789',
@@ -104,7 +95,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Karim Tazi',
 				phone: '0634567890',
@@ -114,7 +105,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Sara El Fassi',
 				phone: '0645678901',
@@ -124,7 +115,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Hassan Berrada',
 				phone: '0656789012',
@@ -134,7 +125,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Leila Kadiri',
 				phone: '0667890123',
@@ -144,7 +135,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('clients'),
+				ref: await getNextRef('contacts'),
 				type: 'client',
 				name: 'Youssef Chraibi',
 				phone: '0678901234',
@@ -160,7 +151,7 @@ async function main() {
 	const suppliers = await Promise.all([
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('suppliers'),
+				ref: await getNextRef('contacts'),
 				type: 'supplier',
 				name: 'Pépinière Atlas',
 				phone: '0522345678',
@@ -170,7 +161,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('suppliers'),
+				ref: await getNextRef('contacts'),
 				type: 'supplier',
 				name: 'Jardins du Souss',
 				phone: '0523456789',
@@ -180,7 +171,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('suppliers'),
+				ref: await getNextRef('contacts'),
 				type: 'supplier',
 				name: 'GardenTools Pro',
 				phone: '0524567890',
@@ -190,7 +181,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('suppliers'),
+				ref: await getNextRef('contacts'),
 				type: 'supplier',
 				name: 'Fleurs du Rif',
 				phone: '0525678901',
@@ -200,7 +191,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('suppliers'),
+				ref: await getNextRef('contacts'),
 				type: 'supplier',
 				name: 'Bio Plantes Maroc',
 				phone: '0526789012',
@@ -212,12 +203,11 @@ async function main() {
 
 	console.log('🏢 Created suppliers');
 
-	// Create more sales with varied statuses and payment methods
+	// Create sales (orders with type 'sale')
 	const sales = await Promise.all([
-		// Original sales
-		prisma.sale.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('sales'),
+				ref: await getNextRef('orders'),
 				date: '2024-01-15T00:00:00.000Z',
 				receiptNumber: 'REC-001',
 				invoiceNumber: 'INV-001',
@@ -226,14 +216,15 @@ async function main() {
 				totalDue: 0,
 				status: 'paid',
 				note: 'Livraison à domicile',
+				type: 'sale',
 				agentId: agent.id,
 				contactId: clients[0].id,
 				createdById: agent.id,
 			},
 		}),
-		prisma.sale.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('sales'),
+				ref: await getNextRef('orders'),
 				date: '2024-01-20T00:00:00.000Z',
 				receiptNumber: 'REC-002',
 				invoiceNumber: 'INV-002',
@@ -242,14 +233,15 @@ async function main() {
 				totalDue: 79.98,
 				status: 'partially_paid',
 				note: 'Paiement en plusieurs fois',
+				type: 'sale',
 				agentId: admin1.id,
 				contactId: clients[1].id,
 				createdById: admin1.id,
 			},
 		}),
-		prisma.sale.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('sales'),
+				ref: await getNextRef('orders'),
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'REC-003',
 				invoiceNumber: 'INV-003',
@@ -258,15 +250,15 @@ async function main() {
 				totalDue: 1099.98,
 				status: 'pending',
 				note: 'Commande en attente de paiement',
+				type: 'sale',
 				agentId: agent.id,
 				contactId: clients[2].id,
 				createdById: agent.id,
 			},
 		}),
-		// Additional sales
-		prisma.sale.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('sales'),
+				ref: await getNextRef('orders'),
 				date: '2024-02-01T00:00:00.000Z',
 				receiptNumber: 'REC-004',
 				invoiceNumber: 'INV-004',
@@ -275,14 +267,15 @@ async function main() {
 				totalDue: 0,
 				status: 'paid',
 				note: 'Paiement comptant',
+				type: 'sale',
 				agentId: admin2.id,
 				contactId: clients[4].id,
 				createdById: admin2.id,
 			},
 		}),
-		prisma.sale.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('sales'),
+				ref: await getNextRef('orders'),
 				date: '2024-02-05T00:00:00.000Z',
 				receiptNumber: 'REC-005',
 				invoiceNumber: 'INV-005',
@@ -291,6 +284,7 @@ async function main() {
 				totalDue: 449.95,
 				status: 'partially_paid',
 				note: 'Paiement échelonné',
+				type: 'sale',
 				agentId: admin1.id,
 				contactId: clients[5].id,
 				createdById: admin1.id,
@@ -300,12 +294,11 @@ async function main() {
 
 	console.log('📋 Created sales');
 
-	// Create more purchases
+	// Create purchases (orders with type 'purchase')
 	const purchases = await Promise.all([
-		// Original purchases
-		prisma.purchase.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('purchases'),
+				ref: await getNextRef('orders'),
 				date: '2024-01-10T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-001',
 				invoiceNumber: 'ACH-INV-001',
@@ -314,14 +307,15 @@ async function main() {
 				totalDue: 0,
 				status: 'paid',
 				note: 'Stock initial plantes',
+				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[0].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.purchase.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('purchases'),
+				ref: await getNextRef('orders'),
 				date: '2024-01-18T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-002',
 				invoiceNumber: 'ACH-INV-002',
@@ -330,14 +324,15 @@ async function main() {
 				totalDue: 200,
 				status: 'partially_paid',
 				note: 'Réapprovisionnement arbres',
+				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.purchase.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('purchases'),
+				ref: await getNextRef('orders'),
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-003',
 				invoiceNumber: 'ACH-INV-003',
@@ -346,15 +341,15 @@ async function main() {
 				totalDue: 400,
 				status: 'partially_paid',
 				note: 'Commande matériel',
+				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		// Additional purchases
-		prisma.purchase.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('purchases'),
+				ref: await getNextRef('orders'),
 				date: '2024-02-01T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-004',
 				invoiceNumber: 'ACH-INV-004',
@@ -363,14 +358,15 @@ async function main() {
 				totalDue: 0,
 				status: 'paid',
 				note: 'Commande plantes exotiques',
+				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[3].id,
 				createdById: superAdmin.id,
 			},
 		}),
-		prisma.purchase.create({
+		prisma.order.create({
 			data: {
-				ref: await getNextRef('purchases'),
+				ref: await getNextRef('orders'),
 				date: '2024-02-08T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-005',
 				invoiceNumber: 'ACH-INV-005',
@@ -379,6 +375,7 @@ async function main() {
 				totalDue: 1500,
 				status: 'pending',
 				note: 'Commande saisonnière',
+				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[4].id,
 				createdById: superAdmin.id,
@@ -388,9 +385,9 @@ async function main() {
 
 	console.log('🛒 Created purchases');
 
-	// Create more transactions
+	// Create transactions
 	await Promise.all([
-		// Original transactions
+		// Sale transactions
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -399,7 +396,7 @@ async function main() {
 				method: 'cash',
 				amount: 200,
 				agentId: agent.id,
-				saleId: sales[0].id,
+				orderId: sales[0].id,
 				createdById: agent.id,
 			},
 		}),
@@ -411,7 +408,7 @@ async function main() {
 				method: 'bank_transfer',
 				amount: 189.98,
 				agentId: agent.id,
-				saleId: sales[0].id,
+				orderId: sales[0].id,
 				createdById: agent.id,
 			},
 		}),
@@ -423,10 +420,59 @@ async function main() {
 				method: 'check',
 				amount: 200,
 				agentId: admin1.id,
-				saleId: sales[1].id,
+				orderId: sales[1].id,
 				createdById: admin1.id,
 			},
 		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'sale',
+				method: 'tpe',
+				amount: 299.97,
+				agentId: admin2.id,
+				orderId: sales[3].id,
+				createdById: admin2.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'sale',
+				method: 'cash',
+				amount: 300,
+				agentId: admin2.id,
+				orderId: sales[3].id,
+				createdById: admin2.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-05T00:00:00.000Z',
+				type: 'sale',
+				method: 'bank_transfer',
+				amount: 250,
+				agentId: admin1.id,
+				orderId: sales[4].id,
+				createdById: admin1.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-05T00:00:00.000Z',
+				type: 'sale',
+				method: 'check',
+				amount: 150,
+				agentId: admin1.id,
+				orderId: sales[4].id,
+				createdById: admin1.id,
+			},
+		}),
+		// Purchase transactions
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -435,7 +481,7 @@ async function main() {
 				method: 'bank_transfer',
 				amount: 500,
 				agentId: superAdmin.id,
-				purchaseId: purchases[0].id,
+				orderId: purchases[0].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -447,7 +493,7 @@ async function main() {
 				method: 'check',
 				amount: 300,
 				agentId: superAdmin.id,
-				purchaseId: purchases[0].id,
+				orderId: purchases[0].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -459,7 +505,7 @@ async function main() {
 				method: 'cash',
 				amount: 250,
 				agentId: superAdmin.id,
-				purchaseId: purchases[1].id,
+				orderId: purchases[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -471,7 +517,7 @@ async function main() {
 				method: 'bank_transfer',
 				amount: 150,
 				agentId: superAdmin.id,
-				purchaseId: purchases[1].id,
+				orderId: purchases[1].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -483,7 +529,7 @@ async function main() {
 				method: 'bank_transfer',
 				amount: 400,
 				agentId: superAdmin.id,
-				purchaseId: purchases[2].id,
+				orderId: purchases[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
@@ -495,10 +541,47 @@ async function main() {
 				method: 'check',
 				amount: 100,
 				agentId: superAdmin.id,
-				purchaseId: purchases[2].id,
+				orderId: purchases[2].id,
 				createdById: superAdmin.id,
 			},
 		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'purchase',
+				method: 'tpe',
+				amount: 500,
+				agentId: superAdmin.id,
+				orderId: purchases[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'purchase',
+				method: 'cash',
+				amount: 400,
+				agentId: superAdmin.id,
+				orderId: purchases[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		prisma.transaction.create({
+			data: {
+				ref: await getNextRef('transactions'),
+				date: '2024-02-01T00:00:00.000Z',
+				type: 'purchase',
+				method: 'bank_transfer',
+				amount: 300,
+				agentId: superAdmin.id,
+				orderId: purchases[3].id,
+				createdById: superAdmin.id,
+			},
+		}),
+		// Other transactions (cashing, receive, send)
 		prisma.transaction.create({
 			data: {
 				ref: await getNextRef('transactions'),
@@ -565,93 +648,6 @@ async function main() {
 				method: 'tpe',
 				amount: 1000,
 				agentId: superAdmin.id,
-				createdById: superAdmin.id,
-			},
-		}),
-		// Missing transactions for paid sales
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-01T00:00:00.000Z',
-				type: 'sale',
-				method: 'tpe',
-				amount: 299.97,
-				agentId: admin2.id,
-				saleId: sales[3].id,
-				createdById: admin2.id,
-			},
-		}),
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-01T00:00:00.000Z',
-				type: 'sale',
-				method: 'cash',
-				amount: 300,
-				agentId: admin2.id,
-				saleId: sales[3].id,
-				createdById: admin2.id,
-			},
-		}),
-		// Missing transactions for partially paid sales
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-05T00:00:00.000Z',
-				type: 'sale',
-				method: 'bank_transfer',
-				amount: 250,
-				agentId: admin1.id,
-				saleId: sales[4].id,
-				createdById: admin1.id,
-			},
-		}),
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-05T00:00:00.000Z',
-				type: 'sale',
-				method: 'check',
-				amount: 150,
-				agentId: admin1.id,
-				saleId: sales[4].id,
-				createdById: admin1.id,
-			},
-		}),
-		// Missing transactions for paid purchases
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-01T00:00:00.000Z',
-				type: 'purchase',
-				method: 'tpe',
-				amount: 500,
-				agentId: superAdmin.id,
-				purchaseId: purchases[3].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-01T00:00:00.000Z',
-				type: 'purchase',
-				method: 'cash',
-				amount: 400,
-				agentId: superAdmin.id,
-				purchaseId: purchases[3].id,
-				createdById: superAdmin.id,
-			},
-		}),
-		prisma.transaction.create({
-			data: {
-				ref: await getNextRef('transactions'),
-				date: '2024-02-01T00:00:00.000Z',
-				type: 'purchase',
-				method: 'bank_transfer',
-				amount: 300,
-				agentId: superAdmin.id,
-				purchaseId: purchases[3].id,
 				createdById: superAdmin.id,
 			},
 		}),

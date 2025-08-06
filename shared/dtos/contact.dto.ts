@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const ContactType = z.enum(['client', 'supplier']);
-export type ContactTypeType = z.infer<typeof ContactType>;
+export type ContactType = z.infer<typeof ContactType>;
 
 export const CreateContactDto = z.object({
 	name: z.string().min(1, 'Le nom du contact ne doit pas être vide'),

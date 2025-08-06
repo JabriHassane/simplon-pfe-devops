@@ -11,7 +11,7 @@ import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import { DICT } from '../i18n/fr';
 import { formatPrice } from '../utils/price.utils';
-import useCrud from '../hooks/useCrud';
+import usePopups from '../hooks/useCrud';
 import {
 	PAYMENT_METHODS_COLOR_MAP,
 	TRANSACTION_TYPE_COLOR_MAP,
@@ -19,6 +19,8 @@ import {
 } from '../../../shared/constants';
 import { formatDate } from '../utils/date.utils';
 import ResourceTable from '../components/shared/ResourceTable';
+import usePagination from '../hooks/usePagination';
+import useFilters from '../hooks/useFilters';
 
 export default function Transactions() {
 	const {
@@ -28,9 +30,23 @@ export default function Transactions() {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = useCrud<TransactionDtoType>();
+	} = usePopups<TransactionDtoType>();
 
-	const { data: transactions, isLoading, error } = useTransactions();
+	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
+		usePagination();
+
+	const { filters, handleFiltersChange } = useFilters(() => {
+		handlePageChange(0);
+	});
+
+	const { data, isLoading, error } = useTransactions({
+		page: page + 1,
+		pageSize: rowsPerPage,
+		...filters,
+	});
+
+	const { data: transactions, pagination } = data || {};
+
 	const deleteTransactionMutation = useDeleteTransaction(handleClosePopup);
 
 	const handleDelete = () => {
@@ -60,37 +76,42 @@ export default function Transactions() {
 					{ id: 'method', name: 'Méthode' },
 					{ id: 'amount', name: 'Montant' },
 				]}
-				rows={transactions?.data.map((transaction) => ({
-					item: transaction,
-					data: {
-						ref: transaction.ref,
-						date: formatDate(transaction.date),
-						agent: transaction.agent?.name || '-',
-						type: (
-							<Chip
-								label={DICT.transactionType[transaction.type]}
-								color={TRANSACTION_TYPE_COLOR_MAP[transaction.type]}
-								size='small'
-								sx={{ px: 0.5 }}
-							/>
-						),
-						method: (
-							<Chip
-								label={DICT.methods[transaction.method as TransactionMethod]}
-								color={
-									PAYMENT_METHODS_COLOR_MAP[
-										transaction.method as TransactionMethod
-									]
-								}
-								size='small'
-								sx={{ px: 0.5 }}
-							/>
-						),
-						amount: formatPrice(transaction.amount),
-					},
-				}))}
+				rows={
+					transactions?.map((transaction: TransactionDtoType) => ({
+						item: transaction,
+						data: {
+							ref: transaction.ref,
+							date: formatDate(transaction.date),
+							agent: transaction.agent?.name || '-',
+							type: (
+								<Chip
+									label={DICT.transactionType[transaction.type]}
+									color={TRANSACTION_TYPE_COLOR_MAP[transaction.type]}
+									size='small'
+									sx={{ px: 0.5 }}
+								/>
+							),
+							method: (
+								<Chip
+									label={DICT.methods[transaction.method as TransactionMethod]}
+									color={
+										PAYMENT_METHODS_COLOR_MAP[
+											transaction.method as TransactionMethod
+										]
+									}
+									size='small'
+									sx={{ px: 0.5 }}
+								/>
+							),
+							amount: formatPrice(transaction.amount),
+						},
+					})) || []
+				}
 				onEdit={handleOpenFormPopup}
 				onDelete={handleOpenDeletePopup}
+				pagination={pagination}
+				onPageChange={handlePageChange}
+				onRowsPerPageChange={handleRowsPerPageChange}
 			/>
 
 			{openFormPopup && (

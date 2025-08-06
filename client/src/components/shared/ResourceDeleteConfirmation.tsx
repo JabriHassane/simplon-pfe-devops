@@ -1,6 +1,6 @@
 import { Button, Box, Divider, TextField } from '@mui/material';
 import ResourceFormPopup from './ResourceFormPopup';
-import { useVerifyPassword } from '../../hooks/ressources/useAuth';
+import { useVerifyPassword } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {

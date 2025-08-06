@@ -1,6 +1,9 @@
 export const ROLES = ['super_admin', 'admin', 'agent'] as const;
 export type Role = (typeof ROLES)[number];
 
+export const ORDER_TYPES = ['sale', 'purchase'] as const;
+export type OrderType = (typeof ORDER_TYPES)[number];
+
 export const ORDER_STATUSES = [
 	'pending',
 	'partially_paid',
@@ -50,3 +53,6 @@ export const PAYMENT_METHODS_COLOR_MAP = {
 	tpe: 'info',
 	bank_transfer: 'secondary',
 } as const;
+
+export const TRANSACTION_ACCOUNTS = ['nabil', 'faycal', 'redouane', 'bank'] as const;
+export type TransactionAccount = (typeof TRANSACTION_ACCOUNTS)[number];

@@ -9,8 +9,7 @@ import { PrismaClient } from '@prisma/client';
 import authRouter from './routers/auth.router';
 import userRouter from './routers/user.router';
 import contactRouter from './routers/contact.router';
-import saleRouter from './routers/sale.router';
-import purchaseRouter from './routers/purchase.router';
+import orderRouter from './routers/order.router';
 import transactionRouter from './routers/transaction.router';
 import cookieParser from 'cookie-parser';
 
@@ -45,8 +44,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/users', userRouter);
 app.use('/api/contacts', contactRouter);
-app.use('/api/sales', saleRouter);
-app.use('/api/purchases', purchaseRouter);
+app.use('/api/orders', orderRouter);
 app.use('/api/transactions', transactionRouter);
 
 // 404 handler

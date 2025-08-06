@@ -1,13 +1,13 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { AuthService } from '../../services/auth.service';
+import { AuthService } from '../services/auth.service';
 import type {
 	LoginDtoType,
 	VerifyPasswordDtoType,
-} from '../../../../shared/dtos/auth.dto';
+} from '../../../shared/dtos/auth.dto';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from './useSnackbar';
 import { useContext } from 'react';
-import { AuthContext } from '../../contexts/AuthContext';
+import { AuthContext } from '../contexts/AuthContext';
 
 export const useLogin = () => {
 	const { showError } = useSnackbar();

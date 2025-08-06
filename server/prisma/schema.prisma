@@ -28,17 +28,12 @@ model User {
   role     Role
 
   // Relations
-  agentSales        Sale[]        @relation("SaleAgent")
-  agentPurchases    Purchase[]    @relation("PurchaseAgent")
+  agentOrders       Order[]       @relation("OrderAgent")
   agentTransactions Transaction[] @relation("TransactionAgent")
 
-  createdSales Sale[] @relation("SaleCreatedBy")
-  updatedSales Sale[] @relation("SaleUpdatedBy")
-  deletedSales Sale[] @relation("SaleDeletedBy")
-
-  createdPurchases Purchase[] @relation("PurchaseCreatedBy")
-  updatedPurchases Purchase[] @relation("PurchaseUpdatedBy")
-  deletedPurchases Purchase[] @relation("PurchaseDeletedBy")
+  createdOrders Order[] @relation("OrderCreatedBy")
+  updatedOrders Order[] @relation("OrderUpdatedBy")
+  deletedOrders Order[] @relation("OrderDeletedBy")
 
   createdTransactions Transaction[] @relation("TransactionCreatedBy")
   updatedTransactions Transaction[] @relation("TransactionUpdatedBy")
@@ -89,8 +84,7 @@ model Contact {
   type    String // 'client' or 'supplier'
 
   // Relations
-  sales     Sale[]
-  purchases Purchase[]
+  orders Order[]
 
   createdById String?
   createdBy   User?   @relation("ContactCreatedBy", fields: [createdById], references: [id])
@@ -109,7 +103,7 @@ enum OrderStatus {
   cancelled
 }
 
-model Sale {
+model Order {
   id        String    @id @default(cuid())
   ref       String    @unique
   createdAt DateTime  @default(now())
@@ -127,10 +121,11 @@ model Sale {
 
   status OrderStatus
   note   String?
+  type   String // 'sale' or 'purchase'
 
   // Relations
   agentId String?
-  agent   User?   @relation("SaleAgent", fields: [agentId], references: [id])
+  agent   User?   @relation("OrderAgent", fields: [agentId], references: [id])
 
   contactId String?
   contact   Contact? @relation(fields: [contactId], references: [id])
@@ -138,51 +133,13 @@ model Sale {
   payments Transaction[]
 
   createdById String?
-  createdBy   User?   @relation("SaleCreatedBy", fields: [createdById], references: [id])
+  createdBy   User?   @relation("OrderCreatedBy", fields: [createdById], references: [id])
   updatedById String?
-  updatedBy   User?   @relation("SaleUpdatedBy", fields: [updatedById], references: [id])
+  updatedBy   User?   @relation("OrderUpdatedBy", fields: [updatedById], references: [id])
   deletedById String?
-  deletedBy   User?   @relation("SaleDeletedBy", fields: [deletedById], references: [id])
+  deletedBy   User?   @relation("OrderDeletedBy", fields: [deletedById], references: [id])
 
-  @@map("sales")
-}
-
-model Purchase {
-  id        String    @id @default(cuid())
-  ref       String    @unique
-  createdAt DateTime  @default(now())
-  updatedAt DateTime?
-  deletedAt DateTime?
-
-  date DateTime
-
-  receiptNumber String?
-  invoiceNumber String?
-
-  totalPrice Float
-  totalPaid  Float
-  totalDue   Float
-
-  status OrderStatus
-  note   String?
-
-  // Relations
-  agentId String?
-  agent   User?   @relation("PurchaseAgent", fields: [agentId], references: [id])
-
-  contactId String?
-  contact   Contact? @relation(fields: [contactId], references: [id])
-
-  payments Transaction[]
-
-  createdById String?
-  createdBy   User?   @relation("PurchaseCreatedBy", fields: [createdById], references: [id])
-  updatedById String?
-  updatedBy   User?   @relation("PurchaseUpdatedBy", fields: [updatedById], references: [id])
-  deletedById String?
-  deletedBy   User?   @relation("PurchaseDeletedBy", fields: [deletedById], references: [id])
-
-  @@map("purchases")
+  @@map("orders")
 }
 
 enum TransactionMethod {
@@ -200,6 +157,13 @@ enum TransactionType {
   cashing
 }
 
+enum TransactionAccount {
+  nabil
+  faycal
+  redouane
+  bank
+}
+
 model Transaction {
   id        String    @id @default(cuid())
   ref       String    @unique
@@ -212,17 +176,21 @@ model Transaction {
   method        TransactionMethod
   transferActor String?
   amount        Float
-  isCashed      Boolean           @default(false)
+
+  cashingTransactionId String?      @unique
+  cashingTransaction   Transaction? @relation("TransactionCashing", fields: [cashingTransactionId], references: [id])
+  cashedPayment        Transaction? @relation("TransactionCashing")
+
+  transferTransactionId String?      @unique
+  transferTransaction   Transaction? @relation("TransactionTransfer", fields: [transferTransactionId], references: [id])
+  transferredPayment    Transaction? @relation("TransactionTransfer")
 
   // Relations
   agentId String?
   agent   User?   @relation("TransactionAgent", fields: [agentId], references: [id])
 
-  saleId String?
-  sale   Sale?   @relation(fields: [saleId], references: [id])
-
-  purchaseId String?
-  purchase   Purchase? @relation(fields: [purchaseId], references: [id])
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id])
 
   createdById String?
   createdBy   User?   @relation("TransactionCreatedBy", fields: [createdById], references: [id])

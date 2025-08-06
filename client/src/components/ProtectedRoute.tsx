@@ -1,5 +1,5 @@
 import { Box, CircularProgress } from '@mui/material';
-import { useConnectedUser } from '../hooks/ressources/useAuth';
+import { useConnectedUser } from '../hooks/useAuth';
 
 interface ProtectedRouteProps {
 	children: React.ReactNode;

@@ -10,8 +10,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
-	OrderPaymentDto,
-	type OrderPaymentDtoType,
+	PaymentDto,
+	type PaymentDtoType,
 } from '../../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import ResourceFormPopup from '../../shared/ResourceFormPopup';
@@ -25,12 +25,12 @@ import { DICT } from '../../../i18n/fr';
 import type { UserDtoType } from '../../../../../shared/dtos/user.dto';
 
 interface Props {
-	init: OrderPaymentDtoType | null;
+	init: PaymentDtoType | null;
 	onClose: () => void;
-	onSubmit: (data: OrderPaymentDtoType) => void;
+	onSubmit: (data: PaymentDtoType) => void;
 }
 
-function OrderPaymentFormPopup({ init, onClose, onSubmit }: Props) {
+function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 	const {
 		register,
 		handleSubmit,
@@ -38,9 +38,8 @@ function OrderPaymentFormPopup({ init, onClose, onSubmit }: Props) {
 		control,
 		setValue,
 	} = useForm({
-		resolver: zodResolver(OrderPaymentDto),
+		resolver: zodResolver(PaymentDto),
 		defaultValues: {
-			ref: init?.ref || '',
 			date: init?.date || '',
 			agentId: init?.agent?.id,
 			agent: init?.agent,
@@ -80,7 +79,7 @@ function OrderPaymentFormPopup({ init, onClose, onSubmit }: Props) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Agent'
-							value={init?.agent?.name}
+							init={init?.agent?.name}
 							onChange={(agent) => {
 								setValue('agent', agent as UserDtoType);
 							}}
@@ -131,4 +130,4 @@ function OrderPaymentFormPopup({ init, onClose, onSubmit }: Props) {
 	);
 }
 
-export default OrderPaymentFormPopup;
+export default PaymentFormPopup;

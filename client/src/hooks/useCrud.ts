@@ -1,6 +1,7 @@
 import { useState } from 'react';
+import type { Resource } from '../components/shared/ResourcePickerPopup';
 
-function useCrud<T>() {
+function usePopups<T extends Resource>() {
 	const [openFormPopup, setOpenFormPopup] = useState(false);
 	const [openDeletePopup, setOpenDeletePopup] = useState(false);
 	const [selectedResource, setSelectedResource] = useState<T | null>(null);
@@ -35,4 +36,4 @@ function useCrud<T>() {
 	};
 }
 
-export default useCrud;
+export default usePopups;

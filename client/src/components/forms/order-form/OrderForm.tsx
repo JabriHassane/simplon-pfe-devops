@@ -10,36 +10,38 @@ import { useForm, Controller, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
-	CreateSaleDto,
-	type CreateSaleDtoType,
-	type SaleDtoType,
-} from '../../../../../shared/dtos/sale.dto';
+	CreateOrderDto,
+	type CreateOrderDtoType,
+	type OrderDtoType,
+} from '../../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
 import ResourceForm from '../ResourceForm';
 import {
-	useCreateSale,
-	useUpdateSale,
-} from '../../../hooks/ressources/useSales';
+	useCreateOrder,
+	useUpdateOrder,
+} from '../../../hooks/ressources/useOrders';
 import { ORDER_STATUSES } from '../../../../../shared/constants';
 import { DICT } from '../../../i18n/fr';
 import { OrderPayments } from './OrderPayments';
 
-interface SaleFormProps {
-	init: SaleDtoType | null;
+interface OrderFormProps {
+	init: OrderDtoType | null;
 	onClose: () => void;
+	type: 'sale' | 'purchase';
 }
 
-export default function SaleForm({ init, onClose }: SaleFormProps) {
+export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 	const methods = useForm({
-		resolver: zodResolver(CreateSaleDto),
+		resolver: zodResolver(CreateOrderDto),
 		defaultValues: {
 			date: init?.date || '',
 			agentId: init?.agentId || '',
-			contactId: init?.contact?.id || '',
+			contactId: init?.contactId || '',
 			payments: init?.payments || [],
 			note: init?.note || '',
 			status: init?.status || 'pending',
+			type: init?.type || type,
 		},
 	});
 
@@ -51,17 +53,17 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 		formState: { errors, isValid },
 	} = methods;
 
-	const createSaleMutation = useCreateSale(onClose);
-	const updateSaleMutation = useUpdateSale(onClose);
+	const createOrderMutation = useCreateOrder(onClose);
+	const updateOrderMutation = useUpdateOrder(onClose);
 
-	const onSubmit = async (data: CreateSaleDtoType) => {
+	const onSubmit = async (data: CreateOrderDtoType) => {
 		if (init) {
-			await updateSaleMutation.mutateAsync({
+			await updateOrderMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createSaleMutation.mutateAsync(data);
+			await createOrderMutation.mutateAsync(data);
 		}
 	};
 
@@ -70,7 +72,9 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 			<ResourceForm
 				onSubmit={handleSubmit(onSubmit)}
 				isValid={isValid}
-				isLoading={createSaleMutation.isPending || updateSaleMutation.isPending}
+				isLoading={
+					createOrderMutation.isPending || updateOrderMutation.isPending
+				}
 			>
 				<Grid container spacing={2}>
 					<Grid size={6}>
@@ -116,7 +120,7 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Contact'
-							value={init?.contact?.name}
+							init={init?.contact?.name}
 							onChange={({ id }) => {
 								setValue('contactId', id);
 							}}
@@ -130,14 +134,13 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Agent'
-							value={init?.agent?.name}
+							init={init?.agent?.name}
 							onChange={({ id }) => {
 								setValue('agentId', id);
 							}}
 							resourceType='user'
 							error={!!errors.agentId}
 							helperText={errors.agentId?.message as string}
-							required
 						/>
 					</Grid>
 
@@ -163,6 +166,45 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 						/>
 					</Grid>
 
+					<Grid size={4}>
+						<TextField
+							fullWidth
+							label='Prix total'
+							type='number'
+							{...register('totalPrice', { valueAsNumber: true })}
+							variant='outlined'
+							error={!!errors.totalPrice}
+							helperText={errors.totalPrice?.message as string}
+							required
+						/>
+					</Grid>
+
+					<Grid size={4}>
+						<TextField
+							fullWidth
+							label='Montant payé'
+							type='number'
+							{...register('totalPaid', { valueAsNumber: true })}
+							variant='outlined'
+							error={!!errors.totalPaid}
+							helperText={errors.totalPaid?.message as string}
+							required
+						/>
+					</Grid>
+
+					<Grid size={4}>
+						<TextField
+							fullWidth
+							label='Reste à payer'
+							type='number'
+							{...register('totalDue', { valueAsNumber: true })}
+							variant='outlined'
+							error={!!errors.totalDue}
+							helperText={errors.totalDue?.message as string}
+							required
+						/>
+					</Grid>
+
 					<Grid size={12}>
 						<TextField
 							fullWidth
@@ -175,9 +217,11 @@ export default function SaleForm({ init, onClose }: SaleFormProps) {
 							helperText={errors.note?.message as string}
 						/>
 					</Grid>
-				</Grid>
 
-				<OrderPayments init={init?.payments} />
+					<Grid size={12}>
+						<OrderPayments />
+					</Grid>
+				</Grid>
 			</ResourceForm>
 		</FormProvider>
 	);

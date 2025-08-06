@@ -84,8 +84,9 @@ function Dashboard() {
 					gap: 3,
 				}}
 			>
-				{TRANSACTION_METHODS.map((method) => (
+				{TRANSACTION_METHODS.map((method, index) => (
 					<PaymentMethodCard
+						key={index}
 						title={method}
 						amount={paymentStats?.[method] || 0}
 						color={PAYMENT_METHODS_COLOR_MAP[method]}
