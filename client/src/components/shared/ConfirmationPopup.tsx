@@ -3,10 +3,7 @@ import ResourceFormPopup from './ResourceFormPopup';
 import { useVerifyPassword } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-	VerifyPasswordDto,
-	type VerifyPasswordDtoType,
-} from '../../../../shared/dtos/auth.dto';
+import { VerifyPasswordDto } from '../../../../shared/dtos/auth.dto';
 
 interface ResourceConfirmationDialogProps {
 	onClose: () => void;
@@ -16,7 +13,7 @@ interface ResourceConfirmationDialogProps {
 	requirePassword?: boolean;
 }
 
-function ResourceDeleteConfirmation({
+function ConfirmationPopup({
 	onClose,
 	title,
 	description,
@@ -27,14 +24,14 @@ function ResourceDeleteConfirmation({
 		register,
 		handleSubmit,
 		formState: { errors, isValid },
-	} = useForm<VerifyPasswordDtoType>({
+	} = useForm<VerifyPasswordDto>({
 		resolver: zodResolver(VerifyPasswordDto),
 		mode: 'onChange',
 	});
 
 	const verifyPasswordMutation = useVerifyPassword(onDelete);
 
-	const handleDelete = async (data: VerifyPasswordDtoType) => {
+	const handleDelete = async (data: VerifyPasswordDto) => {
 		await verifyPasswordMutation.mutateAsync(data);
 	};
 
@@ -91,4 +88,4 @@ function ResourceDeleteConfirmation({
 	);
 }
 
-export default ResourceDeleteConfirmation;
+export default ConfirmationPopup;

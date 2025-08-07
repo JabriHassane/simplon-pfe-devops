@@ -11,8 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
 	CreateOrderDto,
-	type CreateOrderDtoType,
-	type OrderDtoType,
+	type OrderDto,
 } from '../../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -26,7 +25,7 @@ import { DICT } from '../../../i18n/fr';
 import { OrderPayments } from './OrderPayments';
 
 interface OrderFormProps {
-	init: OrderDtoType | null;
+	init: OrderDto | null;
 	onClose: () => void;
 	type: 'sale' | 'purchase';
 }
@@ -35,7 +34,7 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 	const methods = useForm({
 		resolver: zodResolver(CreateOrderDto),
 		defaultValues: {
-			date: init?.date || '',
+			date: init?.date || dayjs().toISOString(),
 			agentId: init?.agentId || '',
 			contactId: init?.contactId || '',
 			payments: init?.payments || [],
@@ -56,7 +55,7 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 	const createOrderMutation = useCreateOrder(onClose);
 	const updateOrderMutation = useUpdateOrder(onClose);
 
-	const onSubmit = async (data: CreateOrderDtoType) => {
+	const onSubmit = async (data: CreateOrderDto) => {
 		if (init) {
 			await updateOrderMutation.mutateAsync({
 				id: init.id,

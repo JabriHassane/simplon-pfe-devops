@@ -4,22 +4,20 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Grid
+	Grid,
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateUserDto,
 	UpdateUserDto,
-	type CreateUserDtoType,
-	type UpdateUserDtoType,
-	type UserDtoType,
+	type UserDto,
 } from '../../../../shared/dtos/user.dto';
 import ResourceForm from './ResourceForm';
 import { useCreateUser, useUpdateUser } from '../../hooks/ressources/useUsers';
 
 interface UserFormProps {
-	init: UserDtoType | null;
+	init: UserDto | null;
 	onClose: () => void;
 }
 
@@ -48,14 +46,14 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 	const createUserMutation = useCreateUser(onClose);
 	const updateUserMutation = useUpdateUser(onClose);
 
-	const onSubmit = async (data: CreateUserDtoType | UpdateUserDtoType) => {
+	const onSubmit = async (data: CreateUserDto | UpdateUserDto) => {
 		if (init) {
 			await updateUserMutation.mutateAsync({
 				id: init.id,
 				data,
 			});
 		} else {
-			await createUserMutation.mutateAsync(data as CreateUserDtoType);
+			await createUserMutation.mutateAsync(data as CreateUserDto);
 		}
 	};
 

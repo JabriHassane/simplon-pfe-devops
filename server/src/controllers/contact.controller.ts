@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import {
-	CreateContactDtoType,
-	UpdateContactDtoType,
+	CreateContactDto,
+	UpdateContactDto,
 } from '../../../shared/dtos/contact.dto';
 import { getPaginationCondition } from '../utils/pagination';
 import { getNextRef } from '../utils/db.utils';
@@ -70,7 +70,7 @@ export const ContactController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const body = req.body as CreateContactDtoType;
+			const body = req.body as CreateContactDto;
 
 			const contact = await prisma.contact.create({
 				data: {
@@ -96,7 +96,7 @@ export const ContactController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const body = req.body as UpdateContactDtoType;
+			const body = req.body as UpdateContactDto;
 
 			// Check if contact exists
 			const existingContact = await prisma.contact.findUnique({

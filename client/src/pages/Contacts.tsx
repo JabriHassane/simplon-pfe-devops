@@ -1,12 +1,15 @@
 import { useContacts, useDeleteContact } from '../hooks/ressources/useContacts';
 import ContactForm from '../components/forms/ContactForm';
-import type { ContactDtoType } from '../../../shared/dtos/contact.dto';
+import type { ContactDto } from '../../../shared/dtos/contact.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
-import usePopups from '../hooks/useCrud';
+import ConfirmationPopup from '../components/shared/ConfirmationPopup';
+import usePopups from '../hooks/usePopups';
 import ResourceTable from '../components/shared/ResourceTable';
+import ContactFilters, {
+	type ContactFiltersData,
+} from '../components/shared/ContactFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
 
@@ -22,14 +25,16 @@ export default function Contacts({ type }: Props) {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = usePopups<ContactDtoType>();
+	} = usePopups<ContactDto>();
 
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters(() => {
-		handlePageChange(0);
-	});
+	const { filters, handleFiltersChange } = useFilters<ContactFiltersData>(
+		() => {
+			handlePageChange(0);
+		}
+	);
 
 	const { data, isLoading, error } = useContacts({
 		page: page + 1,
@@ -60,6 +65,8 @@ export default function Contacts({ type }: Props) {
 				error={!!error}
 			/>
 
+			<ContactFilters filters={filters} onFiltersChange={handleFiltersChange} />
+
 			<ResourceTable
 				headers={[
 					{ id: 'ref', name: 'Ref' },
@@ -68,7 +75,7 @@ export default function Contacts({ type }: Props) {
 					{ id: 'address', name: 'Adresse' },
 				]}
 				rows={
-					contacts?.map((contact: ContactDtoType) => ({
+					contacts?.map((contact: ContactDto) => ({
 						item: contact,
 						data: {
 							ref: contact.ref,
@@ -103,7 +110,7 @@ export default function Contacts({ type }: Props) {
 			)}
 
 			{openDeletePopup && (
-				<ResourceDeleteConfirmation
+				<ConfirmationPopup
 					onClose={handleClosePopup}
 					title={`Supprimer ${selectedContact?.ref}`}
 					description={`Voulez-vous vraiment supprimer ce ${

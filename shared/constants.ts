@@ -23,6 +23,7 @@ export const TRANSACTION_TYPES = [
 	'sale',
 	'purchase',
 	'cashing',
+	'deposit',
 	'send',
 	'receive',
 ] as const;
@@ -37,6 +38,7 @@ export const TRANSACTION_TYPE_COLOR_MAP = {
 	send: 'warning',
 	receive: 'success',
 	cashing: 'info',
+	deposit: 'secondary',
 } as const;
 
 export const TRANSACTION_METHODS = [
@@ -54,5 +56,10 @@ export const PAYMENT_METHODS_COLOR_MAP = {
 	bank_transfer: 'secondary',
 } as const;
 
-export const TRANSACTION_ACCOUNTS = ['nabil', 'faycal', 'redouane', 'bank'] as const;
+export const TRANSACTION_ACCOUNTS = [
+	'nabil',
+	'faycal',
+	'redouane',
+	'bank',
+] as const;
 export type TransactionAccount = (typeof TRANSACTION_ACCOUNTS)[number];

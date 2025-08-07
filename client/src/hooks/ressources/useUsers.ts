@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { UserService } from '../../services/user.service';
 import type {
-	CreateUserDtoType,
-	UpdateUserDtoType,
-	UserDtoType,
+	CreateUserDto,
+	UpdateUserDto,
+	UserDto,
 } from '../../../../shared/dtos/user.dto';
 import { useSnackbar } from '../useSnackbar';
 import type { PaginationParams } from '../../types/pagination.types';
@@ -32,7 +32,7 @@ export const useUsers = (params?: PaginationParams & UserFilters) => {
 				console.error(error);
 				showError('Erreur lors de la récupération des utilisateurs');
 				return {
-					data: [] as UserDtoType[],
+					data: [] as UserDto[],
 					pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 },
 				};
 			}
@@ -84,7 +84,7 @@ export const useCreateUser = (callback: () => void) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (data: CreateUserDtoType) => {
+		mutationFn: async (data: CreateUserDto) => {
 			try {
 				await UserService.create(data);
 				queryClient.invalidateQueries({ queryKey: userKeys.lists() });
@@ -105,13 +105,7 @@ export const useUpdateUser = (callback: () => void) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async ({
-			id,
-			data,
-		}: {
-			id: string;
-			data: UpdateUserDtoType;
-		}) => {
+		mutationFn: async ({ id, data }: { id: string; data: UpdateUserDto }) => {
 			try {
 				await UserService.update(id, data);
 

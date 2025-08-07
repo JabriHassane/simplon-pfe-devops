@@ -24,19 +24,15 @@ import {
 	Check as CheckIcon,
 } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
-import type { UserDtoType } from '../../../../shared/dtos/user.dto';
-import type { ContactDtoType } from '../../../../shared/dtos/contact.dto';
-import type { OrderDtoType } from '../../../../shared/dtos/order.dto';
-import type { TransactionDtoType } from '../../../../shared/dtos/transaction.dto';
+import type { UserDto } from '../../../../shared/dtos/user.dto';
+import type { ContactDto } from '../../../../shared/dtos/contact.dto';
+import type { OrderDto } from '../../../../shared/dtos/order.dto';
+import type { TransactionDto } from '../../../../shared/dtos/transaction.dto';
 
 export type ResourceType = 'user' | 'contact' | 'order' | 'transaction';
 export type PickableResourceType = 'user' | 'contact';
-export type Resource =
-	| UserDtoType
-	| ContactDtoType
-	| OrderDtoType
-	| TransactionDtoType;
-export type PickableResource = UserDtoType | ContactDtoType;
+export type Resource = UserDto | ContactDto | OrderDto | TransactionDto;
+export type PickableResource = UserDto | ContactDto;
 
 interface ResourcePickerProps {
 	onClose: () => void;

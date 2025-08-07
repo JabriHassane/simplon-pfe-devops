@@ -9,10 +9,6 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import { Controller, useForm } from 'react-hook-form';
 import ResourcePickerField from '../../shared/ResourcePickerField';
-import {
-	PaymentDto,
-	type PaymentDtoType,
-} from '../../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
 import ResourceFormPopup from '../../shared/ResourceFormPopup';
 import ResourceForm from '../ResourceForm';
@@ -22,12 +18,13 @@ import {
 	type TransactionMethod,
 } from '../../../../../shared/constants';
 import { DICT } from '../../../i18n/fr';
-import type { UserDtoType } from '../../../../../shared/dtos/user.dto';
+import type { UserDto } from '../../../../../shared/dtos/user.dto';
+import { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
 
 interface Props {
-	init: PaymentDtoType | null;
+	init: TransactionDto | null;
 	onClose: () => void;
-	onSubmit: (data: PaymentDtoType) => void;
+	onSubmit: (data: TransactionDto) => void;
 }
 
 function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
@@ -38,7 +35,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 		control,
 		setValue,
 	} = useForm({
-		resolver: zodResolver(PaymentDto),
+		resolver: zodResolver(TransactionDto),
 		defaultValues: {
 			date: init?.date || '',
 			agentId: init?.agent?.id,
@@ -81,7 +78,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 							label='Agent'
 							init={init?.agent?.name}
 							onChange={(agent) => {
-								setValue('agent', agent as UserDtoType);
+								setValue('agent', agent as UserDto);
 							}}
 							resourceType='user'
 							error={!!errors.agent}

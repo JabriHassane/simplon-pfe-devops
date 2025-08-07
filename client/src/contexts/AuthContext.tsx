@@ -1,7 +1,7 @@
 import React, { createContext, useState } from 'react';
-import type { UserDtoType } from '../../../shared/dtos/user.dto';
+import type { UserDto } from '../../../shared/dtos/user.dto';
 
-type AuthContextType = [UserDtoType | null, (user: UserDtoType | null) => void];
+type AuthContextType = [UserDto | null, (user: UserDto | null) => void];
 
 export const AuthContext = createContext<AuthContextType>([null, () => {}]);
 
@@ -10,7 +10,7 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-	const [user, setUser] = useState<UserDtoType | null>(null);
+	const [user, setUser] = useState<UserDto | null>(null);
 
 	return (
 		<AuthContext.Provider value={[user, setUser]}>

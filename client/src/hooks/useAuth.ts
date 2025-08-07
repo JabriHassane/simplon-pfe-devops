@@ -1,8 +1,8 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { AuthService } from '../services/auth.service';
 import type {
-	LoginDtoType,
-	VerifyPasswordDtoType,
+	LoginDto,
+	VerifyPasswordDto,
 } from '../../../shared/dtos/auth.dto';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from './useSnackbar';
@@ -16,7 +16,7 @@ export const useLogin = () => {
 	const [, setUser] = useContext(AuthContext);
 
 	return useMutation({
-		mutationFn: async (data: LoginDtoType) => {
+		mutationFn: async (data: LoginDto) => {
 			try {
 				const user = await AuthService.login(data);
 				setUser(user);
@@ -79,7 +79,7 @@ export const useVerifyPassword = (callback: () => void) => {
 	const { showWarning } = useSnackbar();
 
 	return useMutation({
-		mutationFn: async (data: VerifyPasswordDtoType) => {
+		mutationFn: async (data: VerifyPasswordDto) => {
 			try {
 				await AuthService.verifyPassword(data);
 				callback();

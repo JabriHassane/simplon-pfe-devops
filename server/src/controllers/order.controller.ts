@@ -2,9 +2,9 @@ import { Request, Response } from 'express';
 import { prisma } from '../index';
 import { getOrderPaginationCondition } from '../utils/pagination';
 import {
-	CreateOrderDtoType,
-	OrderDtoType,
-	UpdateOrderDtoType,
+	CreateOrderDto,
+	OrderDto,
+	UpdateOrderDto,
 } from '../../../shared/dtos/order.dto';
 import { getNextRef } from '../utils/db.utils';
 import { TransactionMethod, TransactionType } from '../../../shared/constants';
@@ -127,7 +127,7 @@ export const OrderController = {
 	async create(req: Request, res: Response) {
 		try {
 			const { userId } = req.user!;
-			const body = req.body as CreateOrderDtoType;
+			const body = req.body as CreateOrderDto;
 
 			// Check if contact exists
 			const contact = await prisma.contact.findUnique({
@@ -176,7 +176,7 @@ export const OrderController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const body = req.body as UpdateOrderDtoType;
+			const body = req.body as UpdateOrderDto;
 
 			// Check if order exists
 			const isExists = await prisma.order.findUnique({

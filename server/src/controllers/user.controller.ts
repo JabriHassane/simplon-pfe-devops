@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
-import { CreateUserDtoType } from '../../../shared/dtos/user.dto';
+import { CreateUserDto } from '../../../shared/dtos/user.dto';
 import { getPaginationCondition } from '../utils/pagination';
 import { hashPassword } from '../utils/auth.utils';
 import { getNextRef } from '../utils/db.utils';
@@ -13,12 +13,19 @@ export const UserController = {
 				['name', 'ref']
 			);
 
+			// Add role filter if provided
+			const role = req.query.role as string;
+			const finalWhereClause = {
+				...whereClause,
+				...(role && { role }),
+			};
+
 			// Get total count for pagination
-			const total = await prisma.user.count({ where: whereClause });
+			const total = await prisma.user.count({ where: finalWhereClause });
 
 			// Get paginated results
 			const users = await prisma.user.findMany({
-				where: whereClause,
+				where: finalWhereClause,
 				orderBy: { createdAt: 'desc' },
 				skip,
 				take: pageSize,
@@ -60,7 +67,7 @@ export const UserController = {
 
 	async create(req: Request, res: Response) {
 		try {
-			const body = req.body as CreateUserDtoType;
+			const body = req.body as CreateUserDto;
 			const { userId } = req.user!;
 
 			// Check if user already exists
@@ -100,7 +107,7 @@ export const UserController = {
 		try {
 			const { id } = req.params;
 			const { userId } = req.user!;
-			const body = req.body as CreateUserDtoType;
+			const body = req.body as CreateUserDto;
 
 			// Check if user exists
 			const isExist = await prisma.user.findUnique({

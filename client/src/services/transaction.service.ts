@@ -1,14 +1,15 @@
 import { ApiService } from './api.service';
 import type {
-	CreateTransactionDtoType,
-	TransactionDtoType,
-	UpdateTransactionDtoType,
+	CreateTransactionDto,
+	TransactionDto,
+	UpdateTransactionDto,
 } from '../../../shared/dtos/transaction.dto';
-import type { PaginationParams } from './api.service';
+import type { PaginationParams } from '../types/pagination.types';
+import type { PaymentCashingDto } from '../../../shared/dtos/order.dto';
 
 export const TransactionService = {
 	async getPage(params?: PaginationParams) {
-		return ApiService.getPaginated<TransactionDtoType>('/transactions', params);
+		return ApiService.getPaginated<TransactionDto>('/transactions', params);
 	},
 
 	async getPaymentMethodStats() {
@@ -21,15 +22,32 @@ export const TransactionService = {
 	},
 
 	async getById(id: string) {
-		return ApiService.get<TransactionDtoType>(`/transactions/${id}`);
+		return ApiService.get<TransactionDto>(`/transactions/${id}`);
 	},
 
-	async create(data: CreateTransactionDtoType) {
-		return ApiService.post<TransactionDtoType>('/transactions', data);
+	async create(data: CreateTransactionDto) {
+		return ApiService.post<TransactionDto>('/transactions', data);
 	},
 
-	async update(id: string, data: UpdateTransactionDtoType) {
-		return ApiService.put<TransactionDtoType>(`/transactions/${id}`, data);
+	async cashPayment(data: PaymentCashingDto) {
+		console.log(data);
+		return ApiService.post<TransactionDto>(`/transactions/${data.id}/cash`, data);
+	},
+
+	async undoPaymentCashing(id: string) {
+		return ApiService.post<TransactionDto>(`/transactions/${id}/undo-cashing`);
+	},
+
+	async depositPaymentToBank(data: PaymentCashingDto) {
+		return ApiService.post<TransactionDto>(`/transactions/${data.id}/deposit`);
+	},
+
+	async undoPaymentDeposit(id: string) {
+		return ApiService.post<TransactionDto>(`/transactions/${id}/undo-deposit`);
+	},
+
+	async update(id: string, data: UpdateTransactionDto) {
+		return ApiService.put<TransactionDto>(`/transactions/${id}`, data);
 	},
 
 	async delete(id: string) {

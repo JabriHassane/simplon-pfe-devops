@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { OrderService } from '../../services/order.service';
 import type {
-	CreateOrderDtoType,
-	UpdateOrderDtoType,
+	CreateOrderDto,
+	UpdateOrderDto,
 } from '../../../../shared/dtos/order.dto';
 import { useSnackbar } from '../useSnackbar';
 import type { PaginationParams } from '../../types/pagination.types';
@@ -102,7 +102,7 @@ export const useCreateOrder = (callback: () => void) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (data: CreateOrderDtoType) => {
+		mutationFn: async (data: CreateOrderDto) => {
 			try {
 				await OrderService.create(data);
 
@@ -124,13 +124,7 @@ export const useUpdateOrder = (callback: () => void) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async ({
-			id,
-			data,
-		}: {
-			id: string;
-			data: UpdateOrderDtoType;
-		}) => {
+		mutationFn: async ({ id, data }: { id: string; data: UpdateOrderDto }) => {
 			try {
 				await OrderService.update(id, data);
 

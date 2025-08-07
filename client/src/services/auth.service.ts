@@ -1,14 +1,17 @@
-import type { LoginDtoType, VerifyPasswordDtoType } from '../../../shared/dtos/auth.dto';
-import type { UserDtoType } from '../../../shared/dtos/user.dto';
+import type {
+	LoginDto,
+	VerifyPasswordDto,
+} from '../../../shared/dtos/auth.dto';
+import type { UserDto } from '../../../shared/dtos/user.dto';
 import { ApiService } from './api.service';
 
 export const AuthService = {
 	async getConnectedUser() {
-		return ApiService.get<UserDtoType>('/auth/me');
+		return ApiService.get<UserDto>('/auth/me');
 	},
 
-	async login(data: LoginDtoType) {
-		return ApiService.post<UserDtoType>('/auth/login', data);
+	async login(data: LoginDto) {
+		return ApiService.post<UserDto>('/auth/login', data);
 	},
 
 	async logout() {
@@ -19,7 +22,7 @@ export const AuthService = {
 		return ApiService.post<{ message: string }>('/auth/refresh');
 	},
 
-	async verifyPassword(data: VerifyPasswordDtoType) {
+	async verifyPassword(data: VerifyPasswordDto) {
 		return ApiService.post<{ message: string }>('/auth/verify-password', data);
 	},
 };

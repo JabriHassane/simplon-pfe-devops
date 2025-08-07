@@ -25,4 +25,10 @@ router.put(
 );
 router.delete('/:id', TransactionController.delete);
 
+// Payment management operations
+router.post('/:id/cash', TransactionController.cashPayment);
+router.post('/:id/undo-cashing', TransactionController.undoPaymentCashing);
+router.post('/:id/deposit', TransactionController.depositPaymentToBank);
+router.post('/:id/undo-deposit', TransactionController.undoPaymentDeposit);
+
 export default router;

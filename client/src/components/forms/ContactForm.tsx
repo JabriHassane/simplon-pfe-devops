@@ -3,8 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateContactDto,
-	type CreateContactDtoType,
-	type ContactDtoType,
+	type ContactDto,
 } from '../../../../shared/dtos/contact.dto';
 import ResourceForm from './ResourceForm';
 import {
@@ -13,7 +12,7 @@ import {
 } from '../../hooks/ressources/useContacts';
 
 interface ContactFormProps {
-	init: ContactDtoType | null;
+	init: ContactDto | null;
 	onClose: () => void;
 	type: 'client' | 'supplier';
 }
@@ -38,7 +37,7 @@ export default function ContactForm({ init, onClose, type }: ContactFormProps) {
 	const createContactMutation = useCreateContact(onClose);
 	const updateContactMutation = useUpdateContact(onClose);
 
-	const onSubmit = async (data: CreateContactDtoType) => {
+	const onSubmit = async (data: CreateContactDto) => {
 		if (init) {
 			await updateContactMutation.mutateAsync({
 				id: init.id,

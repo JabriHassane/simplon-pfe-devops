@@ -4,14 +4,14 @@ import {
 	useDeleteTransaction,
 } from '../hooks/ressources/useTransactions';
 import TransactionForm from '../components/forms/TransactionForm';
-import type { TransactionDtoType } from '../../../shared/dtos/transaction.dto';
+import type { TransactionDto } from '../../../shared/dtos/transaction.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
-import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import ConfirmationPopup from '../components/shared/ConfirmationPopup';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import { DICT } from '../i18n/fr';
 import { formatPrice } from '../utils/price.utils';
-import usePopups from '../hooks/useCrud';
+import usePopups from '../hooks/usePopups';
 import {
 	PAYMENT_METHODS_COLOR_MAP,
 	TRANSACTION_TYPE_COLOR_MAP,
@@ -19,6 +19,9 @@ import {
 } from '../../../shared/constants';
 import { formatDate } from '../utils/date.utils';
 import ResourceTable from '../components/shared/ResourceTable';
+import TransactionFilters, {
+	type TransactionFiltersData,
+} from '../components/shared/TransactionFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
 
@@ -30,14 +33,16 @@ export default function Transactions() {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = usePopups<TransactionDtoType>();
+	} = usePopups<TransactionDto>();
 
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters(() => {
-		handlePageChange(0);
-	});
+	const { filters, handleFiltersChange } = useFilters<TransactionFiltersData>(
+		() => {
+			handlePageChange(0);
+		}
+	);
 
 	const { data, isLoading, error } = useTransactions({
 		page: page + 1,
@@ -67,6 +72,11 @@ export default function Transactions() {
 				error={!!error}
 			/>
 
+			<TransactionFilters
+				filters={filters}
+				onFiltersChange={handleFiltersChange}
+			/>
+
 			<ResourceTable
 				headers={[
 					{ id: 'ref', name: 'Ref' },
@@ -77,7 +87,7 @@ export default function Transactions() {
 					{ id: 'amount', name: 'Montant' },
 				]}
 				rows={
-					transactions?.map((transaction: TransactionDtoType) => ({
+					transactions?.map((transaction: TransactionDto) => ({
 						item: transaction,
 						data: {
 							ref: transaction.ref,
@@ -131,7 +141,7 @@ export default function Transactions() {
 			)}
 
 			{openDeletePopup && (
-				<ResourceDeleteConfirmation
+				<ConfirmationPopup
 					onClose={handleClosePopup}
 					title={`Supprimer ${selectedTransaction?.ref}`}
 					description='Voulez-vous vraiment supprimer cette transaction ?'

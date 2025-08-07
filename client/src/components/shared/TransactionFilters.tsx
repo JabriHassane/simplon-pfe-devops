@@ -12,40 +12,40 @@ import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
-import { ORDER_STATUSES } from '../../../../shared/constants';
-import { DICT } from '../../i18n/fr';
+import { TRANSACTION_ACCOUNTS } from '../../../../shared/constants';
 
-export interface OrderFiltersData {
-	ref?: string;
+export interface TransactionFiltersData {
+	search?: string;
 	dateFrom?: string;
 	dateTo?: string;
-	agentId?: string;
-	contactId?: string;
-	status?: string;
+	account?: string;
 }
 
 interface Props {
-	filters: OrderFiltersData;
-	onFiltersChange: (newFilters: Partial<OrderFiltersData>) => void;
+	filters: TransactionFiltersData;
+	onFiltersChange: (newFilters: Partial<TransactionFiltersData>) => void;
 }
 
-export default function OrderFilters({ filters, onFiltersChange }: Props) {
+export default function TransactionFilters({
+	filters,
+	onFiltersChange,
+}: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
 			<Grid container spacing={1}>
-				<Grid size={2}>
+				<Grid size={3}>
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ ref: '' })}
-							disabled={!filters.ref}
+							onClick={() => onFiltersChange({ search: '' })}
+							disabled={!filters.search}
 						>
 							<Clear />
 						</IconButton>
 						<TextField
-							value={filters.ref}
-							onChange={(e) => onFiltersChange({ ref: e.target.value })}
-							label='Référence'
+							value={filters.search}
+							onChange={(e) => onFiltersChange({ search: e.target.value })}
+							label='Recherche'
 							variant='outlined'
 							placeholder='Rechercher par référence...'
 							fullWidth
@@ -53,7 +53,7 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 					</Box>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={3}>
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
@@ -73,7 +73,7 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 					</Box>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={3}>
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
@@ -93,45 +93,22 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 					</Box>
 				</Grid>
 
-				<Grid size={2}>
-					<ResourcePickerField
-						label='Agent'
-						init={filters.agentId || ''}
-						onChange={({ id }) => onFiltersChange({ agentId: id })}
-						resourceType='user'
-						placeholder='Sélectionner un agent...'
-						showClearButton
-					/>
-				</Grid>
-
-				<Grid size={2}>
-					<ResourcePickerField
-						label='Contact'
-						init={filters.contactId || ''}
-						onChange={({ id }) => onFiltersChange({ contactId: id })}
-						resourceType='contact'
-						placeholder='Sélectionner un contact...'
-						showClearButton
-					/>
-				</Grid>
-
-				<Grid size={2}>
+				<Grid size={3}>
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ status: '' })}
-							disabled={!filters.status}
+							onClick={() => onFiltersChange({ account: '' })}
+							disabled={!filters.account}
 						>
 							<Clear />
 						</IconButton>
 
 						<FormControl fullWidth>
-							<InputLabel>Statut</InputLabel>
+							<InputLabel>Compte</InputLabel>
 							<Select
-								value={filters.status}
-								onChange={(e) => onFiltersChange({ status: e.target.value })}
-								label='Statut'
-								IconComponent={filters.status ? undefined : undefined}
+								value={filters.account}
+								onChange={(e) => onFiltersChange({ account: e.target.value })}
+								label='Compte'
 								MenuProps={{
 									PaperProps: {
 										style: {
@@ -141,9 +118,9 @@ export default function OrderFilters({ filters, onFiltersChange }: Props) {
 								}}
 							>
 								<MenuItem value=''>Tous</MenuItem>
-								{ORDER_STATUSES.map((status) => (
-									<MenuItem key={status} value={status}>
-										{DICT.orderStatus[status]}
+								{TRANSACTION_ACCOUNTS.map((account) => (
+									<MenuItem key={account} value={account}>
+										{account.charAt(0).toUpperCase() + account.slice(1)}
 									</MenuItem>
 								))}
 							</Select>

@@ -1,24 +1,25 @@
 import { useFormContext } from 'react-hook-form';
 import { Box, Typography, Button } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import {
-	type CreateOrderDtoType,
-	type PaymentDtoType,
+import type {
+	CreateOrderDto,
+	PaymentDto,
 } from '../../../../../shared/dtos/order.dto';
 import ResourceTable from '../../shared/ResourceTable';
 import { formatDate } from '../../../utils/date.utils';
 import { formatPrice } from '../../../utils/price.utils';
 import PaymentFormPopup from './OrderPaymentFormPopup';
 import { useEffect, useState } from 'react';
-import usePopups from '../../../hooks/useCrud';
-import ResourceDeleteConfirmation from '../../shared/ResourceDeleteConfirmation';
+import usePopups from '../../../hooks/usePopups';
+import ConfirmationPopup from '../../shared/ConfirmationPopup';
+import type { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
 
 interface OrderPaymentsProps {
-	init?: PaymentDtoType[];
+	init?: TransactionDto[];
 }
 
 export const OrderPayments = ({ init }: OrderPaymentsProps) => {
-	const { setValue } = useFormContext<CreateOrderDtoType>();
+	const { setValue } = useFormContext<CreateOrderDto>();
 
 	const {
 		openFormPopup,
@@ -28,11 +29,11 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = usePopups<PaymentDtoType>();
+	} = usePopups<TransactionDto>();
 
-	const [payments, setPayments] = useState<PaymentDtoType[]>(init || []);
+	const [payments, setPayments] = useState<TransactionDto[]>(init || []);
 
-	const handleSubmit = (payment: PaymentDtoType) => {
+	const handleSubmit = (payment: TransactionDto) => {
 		const newPayments = [...payments];
 		if (selectedPayment) {
 			newPayments[selectedIndex] = payment;
@@ -50,7 +51,7 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 	};
 
 	useEffect(() => {
-		setValue('payments', payments);
+		setValue('payments', payments as PaymentDto[]);
 	}, [payments]);
 
 	return (
@@ -103,7 +104,7 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 			)}
 
 			{openDeletePopup && (
-				<ResourceDeleteConfirmation
+				<ConfirmationPopup
 					onClose={handleClosePopup}
 					title={`Supprimer ${selectedPayment?.ref}`}
 					description='Voulez-vous vraiment supprimer ce paiement ?'

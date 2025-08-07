@@ -10,8 +10,7 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateTransactionDto,
-	type CreateTransactionDtoType,
-	type TransactionDtoType,
+	type TransactionDto,
 } from '../../../../shared/dtos/transaction.dto';
 import ResourceForm from './ResourceForm';
 import { useCreateTransaction } from '../../hooks/ressources/useTransactions';
@@ -25,7 +24,7 @@ import { useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 
 interface TransactionFormProps {
-	init: TransactionDtoType | null;
+	init: TransactionDto | null;
 	onClose: () => void;
 }
 
@@ -58,7 +57,7 @@ export default function TransactionForm({
 	const createTransactionMutation = useCreateTransaction(onClose);
 	const updateTransactionMutation = useUpdateTransaction(onClose);
 
-	const onSubmit = async (data: CreateTransactionDtoType) => {
+	const onSubmit = async (data: CreateTransactionDto) => {
 		if (init) {
 			await updateTransactionMutation.mutateAsync({
 				id: init.id,

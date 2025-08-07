@@ -15,8 +15,8 @@ const CreateTransactionUnrefinedDto = z.object({
 	method: z.enum(TRANSACTION_METHODS).optional(),
 	amount: z.number().positive('Le montant doit être positif'),
 	account: z.enum(TRANSACTION_ACCOUNTS),
-	transferTransactionId: z.string().optional(),
 	cashingTransactionId: z.string().optional(),
+	depositTransactionId: z.string().optional(),
 });
 
 export const CreateTransactionDto = CreateTransactionUnrefinedDto.refine(
@@ -39,10 +39,10 @@ export const TransactionDto = z.object({
 	id: z.string(),
 	ref: z.string(),
 	...CreateTransactionUnrefinedDto.shape,
-	agent: UserDto,
-	order: OrderDto,
+	agent: UserDto.optional(),
+	order: OrderDto.optional(),
 });
 
-export type CreateTransactionDtoType = z.infer<typeof CreateTransactionDto>;
-export type UpdateTransactionDtoType = z.infer<typeof UpdateTransactionDto>;
-export type TransactionDtoType = z.infer<typeof TransactionDto>;
+export type CreateTransactionDto = z.infer<typeof CreateTransactionDto>;
+export type UpdateTransactionDto = z.infer<typeof UpdateTransactionDto>;
+export type TransactionDto = z.infer<typeof TransactionDto>;

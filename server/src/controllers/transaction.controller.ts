@@ -1,20 +1,19 @@
 import { Request, Response } from 'express';
 import { prisma } from '../index';
 import {
-	CreateTransactionDtoType,
-	UpdateTransactionDtoType,
+	CreateTransactionDto,
+	UpdateTransactionDto,
 } from '../../../shared/dtos/transaction.dto';
-import { getPaginationCondition } from '../utils/pagination';
+import { getTransactionPaginationCondition } from '../utils/pagination';
 import { getNextRef } from '../utils/db.utils';
 import { TransactionMethod, TransactionType } from '../../../shared/constants';
+import { PaymentCashingDto } from '../../../shared/dtos/order.dto';
 
 export const TransactionController = {
 	async getPage(req: Request, res: Response) {
 		try {
-			const { page, pageSize, skip, whereClause } = getPaginationCondition(
-				req,
-				['ref']
-			);
+			const { page, pageSize, skip, whereClause } =
+				getTransactionPaginationCondition(req);
 
 			const [transactions, total] = await Promise.all([
 				prisma.transaction.findMany({
@@ -94,7 +93,7 @@ export const TransactionController = {
 
 	async create(req: Request, res: Response) {
 		try {
-			const body = req.body as CreateTransactionDtoType;
+			const body = req.body as CreateTransactionDto;
 			const { userId } = req.user!;
 
 			// Validate related entities exist
@@ -135,7 +134,7 @@ export const TransactionController = {
 	async update(req: Request, res: Response) {
 		try {
 			const { id } = req.params;
-			const body = req.body as UpdateTransactionDtoType;
+			const body = req.body as UpdateTransactionDto;
 			const { userId } = req.user!;
 
 			// Check if transaction exists
@@ -253,6 +252,187 @@ export const TransactionController = {
 			});
 		} catch (error) {
 			console.error('Error in TransactionController.getBalances', error);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
+
+	async cashPayment(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const { userId } = req.user!;
+			const body = req.body as PaymentCashingDto;
+
+			const transaction = await prisma.transaction.findUnique({
+				where: { id },
+			});
+
+			if (!transaction) {
+				return res.status(404).json({ message: 'Transaction not found' });
+			}
+
+			if (transaction.cashingTransactionId) {
+				return res.status(400).json({ message: 'Transaction already cashed' });
+			}
+
+			// Create a new cashing transaction
+			const cashingTransaction = await prisma.transaction.create({
+				data: {
+					ref: await getNextRef('transactions'),
+					date: body.date,
+					type: 'cashing',
+					method: 'cash',
+					amount: transaction.amount,
+					agentId: body.agentId,
+					createdById: userId,
+				},
+			});
+
+			// Update the original transaction with the cashing transaction ID
+			await prisma.transaction.update({
+				where: { id },
+				data: {
+					cashingTransactionId: cashingTransaction.id,
+					updatedById: userId,
+				},
+			});
+
+			res.json({ message: 'Payment cashed successfully' });
+		} catch (error) {
+			console.error('Error in TransactionController.cashPayment', error);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
+
+	async undoPaymentCashing(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const { userId } = req.user!;
+
+			const transaction = await prisma.transaction.findUnique({
+				where: { id },
+				include: {
+					cashingTransaction: true,
+				},
+			});
+
+			if (!transaction) {
+				return res.status(404).json({ message: 'Transaction not found' });
+			}
+
+			if (!transaction.cashingTransactionId) {
+				return res.status(400).json({ message: 'Transaction not cashed' });
+			}
+
+			// Delete the cashing transaction
+			await prisma.transaction.delete({
+				where: { id: transaction.cashingTransactionId },
+			});
+
+			// Remove the reference from the original transaction
+			await prisma.transaction.update({
+				where: { id },
+				data: {
+					cashingTransactionId: null,
+					updatedById: userId,
+				},
+			});
+
+			res.json({ message: 'Payment cashing undone successfully' });
+		} catch (error) {
+			console.error('Error in TransactionController.undoPaymentCashing', error);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
+
+	async depositPaymentToBank(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const { userId } = req.user!;
+			const body = req.body as PaymentCashingDto;
+			
+			const transaction = await prisma.transaction.findUnique({
+				where: { id },
+			});
+
+			if (!transaction) {
+				return res.status(404).json({ message: 'Transaction not found' });
+			}
+
+			if (transaction.depositTransactionId) {
+				return res
+					.status(400)
+					.json({ message: 'Transaction already deposited' });
+			}
+
+			// Create a new deposit transaction
+			const depositTransaction = await prisma.transaction.create({
+				data: {
+					ref: await getNextRef('transactions'),
+					date: body.date,
+					type: 'deposit',
+					method: transaction.method,
+					amount: transaction.amount,
+					agentId: body.agentId,
+					createdById: userId,
+				},
+			});
+
+			// Update the original transaction with the deposit transaction ID
+			await prisma.transaction.update({
+				where: { id },
+				data: {
+					depositTransactionId: depositTransaction.id,
+					updatedById: userId,
+				},
+			});
+
+			res.json({ message: 'Payment deposited to bank successfully' });
+		} catch (error) {
+			console.error(
+				'Error in TransactionController.depositPaymentToBank',
+				error
+			);
+			res.status(500).json({ message: 'Internal server error' });
+		}
+	},
+
+	async undoPaymentDeposit(req: Request, res: Response) {
+		try {
+			const { id } = req.params;
+			const { userId } = req.user!;
+
+			const transaction = await prisma.transaction.findUnique({
+				where: { id },
+				include: {
+					depositTransaction: true,
+				},
+			});
+
+			if (!transaction) {
+				return res.status(404).json({ message: 'Transaction not found' });
+			}
+
+			if (!transaction.depositTransactionId) {
+				return res.status(400).json({ message: 'Transaction not deposited' });
+			}
+
+			// Delete the deposit transaction
+			await prisma.transaction.delete({
+				where: { id: transaction.depositTransactionId },
+			});
+
+			// Remove the reference from the original transaction
+			await prisma.transaction.update({
+				where: { id },
+				data: {
+					depositTransactionId: null,
+					updatedById: userId,
+				},
+			});
+
+			res.json({ message: 'Payment deposit undone successfully' });
+		} catch (error) {
+			console.error('Error in TransactionController.undoPaymentDeposit', error);
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},

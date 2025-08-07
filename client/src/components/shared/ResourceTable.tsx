@@ -1,4 +1,4 @@
-import { Chip, IconButton, TablePagination } from '@mui/material';
+import { Chip, IconButton, TablePagination, Tooltip } from '@mui/material';
 
 import {
 	Table,
@@ -17,11 +17,23 @@ import {
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
-import type { OrderDtoType } from '../../../../shared/dtos/order.dto';
+import type { OrderDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
 import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
-import type { PaymentDtoType } from '../../../../shared/dtos/order.dto';
 import type { Pagination } from '../../types/pagination.types';
+import {
+	useCashPayment,
+	useDeleteTransaction,
+	useDepositPayment,
+	useUndoPaymentCashing,
+	useUndoPaymentDeposit,
+} from '../../hooks/ressources/useTransactions';
+import ResourceFormPopup from './ResourceFormPopup';
+import TransactionForm from '../forms/TransactionForm';
+import ConfirmationPopup from './ConfirmationPopup';
+import usePopups from '../../hooks/usePopups';
+import type { TransactionDto } from '../../../../shared/dtos/transaction.dto';
+import PaymentCashingFormPopup from '../forms/PaymentCashingFormPopup';
 
 interface ResourceTableHeader {
 	id: string;
@@ -139,6 +151,55 @@ function Row({
 }: RowProps) {
 	const [showPayments, setShowPayments] = useState(false);
 
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedTransaction,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = usePopups<TransactionDto>();
+
+	const {
+		openFormPopup: openCashingPopup,
+		handleOpenFormPopup: handleOpenCashingPopup,
+		handleClosePopup: handleCloseCashingPopup,
+	} = usePopups<TransactionDto>();
+
+	const {
+		openFormPopup: openDepositPopup,
+		handleOpenFormPopup: handleOpenDepositPopup,
+		handleClosePopup: handleCloseDepositPopup,
+	} = usePopups<TransactionDto>();
+
+	const {
+		openFormPopup: openUndoCashingPopup,
+		handleOpenFormPopup: handleOpenUndoCashingPopup,
+		handleClosePopup: handleCloseUndoCashingPopup,
+	} = usePopups<TransactionDto>();
+
+	const {
+		openFormPopup: openUndoDepositPopup,
+		handleOpenFormPopup: handleOpenUndoDepositPopup,
+		handleClosePopup: handleCloseUndoDepositPopup,
+	} = usePopups<TransactionDto>();
+
+	const { mutate: cashPayment, isPending: isCashing } = useCashPayment();
+	const { mutate: depositPayment, isPending: isDepositing } =
+		useDepositPayment();
+	const { mutate: undoCashing, isPending: isUndoingCashing } =
+		useUndoPaymentCashing();
+	const { mutate: undoDeposit, isPending: isUndoingDeposit } =
+		useUndoPaymentDeposit();
+
+	const deleteTransactionMutation = useDeleteTransaction(handleClosePopup);
+
+	const handleDelete = () => {
+		if (selectedTransaction) {
+			deleteTransactionMutation.mutate(selectedTransaction.id);
+		}
+	};
+
 	const paymentsHeaders = [
 		{ id: 'ref', name: 'Ref' },
 		{ id: 'date', name: 'Date' },
@@ -147,7 +208,7 @@ function Row({
 		{ id: 'method', name: 'Méthode de paiement' },
 	];
 
-	const order = row.item as OrderDtoType;
+	const order = row.item as OrderDto;
 
 	let payments: ResourceTableRow[] = [];
 
@@ -171,10 +232,7 @@ function Row({
 		}));
 	}
 
-	const payment = row.item as PaymentDtoType;
-
-	const showCashing =
-		isPayment && payment.method !== 'cash' && !payment.isCashed;
+	const payment = row.item as TransactionDto;
 
 	return (
 		<>
@@ -184,35 +242,106 @@ function Row({
 				))}
 
 				<TableCell align='right'>
-					{showCashing && (
+					{isPayment && payment.method !== 'cash' && (
 						<>
-							<IconButton onClick={() => null} size='small'>
-								<AccountBalanceOutlined />
-							</IconButton>
-							<IconButton onClick={() => null} size='small'>
-								<PaidOutlined />
-							</IconButton>
+							<Tooltip
+								title={
+									payment.depositTransactionId
+										? 'Annuler le dépôt'
+										: 'Déposer à la banque'
+								}
+							>
+								<IconButton
+									onClick={() =>
+										payment.depositTransactionId
+											? handleOpenUndoDepositPopup(payment)
+											: handleOpenDepositPopup(null)
+									}
+									size='small'
+									disabled={isDepositing || !!payment.cashingTransactionId}
+									color={payment.depositTransactionId ? 'warning' : 'default'}
+								>
+									<AccountBalanceOutlined />
+								</IconButton>
+							</Tooltip>
+
+							<Tooltip
+								title={
+									payment.cashingTransactionId
+										? "Annuler l'encaissement"
+										: 'Encaisser'
+								}
+							>
+								<IconButton
+									onClick={() =>
+										payment.cashingTransactionId
+											? handleOpenUndoCashingPopup(payment)
+											: handleOpenCashingPopup(null)
+									}
+									size='small'
+									disabled={isCashing || !!payment.depositTransactionId}
+									color={payment.cashingTransactionId ? 'warning' : 'default'}
+								>
+									<PaidOutlined />
+								</IconButton>
+							</Tooltip>
+
+							{(openCashingPopup || openDepositPopup) && (
+								<PaymentCashingFormPopup
+									paymentId={payment.id}
+									onClose={() => {
+										handleCloseCashingPopup();
+										handleCloseDepositPopup();
+									}}
+									title={openCashingPopup ? 'Encaisser' : 'Déposer à la banque'}
+									type={openCashingPopup ? 'cash' : 'deposit'}
+								/>
+							)}
+
+							{openUndoCashingPopup && (
+								<ConfirmationPopup
+									title="Annuler l'encaissement"
+									description={`Voulez-vous vraiment annuler l'encaissement de ce paiement ?`}
+									onDelete={() => undoCashing(payment.id)}
+									onClose={handleCloseUndoCashingPopup}
+								/>
+							)}
+
+							{openUndoDepositPopup && (
+								<ConfirmationPopup
+									title='Annuler le dépôt'
+									description={`Voulez-vous vraiment annuler le dépôt de ce paiement ?`}
+									onDelete={() => undoDeposit(payment.id)}
+									onClose={handleCloseUndoDepositPopup}
+								/>
+							)}
 						</>
 					)}
 
 					{isOrder && (
-						<IconButton
-							onClick={() => setShowPayments(!showPayments)}
-							size='small'
-							color={showPayments ? 'info' : 'default'}
-							disabled={payments.length === 0}
-						>
-							<HistoryOutlined />
-						</IconButton>
+						<Tooltip title='Historique des paiements'>
+							<IconButton
+								onClick={() => setShowPayments(!showPayments)}
+								size='small'
+								color={showPayments ? 'info' : 'default'}
+								disabled={payments.length === 0}
+							>
+								<HistoryOutlined />
+							</IconButton>
+						</Tooltip>
 					)}
 
-					<IconButton onClick={() => onEdit(row.item, index)} size='small'>
-						<EditOutlined />
-					</IconButton>
+					<Tooltip title='Modifier'>
+						<IconButton onClick={() => onEdit(row.item, index)} size='small'>
+							<EditOutlined />
+						</IconButton>
+					</Tooltip>
 
-					<IconButton onClick={() => onDelete(row.item, index)} size='small'>
-						<DeleteOutline />
-					</IconButton>
+					<Tooltip title='Supprimer'>
+						<IconButton onClick={() => onDelete(row.item, index)} size='small'>
+							<DeleteOutline />
+						</IconButton>
+					</Tooltip>
 				</TableCell>
 			</TableRow>
 
@@ -220,13 +349,40 @@ function Row({
 				<TableRow>
 					<TableCell sx={{ py: 0, pr: 0, px: 11 }} colSpan={12}>
 						{showPayments && (
-							<ResourceTable
-								headers={paymentsHeaders}
-								rows={payments}
-								onEdit={onEdit}
-								onDelete={onDelete}
-								isPayment
-							/>
+							<>
+								<ResourceTable
+									headers={paymentsHeaders}
+									rows={payments}
+									onEdit={handleOpenFormPopup}
+									onDelete={handleOpenDeletePopup}
+									isPayment
+								/>
+
+								{openFormPopup && (
+									<ResourceFormPopup
+										onClose={handleClosePopup}
+										title={
+											selectedTransaction
+												? `Modifier ${selectedTransaction.ref}`
+												: 'Nouvelle transaction'
+										}
+									>
+										<TransactionForm
+											init={selectedTransaction}
+											onClose={handleClosePopup}
+										/>
+									</ResourceFormPopup>
+								)}
+
+								{openDeletePopup && (
+									<ConfirmationPopup
+										onClose={handleClosePopup}
+										title={`Supprimer ${selectedTransaction?.ref}`}
+										description='Voulez-vous vraiment supprimer cette transaction ?'
+										onDelete={handleDelete}
+									/>
+								)}
+							</>
 						)}
 					</TableCell>
 				</TableRow>

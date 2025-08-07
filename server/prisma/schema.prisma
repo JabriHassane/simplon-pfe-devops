@@ -124,8 +124,8 @@ model Order {
   type   String // 'sale' or 'purchase'
 
   // Relations
-  agentId String?
-  agent   User?   @relation("OrderAgent", fields: [agentId], references: [id])
+  agentId String
+  agent   User   @relation("OrderAgent", fields: [agentId], references: [id])
 
   contactId String?
   contact   Contact? @relation(fields: [contactId], references: [id])
@@ -155,6 +155,7 @@ enum TransactionType {
   send
   receive
   cashing
+  deposit
 }
 
 enum TransactionAccount {
@@ -181,13 +182,13 @@ model Transaction {
   cashingTransaction   Transaction? @relation("TransactionCashing", fields: [cashingTransactionId], references: [id])
   cashedPayment        Transaction? @relation("TransactionCashing")
 
-  transferTransactionId String?      @unique
-  transferTransaction   Transaction? @relation("TransactionTransfer", fields: [transferTransactionId], references: [id])
-  transferredPayment    Transaction? @relation("TransactionTransfer")
+  depositTransactionId String?      @unique
+  depositTransaction   Transaction? @relation("TransactionDeposit", fields: [depositTransactionId], references: [id])
+  depositedPayment     Transaction? @relation("TransactionDeposit")
 
   // Relations
-  agentId String?
-  agent   User?   @relation("TransactionAgent", fields: [agentId], references: [id])
+  agentId String
+  agent   User   @relation("TransactionAgent", fields: [agentId], references: [id])
 
   orderId String?
   order   Order?  @relation(fields: [orderId], references: [id])

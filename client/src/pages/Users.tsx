@@ -1,13 +1,16 @@
 import { Box } from '@mui/material';
 import { useUsers, useDeleteUser } from '../hooks/ressources/useUsers';
 import UserForm from '../components/forms/UserForm';
-import type { UserDtoType } from '../../../shared/dtos/user.dto';
+import type { UserDto } from '../../../shared/dtos/user.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import ResourceLoader from '../components/shared/ResourceLoader';
-import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
-import usePopups from '../hooks/useCrud';
+import ConfirmationPopup from '../components/shared/ConfirmationPopup';
+import usePopups from '../hooks/usePopups';
 import ResourceTable from '../components/shared/ResourceTable';
+import UserFilters, {
+	type UserFiltersData,
+} from '../components/shared/UserFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
 
@@ -19,12 +22,12 @@ export default function Users() {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = usePopups<UserDtoType>();
+	} = usePopups<UserDto>();
 
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters(() => {
+	const { filters, handleFiltersChange } = useFilters<UserFiltersData>(() => {
 		handlePageChange(0);
 	});
 
@@ -56,6 +59,8 @@ export default function Users() {
 				error={!!error}
 			/>
 
+			<UserFilters filters={filters} onFiltersChange={handleFiltersChange} />
+
 			<ResourceTable
 				headers={[
 					{ id: 'ref', name: 'Ref' },
@@ -63,7 +68,7 @@ export default function Users() {
 					{ id: 'role', name: 'Rôle' },
 				]}
 				rows={
-					users?.map((user: UserDtoType) => ({
+					users?.map((user: UserDto) => ({
 						item: user,
 						data: {
 							ref: user.ref,
@@ -91,7 +96,7 @@ export default function Users() {
 			)}
 
 			{openDeletePopup && (
-				<ResourceDeleteConfirmation
+				<ConfirmationPopup
 					onClose={handleClosePopup}
 					title={`Supprimer ${selectedUser?.ref}`}
 					description='Voulez-vous vraiment supprimer cet utilisateur ?'

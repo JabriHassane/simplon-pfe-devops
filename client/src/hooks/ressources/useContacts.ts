@@ -2,8 +2,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ContactService } from '../../services/contact.service';
 import type {
 	ContactType,
-	CreateContactDtoType,
-	UpdateContactDtoType,
+	CreateContactDto,
+	UpdateContactDto,
 } from '../../../../shared/dtos/contact.dto';
 import { useSnackbar } from '../useSnackbar';
 import type { PaginationParams } from '../../types/pagination.types';
@@ -96,7 +96,7 @@ export const useCreateContact = (callback: () => void) => {
 	const queryClient = useQueryClient();
 
 	return useMutation({
-		mutationFn: async (data: CreateContactDtoType) => {
+		mutationFn: async (data: CreateContactDto) => {
 			try {
 				await ContactService.create(data);
 
@@ -123,7 +123,7 @@ export const useUpdateContact = (callback: () => void) => {
 			data,
 		}: {
 			id: string;
-			data: UpdateContactDtoType;
+			data: UpdateContactDto;
 		}) => {
 			try {
 				await ContactService.update(id, data);

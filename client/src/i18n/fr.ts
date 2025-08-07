@@ -5,6 +5,7 @@ export const DICT = {
 		send: 'Envoi',
 		receive: 'Réception',
 		cashing: 'Encaissement',
+		deposit: 'Dépôt',
 	},
 	orderStatus: {
 		pending: 'En attente',
@@ -17,5 +18,6 @@ export const DICT = {
 		check: 'Chèque',
 		tpe: 'TPE',
 		bank_transfer: 'Virement',
+		deposit: 'Dépôt',
 	},
 } as const;

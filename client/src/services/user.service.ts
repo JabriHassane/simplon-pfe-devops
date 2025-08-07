@@ -3,29 +3,26 @@ import {
 	type PaginationParams,
 	type PaginatedResponse,
 } from './api.service';
-import type {
-	CreateUserDtoType,
-	UserDtoType,
-} from '../../../shared/dtos/user.dto';
-import type { UpdateUserDtoType } from '../../../shared/dtos/user.dto';
+import type { CreateUserDto, UserDto } from '../../../shared/dtos/user.dto';
+import type { UpdateUserDto } from '../../../shared/dtos/user.dto';
 
 export const UserService = {
 	async getPage(
 		params?: PaginationParams
-	): Promise<PaginatedResponse<UserDtoType>> {
-		return ApiService.getPaginated<UserDtoType>('/users', params);
+	): Promise<PaginatedResponse<UserDto>> {
+		return ApiService.getPaginated<UserDto>('/users', params);
 	},
 
 	async getById(id: string) {
-		return ApiService.get<UserDtoType>(`/users/${id}`);
+		return ApiService.get<UserDto>(`/users/${id}`);
 	},
 
-	async create(data: CreateUserDtoType) {
-		return ApiService.post<UserDtoType>('/users', data);
+	async create(data: CreateUserDto) {
+		return ApiService.post<UserDto>('/users', data);
 	},
 
-	async update(id: string, data: UpdateUserDtoType) {
-		return ApiService.put<UserDtoType>(`/users/${id}`, data);
+	async update(id: string, data: UpdateUserDto) {
+		return ApiService.put<UserDto>(`/users/${id}`, data);
 	},
 
 	async delete(id: string) {

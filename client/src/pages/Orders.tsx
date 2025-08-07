@@ -1,13 +1,13 @@
 import { Chip } from '@mui/material';
 import OrderForm from '../components/forms/order-form/OrderForm';
 import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
-import type { OrderDtoType } from '../../../shared/dtos/order.dto';
+import type { OrderDto } from '../../../shared/dtos/order.dto';
 import { formatDate } from '../utils/date.utils';
-import ResourceDeleteConfirmation from '../components/shared/ResourceDeleteConfirmation';
+import ConfirmationPopup from '../components/shared/ConfirmationPopup';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
-import usePopups from '../hooks/useCrud';
+import usePopups from '../hooks/usePopups';
 import { DICT } from '../i18n/fr';
 import { ORDER_STATUS_COLOR_MAP } from '../../../shared/constants';
 import { formatPrice } from '../utils/price.utils';
@@ -30,7 +30,7 @@ export default function Orders({ type }: OrdersPageProps) {
 		handleOpenFormPopup,
 		handleOpenDeletePopup,
 		handleClosePopup,
-	} = usePopups<OrderDtoType>();
+	} = usePopups<OrderDto>();
 
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
@@ -131,7 +131,7 @@ export default function Orders({ type }: OrdersPageProps) {
 			)}
 
 			{openDeletePopup && (
-				<ResourceDeleteConfirmation
+				<ConfirmationPopup
 					onClose={handleClosePopup}
 					title={`Supprimer ${selectedOrder?.ref}`}
 					description={`Voulez-vous vraiment supprimer cette ${

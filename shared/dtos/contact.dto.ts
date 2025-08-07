@@ -18,6 +18,6 @@ export const ContactDto = z.object({
 	...CreateContactDto.shape,
 });
 
-export type CreateContactDtoType = z.infer<typeof CreateContactDto>;
-export type UpdateContactDtoType = z.infer<typeof UpdateContactDto>;
-export type ContactDtoType = z.infer<typeof ContactDto>;
+export type CreateContactDto = z.infer<typeof CreateContactDto>;
+export type UpdateContactDto = z.infer<typeof UpdateContactDto>;
+export type ContactDto = z.infer<typeof ContactDto>;

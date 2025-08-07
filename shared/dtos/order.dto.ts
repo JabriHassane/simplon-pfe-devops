@@ -6,16 +6,23 @@ import { ContactDto } from './contact.dto';
 export const CreatePaymentDto = z.object({
 	date: z.string().min(1, 'Date requise'),
 	amount: z.number().min(0, 'Le montant doit être positif'),
-	agentId: z.string().optional(),
+	agentId: z.string(),
 	method: z.enum(TRANSACTION_METHODS),
-	isCashed: z.boolean().optional(),
+	cashingTransactionId: z.string().optional(),
+	depositTransactionId: z.string().optional(),
+});
+
+export const PaymentCashingDto = z.object({
+	id: z.string(),
+	date: z.string().min(1, 'Date requise'),
+	agentId: z.string(),
 });
 
 export const CreateOrderDto = z.object({
 	type: z.enum(ORDER_TYPES),
 	date: z.string().min(1, 'Date requise'),
 
-	agentId: z.string().optional(),
+	agentId: z.string(),
 	contactId: z.string().optional(),
 
 	receiptNumber: z.string().optional(),
@@ -33,7 +40,8 @@ export const CreateOrderDto = z.object({
 
 export const UpdateOrderDto = CreateOrderDto;
 
-export const PaymentDto = z.object({
+const PaymentDto = z.object({
+	id: z.string(),
 	ref: z.string(),
 	...CreatePaymentDto.shape,
 	agent: UserDto.optional(),
@@ -48,8 +56,9 @@ export const OrderDto = z.object({
 	payments: z.array(PaymentDto),
 });
 
-export type CreatePaymentDtoType = z.infer<typeof CreatePaymentDto>;
-export type CreateOrderDtoType = z.infer<typeof CreateOrderDto>;
-export type UpdateOrderDtoType = z.infer<typeof UpdateOrderDto>;
-export type PaymentDtoType = z.infer<typeof PaymentDto>;
-export type OrderDtoType = z.infer<typeof OrderDto>;
+export type CreatePaymentDto = z.infer<typeof CreatePaymentDto>;
+export type PaymentCashingDto = z.infer<typeof PaymentCashingDto>;
+export type CreateOrderDto = z.infer<typeof CreateOrderDto>;
+export type UpdateOrderDto = z.infer<typeof UpdateOrderDto>;
+export type OrderDto = z.infer<typeof OrderDto>;
+export type PaymentDto = z.infer<typeof PaymentDto>;
