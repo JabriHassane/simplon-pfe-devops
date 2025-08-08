@@ -21,7 +21,7 @@ export default function ContactForm({ init, onClose, type }: ContactFormProps) {
 	const {
 		register,
 		handleSubmit,
-		formState: { errors, isValid },
+		formState: { errors },
 	} = useForm({
 		resolver: zodResolver(CreateContactDto),
 		defaultValues: {
@@ -51,7 +51,6 @@ export default function ContactForm({ init, onClose, type }: ContactFormProps) {
 	return (
 		<ResourceForm
 			onSubmit={handleSubmit(onSubmit)}
-			isValid={isValid}
 			isLoading={
 				createContactMutation.isPending || updateContactMutation.isPending
 			}

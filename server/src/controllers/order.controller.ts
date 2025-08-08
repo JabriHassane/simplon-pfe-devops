@@ -129,18 +129,25 @@ export const OrderController = {
 			const { userId } = req.user!;
 			const body = req.body as CreateOrderDto;
 
-			// Check if contact exists
-			const contact = await prisma.contact.findUnique({
-				where: { id: body.contactId },
-			});
+			if (body.contactId) {
+				// Check if contact exists
+				const contact = await prisma.contact.findUnique({
+					where: { id: body.contactId },
+				});
 
-			if (!contact) {
-				return res.status(400).json({ message: 'Contact not found' });
+				if (!contact) {
+					return res.status(400).json({ message: 'Contact not found' });
+				}
 			}
+
+			const paymentRefs = await Promise.all(
+				body.payments.map(() => getNextRef('transactions'))
+			);
 
 			const order = await prisma.order.create({
 				data: {
-					ref: await getNextRef('orders'),
+					ref: await getNextRef(body.type === 'sale' ? 'sales' : 'purchases'),
+					type: body.type,
 					date: body.date,
 					agentId: body.agentId,
 					contactId: body.contactId,
@@ -148,10 +155,19 @@ export const OrderController = {
 					invoiceNumber: body.invoiceNumber,
 					totalPrice: body.totalPrice,
 					totalPaid: body.totalPaid,
-					totalDue: body.totalDue,
-					status: body.status,
-					note: body.note,
-					type: body.type,
+					payments: {
+						createMany: {
+							data: body.payments.map((item, index) => ({
+								ref: paymentRefs[index],
+								amount: item.amount,
+								date: item.date,
+								method: item.method as TransactionMethod,
+								type: body.type as TransactionType,
+								agentId: item.agentId,
+								createdById: userId,
+							})),
+						},
+					},
 					createdById: userId,
 				},
 				include: {
@@ -187,13 +203,15 @@ export const OrderController = {
 				throw new Error('Order not found');
 			}
 
-			// Check if contact exists
-			const contact = await prisma.contact.findUnique({
-				where: { id: body.contactId },
-			});
+			if (body.contactId) {
+				// Check if contact exists
+				const contact = await prisma.contact.findUnique({
+					where: { id: body.contactId },
+				});
 
-			if (!contact) {
-				throw new Error('Contact not found');
+				if (!contact) {
+					throw new Error('Contact not found');
+				}
 			}
 
 			// Generate refs for payments before transaction
@@ -207,7 +225,6 @@ export const OrderController = {
 					...body,
 					totalPrice: body.totalPrice,
 					totalPaid: body.totalPaid,
-					totalDue: body.totalDue,
 
 					payments: {
 						deleteMany: {},

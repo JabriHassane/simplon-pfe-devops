@@ -152,6 +152,7 @@ export const TransactionController = {
 					...body,
 					updatedAt: new Date(),
 					updatedById: userId,
+					method: body.method as TransactionMethod,
 				},
 				include: {
 					order: true,
@@ -179,10 +180,32 @@ export const TransactionController = {
 			// Check if transaction exists
 			const existingTransaction = await prisma.transaction.findUnique({
 				where: { id },
+				include: {
+					cashedPayment: true,
+					depositedPayment: true,
+				},
 			});
 
 			if (!existingTransaction) {
 				return res.status(404).json({ message: 'Transaction not found' });
+			}
+
+			// If it's a cashing or deposit, we need to remove it's reference from the original transaction
+			if (
+				existingTransaction.cashedPayment ||
+				existingTransaction.depositedPayment
+			) {
+				await prisma.transaction.update({
+					where: {
+						id:
+							existingTransaction.cashedPayment?.id ||
+							existingTransaction.depositedPayment?.id,
+					},
+					data: {
+						cashingTransactionId: null,
+						depositTransactionId: null,
+					},
+				});
 			}
 
 			// Soft delete
@@ -349,7 +372,7 @@ export const TransactionController = {
 			const { id } = req.params;
 			const { userId } = req.user!;
 			const body = req.body as PaymentCashingDto;
-			
+
 			const transaction = await prisma.transaction.findUnique({
 				where: { id },
 			});

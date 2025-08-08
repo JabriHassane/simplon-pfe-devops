@@ -43,7 +43,7 @@ export default function Users() {
 
 	const handleDelete = () => {
 		if (selectedUser) {
-			deleteUserMutation.mutate(selectedUser.id);
+			deleteUserMutation.mutateAsync(selectedUser.id);
 		}
 	};
 

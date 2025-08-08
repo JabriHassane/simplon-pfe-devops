@@ -1,16 +1,11 @@
-import {
-	TextField,
-	FormControl,
-	InputLabel,
-	Select,
-	MenuItem,
-	Grid,
-} from '@mui/material';
+import { TextField, Grid } from '@mui/material';
 import { useForm, Controller, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
 	CreateOrderDto,
+	CreatePaymentDto,
+	PaymentDto,
 	type OrderDto,
 } from '../../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
@@ -20,9 +15,13 @@ import {
 	useCreateOrder,
 	useUpdateOrder,
 } from '../../../hooks/ressources/useOrders';
-import { ORDER_STATUSES } from '../../../../../shared/constants';
-import { DICT } from '../../../i18n/fr';
 import { OrderPayments } from './OrderPayments';
+import type { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
+import { useContext, useEffect } from 'react';
+import { AuthContext } from '../../../contexts/AuthContext';
+import PaymentFormPopup from './OrderPaymentFormPopup';
+import usePopups from '../../../hooks/usePopups';
+import ConfirmationPopup from '../../shared/ConfirmationPopup';
 
 interface OrderFormProps {
 	init: OrderDto | null;
@@ -31,16 +30,19 @@ interface OrderFormProps {
 }
 
 export default function OrderForm({ init, onClose, type }: OrderFormProps) {
+	const [user] = useContext(AuthContext);
+
 	const methods = useForm({
 		resolver: zodResolver(CreateOrderDto),
 		defaultValues: {
 			date: init?.date || dayjs().toISOString(),
-			agentId: init?.agentId || '',
-			contactId: init?.contactId || '',
+			agentId: init?.agentId || user?.id,
+			contactId: init?.contactId,
 			payments: init?.payments || [],
-			note: init?.note || '',
-			status: init?.status || 'pending',
 			type: init?.type || type,
+			totalPrice: init?.totalPrice,
+			receiptNumber: init?.receiptNumber,
+			invoiceNumber: init?.invoiceNumber,
 		},
 	});
 
@@ -49,11 +51,46 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 		handleSubmit,
 		control,
 		setValue,
-		formState: { errors, isValid },
+		formState: { errors },
+		watch,
 	} = methods;
+
+	console.log('payments', init?.payments);
+	console.log('errors', errors);
 
 	const createOrderMutation = useCreateOrder(onClose);
 	const updateOrderMutation = useUpdateOrder(onClose);
+
+	const {
+		openFormPopup,
+		openDeletePopup,
+		selectedResource: selectedPayment,
+		selectedIndex,
+		handleOpenFormPopup,
+		handleOpenDeletePopup,
+		handleClosePopup,
+	} = usePopups<TransactionDto>();
+
+	const orderPayments = (watch('payments') || []) as TransactionDto[];
+
+	const handlePaymentSubmit = (payment: CreatePaymentDto) => {
+		const newPayments = [...orderPayments];
+		if (selectedPayment) {
+			newPayments[selectedIndex] = payment as TransactionDto;
+		} else {
+			newPayments.push(payment as TransactionDto);
+		}
+		setValue('payments', newPayments as PaymentDto[]);
+		console.log(newPayments);
+		handleClosePopup();
+	};
+
+	const handlePaymentRemove = () => {
+		const newPayments = [...orderPayments];
+		newPayments.splice(selectedIndex, 1);
+		setValue('payments', newPayments as PaymentDto[]);
+		handleClosePopup();
+	};
 
 	const onSubmit = async (data: CreateOrderDto) => {
 		if (init) {
@@ -66,17 +103,28 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 		}
 	};
 
+	const totalPrice = watch('totalPrice') || 0;
+	const formPayments = watch('payments') || [];
+	const totalPaid = formPayments.reduce(
+		(acc, payment) => acc + (payment.amount || 0),
+		0
+	);
+	const totalDue = totalPrice - totalPaid;
+
+	useEffect(() => {
+		setValue('totalPaid', totalPaid);
+	}, [totalPaid]);
+
 	return (
 		<FormProvider {...methods}>
 			<ResourceForm
 				onSubmit={handleSubmit(onSubmit)}
-				isValid={isValid}
 				isLoading={
 					createOrderMutation.isPending || updateOrderMutation.isPending
 				}
 			>
 				<Grid container spacing={2}>
-					<Grid size={6}>
+					<Grid size={12}>
 						<Controller
 							name='date'
 							control={control}
@@ -98,31 +146,10 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 					</Grid>
 
 					<Grid size={6}>
-						<FormControl fullWidth>
-							<InputLabel>Statut</InputLabel>
-							<Select
-								{...register('status')}
-								label='Statut'
-								error={!!errors.status}
-								required
-								defaultValue='pending'
-							>
-								{ORDER_STATUSES.map((status) => (
-									<MenuItem key={status} value={status}>
-										{DICT.orderStatus[status]}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Grid>
-
-					<Grid size={6}>
 						<ResourcePickerField
 							label='Contact'
 							init={init?.contact?.name}
-							onChange={({ id }) => {
-								setValue('contactId', id);
-							}}
+							onChange={({ id }) => setValue('contactId', id)}
 							resourceType='contact'
 							error={!!errors.contactId}
 							helperText={errors.contactId?.message as string}
@@ -133,10 +160,8 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Agent'
-							init={init?.agent?.name}
-							onChange={({ id }) => {
-								setValue('agentId', id);
-							}}
+							init={init?.agent?.name || user?.name}
+							onChange={({ id }) => setValue('agentId', id)}
 							resourceType='user'
 							error={!!errors.agentId}
 							helperText={errors.agentId?.message as string}
@@ -183,11 +208,13 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 							fullWidth
 							label='Montant payé'
 							type='number'
-							{...register('totalPaid', { valueAsNumber: true })}
 							variant='outlined'
-							error={!!errors.totalPaid}
-							helperText={errors.totalPaid?.message as string}
-							required
+							value={totalPaid}
+							slotProps={{
+								input: {
+									readOnly: true,
+								},
+							}}
 						/>
 					</Grid>
 
@@ -196,32 +223,43 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 							fullWidth
 							label='Reste à payer'
 							type='number'
-							{...register('totalDue', { valueAsNumber: true })}
+							value={totalDue}
+							slotProps={{
+								input: {
+									readOnly: true,
+								},
+							}}
 							variant='outlined'
-							error={!!errors.totalDue}
-							helperText={errors.totalDue?.message as string}
-							required
 						/>
 					</Grid>
 
 					<Grid size={12}>
-						<TextField
-							fullWidth
-							label='Note'
-							{...register('note')}
-							variant='outlined'
-							multiline
-							rows={3}
-							error={!!errors.note}
-							helperText={errors.note?.message as string}
+						<OrderPayments
+							payments={orderPayments}
+							onOpenFormPopup={handleOpenFormPopup}
+							onOpenDeletePopup={handleOpenDeletePopup}
+							showRef={!!init}
 						/>
-					</Grid>
-
-					<Grid size={12}>
-						<OrderPayments />
 					</Grid>
 				</Grid>
 			</ResourceForm>
+
+			{openFormPopup && (
+				<PaymentFormPopup
+					init={selectedPayment}
+					onSubmit={handlePaymentSubmit}
+					onClose={handleClosePopup}
+				/>
+			)}
+
+			{openDeletePopup && (
+				<ConfirmationPopup
+					onClose={handleClosePopup}
+					title={`Supprimer ${selectedPayment?.ref}`}
+					description='Voulez-vous vraiment supprimer ce paiement ?'
+					onDelete={handlePaymentRemove}
+				/>
+			)}
 		</FormProvider>
 	);
 }

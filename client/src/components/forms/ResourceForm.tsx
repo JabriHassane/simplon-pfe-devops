@@ -4,16 +4,10 @@ import { Box, Button, Divider } from '@mui/material';
 interface ResourceFormProps {
 	onSubmit: (data: any) => void;
 	isLoading?: boolean;
-	isValid?: boolean;
 	children: React.ReactNode;
 }
 
-function ResourceForm({
-	onSubmit,
-	isLoading,
-	isValid,
-	children,
-}: ResourceFormProps) {
+function ResourceForm({ onSubmit, isLoading, children }: ResourceFormProps) {
 	return (
 		<Box component='form' onSubmit={onSubmit}>
 			<Divider sx={{ mb: 1 }} />

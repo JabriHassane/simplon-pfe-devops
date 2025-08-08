@@ -18,7 +18,8 @@ export const CreateUserDto = z.object({
 export const UpdateUserDto = CreateUserDto.extend({
 	password: z
 		.string()
-		.optional()
+		.nullish()
+		.nullable()
 		.refine((val) => !val || val.length >= 6, {
 			message: 'Le mot de passe doit contenir au moins 6 caractères',
 		}),

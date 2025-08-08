@@ -56,7 +56,7 @@ export default function Transactions() {
 
 	const handleDelete = () => {
 		if (selectedTransaction) {
-			deleteTransactionMutation.mutate(selectedTransaction.id);
+			deleteTransactionMutation.mutateAsync(selectedTransaction.id);
 		}
 	};
 

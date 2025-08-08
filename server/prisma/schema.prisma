@@ -71,6 +71,11 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+enum ContactType {
+  client
+  supplier
+}
+
 model Contact {
   id        String    @id @default(cuid())
   ref       String    @unique
@@ -80,8 +85,8 @@ model Contact {
 
   name    String
   phone   String?
-  address String? @default("")
-  type    String // 'client' or 'supplier'
+  address String?     @default("")
+  type    ContactType
 
   // Relations
   orders Order[]
@@ -97,10 +102,13 @@ model Contact {
 }
 
 enum OrderStatus {
-  pending
   partially_paid
   paid
-  cancelled
+}
+
+enum OrderType {
+  sale
+  purchase
 }
 
 model Order {
@@ -117,11 +125,8 @@ model Order {
 
   totalPrice Float
   totalPaid  Float
-  totalDue   Float
 
-  status OrderStatus
-  note   String?
-  type   String // 'sale' or 'purchase'
+  type OrderType
 
   // Relations
   agentId String

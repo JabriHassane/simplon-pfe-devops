@@ -8,10 +8,8 @@ export const DICT = {
 		deposit: 'Dépôt',
 	},
 	orderStatus: {
-		pending: 'En attente',
 		partially_paid: 'Règlement',
 		paid: 'Payé',
-		cancelled: 'Annulé',
 	},
 	methods: {
 		cash: 'Espèce',

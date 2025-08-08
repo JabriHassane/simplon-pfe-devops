@@ -52,7 +52,7 @@ export default function Orders({ type }: OrdersPageProps) {
 
 	const handleDelete = () => {
 		if (selectedOrder) {
-			deleteOrderMutation.mutate(selectedOrder.id);
+			deleteOrderMutation.mutateAsync(selectedOrder.id);
 		}
 	};
 
@@ -82,27 +82,32 @@ export default function Orders({ type }: OrdersPageProps) {
 					{ id: 'statut', name: 'Statut' },
 				]}
 				rows={
-					orders?.map((order) => ({
-						item: order,
-						data: {
-							ref: order.ref,
-							date: formatDate(order.date),
-							agent: order.agent?.name,
-							contact: order.contact?.name,
-							total: formatPrice(order.totalPrice),
-							paid: formatPrice(order.totalPaid),
-							due: formatPrice(order.totalDue),
-							statut: (
-								<Chip
-									key={order.id}
-									label={DICT.orderStatus[order.status]}
-									color={ORDER_STATUS_COLOR_MAP[order.status]}
-									size='small'
-									sx={{ px: 0.5 }}
-								/>
-							),
-						},
-					})) || []
+					orders?.map((order) => {
+						const orderStatus =
+							order.totalPrice === order.totalPaid ? 'paid' : 'partially_paid';
+
+						return {
+							item: order,
+							data: {
+								ref: order.ref,
+								date: formatDate(order.date),
+								agent: order.agent?.name,
+								contact: order.contact?.name,
+								total: formatPrice(order.totalPrice),
+								paid: formatPrice(order.totalPaid),
+								due: formatPrice(order.totalPrice - order.totalPaid),
+								statut: (
+									<Chip
+										key={order.id}
+										label={DICT.orderStatus[orderStatus]}
+										color={ORDER_STATUS_COLOR_MAP[orderStatus]}
+										size='small'
+										sx={{ px: 0.5 }}
+									/>
+								),
+							},
+						};
+					}) || []
 				}
 				onEdit={handleOpenFormPopup}
 				onDelete={handleOpenDeletePopup}

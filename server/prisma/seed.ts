@@ -13,7 +13,14 @@ async function main() {
 	await prisma.contact.deleteMany();
 	await prisma.user.deleteMany();
 
-	const sequences = ['users', 'contacts', 'orders', 'transactions'];
+	const sequences = [
+		'users',
+		'clients',
+		'suppliers',
+		'sales',
+		'purchases',
+		'transactions',
+	];
 
 	for (const sequence of sequences) {
 		await prisma.$executeRawUnsafe(
@@ -75,7 +82,7 @@ async function main() {
 	const clients = await Promise.all([
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Mohammed Alami',
 				phone: '0612345678',
@@ -85,7 +92,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Amina Benjelloun',
 				phone: '0623456789',
@@ -95,7 +102,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Karim Tazi',
 				phone: '0634567890',
@@ -105,7 +112,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Sara El Fassi',
 				phone: '0645678901',
@@ -115,7 +122,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Hassan Berrada',
 				phone: '0656789012',
@@ -125,7 +132,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Leila Kadiri',
 				phone: '0667890123',
@@ -135,7 +142,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('clients'),
 				type: 'client',
 				name: 'Youssef Chraibi',
 				phone: '0678901234',
@@ -151,7 +158,7 @@ async function main() {
 	const suppliers = await Promise.all([
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('suppliers'),
 				type: 'supplier',
 				name: 'Pépinière Atlas',
 				phone: '0522345678',
@@ -161,7 +168,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('suppliers'),
 				type: 'supplier',
 				name: 'Jardins du Souss',
 				phone: '0523456789',
@@ -171,7 +178,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('suppliers'),
 				type: 'supplier',
 				name: 'GardenTools Pro',
 				phone: '0524567890',
@@ -181,7 +188,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('suppliers'),
 				type: 'supplier',
 				name: 'Fleurs du Rif',
 				phone: '0525678901',
@@ -191,7 +198,7 @@ async function main() {
 		}),
 		prisma.contact.create({
 			data: {
-				ref: await getNextRef('contacts'),
+				ref: await getNextRef('suppliers'),
 				type: 'supplier',
 				name: 'Bio Plantes Maroc',
 				phone: '0526789012',
@@ -207,15 +214,12 @@ async function main() {
 	const sales = await Promise.all([
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('sales'),
 				date: '2024-01-15T00:00:00.000Z',
 				receiptNumber: 'REC-001',
 				invoiceNumber: 'INV-001',
 				totalPrice: 389.98,
 				totalPaid: 389.98,
-				totalDue: 0,
-				status: 'paid',
-				note: 'Livraison à domicile',
 				type: 'sale',
 				agentId: agent.id,
 				contactId: clients[0].id,
@@ -224,15 +228,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('sales'),
 				date: '2024-01-20T00:00:00.000Z',
 				receiptNumber: 'REC-002',
 				invoiceNumber: 'INV-002',
 				totalPrice: 279.98,
 				totalPaid: 200,
-				totalDue: 79.98,
-				status: 'partially_paid',
-				note: 'Paiement en plusieurs fois',
 				type: 'sale',
 				agentId: admin1.id,
 				contactId: clients[1].id,
@@ -241,15 +242,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('sales'),
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'REC-003',
 				invoiceNumber: 'INV-003',
 				totalPrice: 1099.98,
 				totalPaid: 0,
-				totalDue: 1099.98,
-				status: 'pending',
-				note: 'Commande en attente de paiement',
 				type: 'sale',
 				agentId: agent.id,
 				contactId: clients[2].id,
@@ -258,15 +256,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('sales'),
 				date: '2024-02-01T00:00:00.000Z',
 				receiptNumber: 'REC-004',
 				invoiceNumber: 'INV-004',
 				totalPrice: 599.97,
 				totalPaid: 599.97,
-				totalDue: 0,
-				status: 'paid',
-				note: 'Paiement comptant',
 				type: 'sale',
 				agentId: admin2.id,
 				contactId: clients[4].id,
@@ -275,15 +270,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('sales'),
 				date: '2024-02-05T00:00:00.000Z',
 				receiptNumber: 'REC-005',
 				invoiceNumber: 'INV-005',
 				totalPrice: 849.95,
 				totalPaid: 400,
-				totalDue: 449.95,
-				status: 'partially_paid',
-				note: 'Paiement échelonné',
 				type: 'sale',
 				agentId: admin1.id,
 				contactId: clients[5].id,
@@ -298,15 +290,12 @@ async function main() {
 	const purchases = await Promise.all([
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('purchases'),
 				date: '2024-01-10T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-001',
 				invoiceNumber: 'ACH-INV-001',
 				totalPrice: 800,
 				totalPaid: 800,
-				totalDue: 0,
-				status: 'paid',
-				note: 'Stock initial plantes',
 				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[0].id,
@@ -315,15 +304,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('purchases'),
 				date: '2024-01-18T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-002',
 				invoiceNumber: 'ACH-INV-002',
 				totalPrice: 600,
 				totalPaid: 400,
-				totalDue: 200,
-				status: 'partially_paid',
-				note: 'Réapprovisionnement arbres',
 				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[1].id,
@@ -332,15 +318,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('purchases'),
 				date: '2024-01-25T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-003',
 				invoiceNumber: 'ACH-INV-003',
 				totalPrice: 900,
 				totalPaid: 500,
-				totalDue: 400,
-				status: 'partially_paid',
-				note: 'Commande matériel',
 				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[2].id,
@@ -349,15 +332,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('purchases'),
 				date: '2024-02-01T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-004',
 				invoiceNumber: 'ACH-INV-004',
 				totalPrice: 1200,
 				totalPaid: 1200,
-				totalDue: 0,
-				status: 'paid',
-				note: 'Commande plantes exotiques',
 				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[3].id,
@@ -366,15 +346,12 @@ async function main() {
 		}),
 		prisma.order.create({
 			data: {
-				ref: await getNextRef('orders'),
+				ref: await getNextRef('purchases'),
 				date: '2024-02-08T00:00:00.000Z',
 				receiptNumber: 'ACH-REC-005',
 				invoiceNumber: 'ACH-INV-005',
 				totalPrice: 1500,
 				totalPaid: 0,
-				totalDue: 1500,
-				status: 'pending',
-				note: 'Commande saisonnière',
 				type: 'purchase',
 				agentId: superAdmin.id,
 				contactId: suppliers[4].id,

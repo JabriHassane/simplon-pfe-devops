@@ -13,35 +13,39 @@ import dayjs from 'dayjs';
 import ResourceFormPopup from '../../shared/ResourceFormPopup';
 import ResourceForm from '../ResourceForm';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-	TRANSACTION_METHODS,
-	type TransactionMethod,
-} from '../../../../../shared/constants';
+import { TRANSACTION_METHODS } from '../../../../../shared/constants';
 import { DICT } from '../../../i18n/fr';
 import type { UserDto } from '../../../../../shared/dtos/user.dto';
 import { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
+import { useContext } from 'react';
+import { AuthContext } from '../../../contexts/AuthContext';
+import { CreatePaymentDto } from '../../../../../shared/dtos/order.dto';
 
 interface Props {
 	init: TransactionDto | null;
 	onClose: () => void;
-	onSubmit: (data: TransactionDto) => void;
+	onSubmit: (data: CreatePaymentDto) => void;
 }
 
 function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
+	const [user] = useContext(AuthContext);
+
 	const {
 		register,
 		handleSubmit,
-		formState: { isValid, errors },
+		formState: { errors },
 		control,
 		setValue,
 	} = useForm({
-		resolver: zodResolver(TransactionDto),
+		resolver: zodResolver(CreatePaymentDto),
 		defaultValues: {
-			date: init?.date || '',
-			agentId: init?.agent?.id,
-			agent: init?.agent,
-			amount: init?.amount || 0,
-			method: init?.method as TransactionMethod,
+			date: init?.date || dayjs().toISOString(),
+			agentId: init?.agentId || user?.id,
+			agent: init?.agent || user,
+			amount: init?.amount,
+			method: init?.method || 'cash',
+			cashingTransactionId: init?.cashingTransactionId,
+			depositTransactionId: init?.depositTransactionId,
 		},
 	});
 
@@ -50,7 +54,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 			onClose={onClose}
 			title={init ? `Modifier ${init.ref}` : 'Nouveau paiement'}
 		>
-			<ResourceForm onSubmit={handleSubmit(onSubmit)} isValid={isValid}>
+			<ResourceForm onSubmit={handleSubmit(onSubmit)}>
 				<Grid container spacing={2}>
 					<Grid size={6}>
 						<Controller
@@ -63,6 +67,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 									onChange={(date) => field.onChange(date?.toISOString())}
 									slotProps={{
 										textField: {
+											required: true,
 											error: !!errors.date,
 											helperText: errors.date?.message as string,
 										},
@@ -76,25 +81,27 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 					<Grid size={6}>
 						<ResourcePickerField
 							label='Agent'
-							init={init?.agent?.name}
-							onChange={(agent) => {
-								setValue('agent', agent as UserDto);
+							init={init?.agent?.name || user?.name}
+							onChange={(user) => {
+								setValue('agentId', user.id);
+								setValue('agent', user as UserDto);
 							}}
 							resourceType='user'
-							error={!!errors.agent}
-							helperText={errors.agent?.message}
+							error={!!errors.agentId}
+							helperText={errors.agentId?.message}
+							required
 						/>
 					</Grid>
 
-					<Grid size={4}>
-						<FormControl fullWidth>
+					<Grid size={6}>
+						<FormControl fullWidth required>
 							<InputLabel>Mode de paiement</InputLabel>
 							<Select
 								{...register('method')}
 								label='Mode de paiement'
 								error={!!errors.method}
 								required
-								defaultValue={init?.method}
+								defaultValue={init?.method || 'cash'}
 							>
 								{TRANSACTION_METHODS.map((method) => (
 									<MenuItem key={method} value={method}>
@@ -105,7 +112,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 						</FormControl>
 					</Grid>
 
-					<Grid size={4}>
+					<Grid size={6}>
 						<TextField
 							label='Montant'
 							type='number'

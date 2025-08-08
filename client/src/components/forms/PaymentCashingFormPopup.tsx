@@ -11,6 +11,8 @@ import {
 import { Grid } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
+import { useContext } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
 
 function PaymentCashingFormPopup({
 	onClose,
@@ -23,12 +25,14 @@ function PaymentCashingFormPopup({
 	paymentId: string;
 	type: 'cash' | 'deposit';
 }) {
+	const [user] = useContext(AuthContext);
+
 	const methods = useForm({
 		resolver: zodResolver(PaymentCashingDto),
 		defaultValues: {
 			id: paymentId,
 			date: dayjs().toISOString(),
-			agentId: '',
+			agentId: user?.id || '',
 		},
 	});
 
@@ -36,7 +40,7 @@ function PaymentCashingFormPopup({
 		handleSubmit,
 		control,
 		setValue,
-		formState: { errors, isValid },
+		formState: { errors },
 	} = methods;
 
 	const mutation =
@@ -51,7 +55,6 @@ function PaymentCashingFormPopup({
 			<FormProvider {...methods}>
 				<ResourceForm
 					onSubmit={handleSubmit(onSubmit)}
-					isValid={isValid}
 					isLoading={mutation.isPending}
 				>
 					<Grid container spacing={2}>
@@ -79,6 +82,7 @@ function PaymentCashingFormPopup({
 						<Grid size={6}>
 							<ResourcePickerField
 								label='Agent'
+								init={user?.name}
 								onChange={({ id }) => {
 									setValue('agentId', id);
 								}}

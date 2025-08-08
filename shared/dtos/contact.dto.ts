@@ -5,8 +5,8 @@ export type ContactType = z.infer<typeof ContactType>;
 
 export const CreateContactDto = z.object({
 	name: z.string().min(1, 'Le nom du contact ne doit pas être vide'),
-	phone: z.string().optional(),
-	address: z.string().optional(),
+	phone: z.string().nullish(),
+	address: z.string().nullish(),
 	type: ContactType,
 });
 

@@ -3,8 +3,10 @@ import { PrismaClient } from '@prisma/client';
 const TABLE_PREFIX_MAP = {
 	users: 'UTI',
 	accounts: 'COM',
-	contacts: 'CON',
-	orders: 'ORD',
+	clients: 'CLI',
+	suppliers: 'FOU',
+	sales: 'VEN',
+	purchases: 'ACH',
 	transactions: 'TRA',
 };
 

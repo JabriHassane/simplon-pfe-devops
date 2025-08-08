@@ -30,10 +30,8 @@ export default function Contacts({ type }: Props) {
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters<ContactFiltersData>(
-		() => {
-			handlePageChange(0);
-		}
+	const { filters, handleFiltersChange } = useFilters<ContactFiltersData>(() =>
+		handlePageChange(0)
 	);
 
 	const { data, isLoading, error } = useContacts({
@@ -49,7 +47,7 @@ export default function Contacts({ type }: Props) {
 
 	const handleDelete = () => {
 		if (selectedContact) {
-			deleteContactMutation.mutate(selectedContact.id);
+			deleteContactMutation.mutateAsync(selectedContact.id);
 		}
 	};
 

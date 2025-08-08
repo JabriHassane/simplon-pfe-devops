@@ -19,7 +19,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SnackbarProvider } from 'notistack';
 import { AuthContext, AuthProvider } from './contexts/AuthContext';
-import logo from './assets/logo.png';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
 import Login from './pages/Login';
@@ -30,7 +29,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useLogout } from './hooks/useAuth';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
-import Reports from './pages/Reports';
 import Users from './pages/Users';
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { useContext } from 'react';
@@ -73,7 +71,7 @@ function AppContent() {
 					>
 						<Toolbar>
 							<Box padding={3}>
-								<img src={logo} alt='logo' style={{ width: '100%' }} />
+								{/* <img src={logo} alt='logo' style={{ width: '100%' }} /> */}
 							</Box>
 						</Toolbar>
 
@@ -116,7 +114,6 @@ function AppContent() {
 							<Route path='/sales' element={<Orders type='sale' />} />
 							<Route path='/purchases' element={<Orders type='purchase' />} />
 							<Route path='/transactions' element={<Transactions />} />
-							<Route path='/reports' element={<Reports />} />
 							<Route path='/users' element={<Users />} />
 						</Routes>
 					</Box>

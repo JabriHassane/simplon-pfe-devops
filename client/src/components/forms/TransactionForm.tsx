@@ -39,7 +39,7 @@ export default function TransactionForm({
 		handleSubmit,
 		control,
 		setValue,
-		formState: { errors, isValid },
+		formState: { errors },
 	} = useForm({
 		resolver: zodResolver(CreateTransactionDto),
 		defaultValues: {
@@ -71,7 +71,6 @@ export default function TransactionForm({
 	return (
 		<ResourceForm
 			onSubmit={handleSubmit(onSubmit)}
-			isValid={isValid}
 			isLoading={
 				createTransactionMutation.isPending ||
 				updateTransactionMutation.isPending

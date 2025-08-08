@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ORDER_STATUSES, ORDER_TYPES, TRANSACTION_METHODS } from '../constants';
+import { ORDER_TYPES, TRANSACTION_METHODS } from '../constants';
 import { UserDto } from './user.dto';
 import { ContactDto } from './contact.dto';
 
@@ -7,9 +7,10 @@ export const CreatePaymentDto = z.object({
 	date: z.string().min(1, 'Date requise'),
 	amount: z.number().min(0, 'Le montant doit être positif'),
 	agentId: z.string(),
+	agent: UserDto.nullish(),
 	method: z.enum(TRANSACTION_METHODS),
-	cashingTransactionId: z.string().optional(),
-	depositTransactionId: z.string().optional(),
+	cashingTransactionId: z.string().nullish(),
+	depositTransactionId: z.string().nullish(),
 });
 
 export const PaymentCashingDto = z.object({
@@ -23,36 +24,32 @@ export const CreateOrderDto = z.object({
 	date: z.string().min(1, 'Date requise'),
 
 	agentId: z.string(),
-	contactId: z.string().optional(),
+	contactId: z.string().nullish(),
 
-	receiptNumber: z.string().optional(),
-	invoiceNumber: z.string().optional(),
+	receiptNumber: z.string().nullish(),
+	invoiceNumber: z.string().nullish(),
 
 	totalPrice: z.number(),
 	totalPaid: z.number(),
-	totalDue: z.number(),
 
 	payments: z.array(CreatePaymentDto),
-	status: z.enum(ORDER_STATUSES).optional().default('pending'),
-
-	note: z.string().optional(),
 });
 
 export const UpdateOrderDto = CreateOrderDto;
 
-const PaymentDto = z.object({
+export const PaymentDto = z.object({
 	id: z.string(),
 	ref: z.string(),
 	...CreatePaymentDto.shape,
-	agent: UserDto.optional(),
+	agent: UserDto.nullish(),
 });
 
 export const OrderDto = z.object({
 	id: z.string(),
 	ref: z.string(),
 	...CreateOrderDto.shape,
-	agent: UserDto.optional(),
-	contact: ContactDto.optional(),
+	agent: UserDto.nullish(),
+	contact: ContactDto.nullish(),
 	payments: z.array(PaymentDto),
 });
 

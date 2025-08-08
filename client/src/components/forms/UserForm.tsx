@@ -25,7 +25,7 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 	const {
 		register,
 		handleSubmit,
-		formState: { errors, isValid },
+		formState: { errors },
 		control,
 	} = useForm({
 		resolver: zodResolver(init ? UpdateUserDto : CreateUserDto),
@@ -60,7 +60,6 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 	return (
 		<ResourceForm
 			onSubmit={handleSubmit(onSubmit)}
-			isValid={isValid}
 			isLoading={createUserMutation.isPending || updateUserMutation.isPending}
 		>
 			<Grid container spacing={2}>

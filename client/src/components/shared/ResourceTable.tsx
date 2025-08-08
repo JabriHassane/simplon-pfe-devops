@@ -184,19 +184,18 @@ function Row({
 		handleClosePopup: handleCloseUndoDepositPopup,
 	} = usePopups<TransactionDto>();
 
-	const { mutate: cashPayment, isPending: isCashing } = useCashPayment();
-	const { mutate: depositPayment, isPending: isDepositing } =
-		useDepositPayment();
-	const { mutate: undoCashing, isPending: isUndoingCashing } =
-		useUndoPaymentCashing();
-	const { mutate: undoDeposit, isPending: isUndoingDeposit } =
-		useUndoPaymentDeposit();
+	const undoCashingMutation = useUndoPaymentCashing(
+		handleCloseUndoCashingPopup
+	);
+	const undoDepositMutation = useUndoPaymentDeposit(
+		handleCloseUndoDepositPopup
+	);
 
 	const deleteTransactionMutation = useDeleteTransaction(handleClosePopup);
 
 	const handleDelete = () => {
 		if (selectedTransaction) {
-			deleteTransactionMutation.mutate(selectedTransaction.id);
+			deleteTransactionMutation.mutateAsync(selectedTransaction.id);
 		}
 	};
 
@@ -258,7 +257,7 @@ function Row({
 											: handleOpenDepositPopup(null)
 									}
 									size='small'
-									disabled={isDepositing || !!payment.cashingTransactionId}
+									disabled={!!payment.cashingTransactionId}
 									color={payment.depositTransactionId ? 'warning' : 'default'}
 								>
 									<AccountBalanceOutlined />
@@ -279,7 +278,7 @@ function Row({
 											: handleOpenCashingPopup(null)
 									}
 									size='small'
-									disabled={isCashing || !!payment.depositTransactionId}
+									disabled={!!payment.depositTransactionId}
 									color={payment.cashingTransactionId ? 'warning' : 'default'}
 								>
 									<PaidOutlined />
@@ -302,7 +301,7 @@ function Row({
 								<ConfirmationPopup
 									title="Annuler l'encaissement"
 									description={`Voulez-vous vraiment annuler l'encaissement de ce paiement ?`}
-									onDelete={() => undoCashing(payment.id)}
+									onDelete={() => undoCashingMutation.mutateAsync(payment.id)}
 									onClose={handleCloseUndoCashingPopup}
 								/>
 							)}
@@ -311,7 +310,7 @@ function Row({
 								<ConfirmationPopup
 									title='Annuler le dépôt'
 									description={`Voulez-vous vraiment annuler le dépôt de ce paiement ?`}
-									onDelete={() => undoDeposit(payment.id)}
+									onDelete={() => undoDepositMutation.mutateAsync(payment.id)}
 									onClose={handleCloseUndoDepositPopup}
 								/>
 							)}

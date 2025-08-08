@@ -23,7 +23,7 @@ function ConfirmationPopup({
 	const {
 		register,
 		handleSubmit,
-		formState: { errors, isValid },
+		formState: { errors },
 	} = useForm<VerifyPasswordDto>({
 		resolver: zodResolver(VerifyPasswordDto),
 		mode: 'onChange',

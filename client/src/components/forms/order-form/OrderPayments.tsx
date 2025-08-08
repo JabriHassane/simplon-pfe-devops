@@ -1,58 +1,32 @@
-import { useFormContext } from 'react-hook-form';
 import { Box, Typography, Button } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import type {
-	CreateOrderDto,
-	PaymentDto,
-} from '../../../../../shared/dtos/order.dto';
 import ResourceTable from '../../shared/ResourceTable';
 import { formatDate } from '../../../utils/date.utils';
 import { formatPrice } from '../../../utils/price.utils';
-import PaymentFormPopup from './OrderPaymentFormPopup';
-import { useEffect, useState } from 'react';
-import usePopups from '../../../hooks/usePopups';
-import ConfirmationPopup from '../../shared/ConfirmationPopup';
 import type { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
 
 interface OrderPaymentsProps {
-	init?: TransactionDto[];
+	payments: TransactionDto[];
+	onOpenFormPopup?: (resource: TransactionDto | null, index?: number) => void;
+	onOpenDeletePopup?: (resource: TransactionDto, index: number) => void;
+	showRef?: boolean;
 }
 
-export const OrderPayments = ({ init }: OrderPaymentsProps) => {
-	const { setValue } = useFormContext<CreateOrderDto>();
+export const OrderPayments = ({
+	payments,
+	onOpenFormPopup,
+	onOpenDeletePopup,
+	showRef = false,
+}: OrderPaymentsProps) => {
+	const headers = [
+		{ id: 'date', name: 'Date' },
+		{ id: 'agent', name: 'Agent' },
+		{ id: 'amount', name: 'Montant' },
+	];
 
-	const {
-		openFormPopup,
-		openDeletePopup,
-		selectedResource: selectedPayment,
-		selectedIndex,
-		handleOpenFormPopup,
-		handleOpenDeletePopup,
-		handleClosePopup,
-	} = usePopups<TransactionDto>();
-
-	const [payments, setPayments] = useState<TransactionDto[]>(init || []);
-
-	const handleSubmit = (payment: TransactionDto) => {
-		const newPayments = [...payments];
-		if (selectedPayment) {
-			newPayments[selectedIndex] = payment;
-		} else {
-			newPayments.push(payment);
-		}
-		setPayments(newPayments);
-		handleClosePopup();
-	};
-
-	const handleRemove = () => {
-		const newPayments = [...payments];
-		newPayments.splice(selectedIndex, 1);
-		setPayments(newPayments);
-	};
-
-	useEffect(() => {
-		setValue('payments', payments as PaymentDto[]);
-	}, [payments]);
+	if (showRef) {
+		headers.unshift({ id: 'ref', name: 'Ref' });
+	}
 
 	return (
 		<>
@@ -66,7 +40,7 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 				<Typography variant='h6'>Paiements</Typography>
 
 				<Button
-					onClick={() => handleOpenFormPopup(null)}
+					onClick={() => onOpenFormPopup?.(null)}
 					variant='contained'
 					disableElevation
 					startIcon={<Add />}
@@ -76,12 +50,7 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 			</Box>
 
 			<ResourceTable
-				headers={[
-					{ id: 'ref', name: 'Ref' },
-					{ id: 'date', name: 'Date' },
-					{ id: 'agent', name: 'Agent' },
-					{ id: 'amount', name: 'Montant' },
-				]}
+				headers={headers}
 				rows={payments.map((payment) => ({
 					item: payment,
 					data: {
@@ -91,26 +60,9 @@ export const OrderPayments = ({ init }: OrderPaymentsProps) => {
 						amount: formatPrice(payment.amount),
 					},
 				}))}
-				onEdit={handleOpenFormPopup}
-				onDelete={handleOpenDeletePopup}
+				onEdit={(item, index) => onOpenFormPopup?.(item, index)}
+				onDelete={(item, index) => onOpenDeletePopup?.(item, index)}
 			/>
-
-			{openFormPopup && (
-				<PaymentFormPopup
-					init={selectedPayment}
-					onSubmit={handleSubmit}
-					onClose={handleClosePopup}
-				/>
-			)}
-
-			{openDeletePopup && (
-				<ConfirmationPopup
-					onClose={handleClosePopup}
-					title={`Supprimer ${selectedPayment?.ref}`}
-					description='Voulez-vous vraiment supprimer ce paiement ?'
-					onDelete={handleRemove}
-				/>
-			)}
 		</>
 	);
 };

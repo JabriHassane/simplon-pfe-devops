@@ -1,17 +1,20 @@
-import { useContacts } from '../../hooks/ressources/useContacts';
-import { useUsers } from '../../hooks/ressources/useUsers';
+import {
+	useContacts,
+	type ContactFilters,
+} from '../../hooks/ressources/useContacts';
+import { useUsers, type UserFilters } from '../../hooks/ressources/useUsers';
 import type { ResourceType } from '../../components/shared/ResourcePickerPopup';
 import type {
 	PaginatedResponse,
 	PaginationParams,
 } from '../../types/pagination.types';
-import { useOrders } from './useOrders';
-import { useTransactions } from './useTransactions';
+import { useOrders, type OrderFilters } from './useOrders';
+import { useTransactions, type TransactionFilters } from './useTransactions';
 import type { UseQueryResult } from '@tanstack/react-query';
 
 export const useResource = <T>(
 	resourceType: ResourceType,
-	params?: PaginationParams
+	params?: PaginationParams & Record<string, any>
 ) => {
 	const hookMap = {
 		contact: useContacts,

@@ -141,17 +141,13 @@ export const ContactController = {
 			}
 
 			// Check if contact has sales or purchases
-			const hasSales = await prisma.sale.findFirst({
+			const hasOrders = await prisma.order.findFirst({
 				where: { contactId: id },
 			});
 
-			const hasPurchases = await prisma.purchase.findFirst({
-				where: { contactId: id },
-			});
-
-			if (hasSales || hasPurchases) {
+			if (hasOrders) {
 				return res.status(400).json({
-					message: 'Cannot delete contact with existing sales or purchases',
+					message: 'Cannot delete contact with existing orders',
 				});
 			}
 
