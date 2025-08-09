@@ -7,12 +7,13 @@ import {
 	MenuItem,
 	Grid,
 	IconButton,
+	InputAdornment,
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
-import { ORDER_STATUSES } from '../../../../shared/constants';
+import { ORDER_STATUSES, type OrderType } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
 
 export interface OrderFiltersData {
@@ -25,130 +26,156 @@ export interface OrderFiltersData {
 }
 
 interface Props {
+	type: OrderType;
 	filters: OrderFiltersData;
 	onFiltersChange: (newFilters: Partial<OrderFiltersData>) => void;
 }
 
-export default function OrderFilters({ filters, onFiltersChange }: Props) {
+export default function OrderFilters({
+	type,
+	filters,
+	onFiltersChange,
+}: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
 			<Grid container spacing={1}>
 				<Grid size={2}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ ref: '' })}
-							disabled={!filters.ref}
-						>
-							<Clear />
-						</IconButton>
-						<TextField
-							value={filters.ref}
-							onChange={(e) => onFiltersChange({ ref: e.target.value })}
-							label='Référence'
-							variant='outlined'
-							placeholder='Rechercher par référence...'
-							fullWidth
-						/>
-					</Box>
+					<TextField
+						value={filters.ref}
+						onChange={(e) => onFiltersChange({ ref: e.target.value })}
+						label='Référence'
+						variant='outlined'
+						placeholder='Rechercher par référence...'
+						fullWidth
+						slotProps={{
+							input: {
+								startAdornment: (
+									<InputAdornment position='start'>
+										<IconButton
+											size='small'
+											onClick={() => onFiltersChange({ ref: '' })}
+										>
+											<Clear />
+										</IconButton>
+									</InputAdornment>
+								),
+							},
+						}}
+					/>
 				</Grid>
 
 				<Grid size={2}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ dateFrom: '' })}
-							disabled={!filters.dateFrom}
-						>
-							<Clear />
-						</IconButton>
-						<DatePicker
-							sx={{ width: '100%' }}
-							label='Date de début'
-							value={filters.dateFrom ? dayjs(filters.dateFrom) : null}
-							onChange={(date) =>
-								onFiltersChange({ dateFrom: date?.toISOString() })
-							}
-						/>
-					</Box>
+					<DatePicker
+						sx={{ width: '100%' }}
+						label='Date de début'
+						value={filters.dateFrom ? dayjs(filters.dateFrom) : null}
+						onChange={(date) =>
+							onFiltersChange({ dateFrom: date?.toISOString() })
+						}
+						slotProps={{
+							textField: {
+								InputProps: {
+									startAdornment: (
+										<InputAdornment position='start'>
+											<IconButton
+												size='small'
+												onClick={() => onFiltersChange({ dateFrom: '' })}
+											>
+												<Clear />
+											</IconButton>
+										</InputAdornment>
+									),
+								},
+							},
+						}}
+					/>
 				</Grid>
 
 				<Grid size={2}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ dateTo: '' })}
-							disabled={!filters.dateTo}
-						>
-							<Clear />
-						</IconButton>
-						<DatePicker
-							sx={{ width: '100%' }}
-							label='Date de fin'
-							value={filters.dateTo ? dayjs(filters.dateTo) : null}
-							onChange={(date) =>
-								onFiltersChange({ dateTo: date?.toISOString() })
-							}
-						/>
-					</Box>
+					<DatePicker
+						sx={{ width: '100%' }}
+						label='Date de fin'
+						value={filters.dateTo ? dayjs(filters.dateTo) : null}
+						onChange={(date) =>
+							onFiltersChange({ dateTo: date?.toISOString() })
+						}
+						slotProps={{
+							textField: {
+								InputProps: {
+									startAdornment: (
+										<InputAdornment position='start'>
+											<IconButton
+												size='small'
+												onClick={() => onFiltersChange({ dateTo: '' })}
+											>
+												<Clear />
+											</IconButton>
+										</InputAdornment>
+									),
+								},
+							},
+						}}
+					/>
 				</Grid>
 
 				<Grid size={2}>
 					<ResourcePickerField
 						label='Agent'
-						init={filters.agentId || ''}
 						onChange={({ id }) => onFiltersChange({ agentId: id })}
 						resourceType='user'
 						placeholder='Sélectionner un agent...'
-						showClearButton
+						clearButtonPosition='start'
 					/>
 				</Grid>
 
 				<Grid size={2}>
 					<ResourcePickerField
-						label='Contact'
-						init={filters.contactId || ''}
+						label={type === 'sale' ? 'Client' : 'Fournisseur'}
 						onChange={({ id }) => onFiltersChange({ contactId: id })}
 						resourceType='contact'
-						placeholder='Sélectionner un contact...'
-						showClearButton
+						placeholder={
+							type === 'sale'
+								? 'Sélectionner un client...'
+								: 'Sélectionner un fournisseur...'
+						}
+						clearButtonPosition='start'
 					/>
 				</Grid>
 
 				<Grid size={2}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ status: '' })}
-							disabled={!filters.status}
-						>
-							<Clear />
-						</IconButton>
-
-						<FormControl fullWidth>
-							<InputLabel>Statut</InputLabel>
-							<Select
-								value={filters.status}
-								onChange={(e) => onFiltersChange({ status: e.target.value })}
-								label='Statut'
-								IconComponent={filters.status ? undefined : undefined}
-								MenuProps={{
-									PaperProps: {
-										style: {
-											maxHeight: 300,
-										},
+					<FormControl fullWidth>
+						<InputLabel>Statut</InputLabel>
+						<Select
+							value={filters.status || ''}
+							onChange={(e) => onFiltersChange({ status: e.target.value })}
+							label='Statut'
+							displayEmpty
+							startAdornment={
+								<InputAdornment position='start'>
+									<IconButton
+										size='small'
+										onClick={() => onFiltersChange({ status: '' })}
+									>
+										<Clear />
+									</IconButton>
+								</InputAdornment>
+							}
+							MenuProps={{
+								PaperProps: {
+									style: {
+										maxHeight: 300,
 									},
-								}}
-							>
-								<MenuItem value=''>Tous</MenuItem>
-								{ORDER_STATUSES.map((status) => (
-									<MenuItem key={status} value={status}>
-										{DICT.orderStatus[status]}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Box>
+								},
+							}}
+						>
+							<MenuItem value=''>Tous</MenuItem>
+							{ORDER_STATUSES.map((status) => (
+								<MenuItem key={status} value={status}>
+									{DICT.orderStatus[status]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 				</Grid>
 			</Grid>
 		</Box>

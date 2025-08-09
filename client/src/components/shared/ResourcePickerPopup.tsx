@@ -20,14 +20,18 @@ import {
 } from '@mui/material';
 import {
 	Search as SearchIcon,
-	Close as CloseIcon,
 	Check as CheckIcon,
+	Add,
 } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
 import type { UserDto } from '../../../../shared/dtos/user.dto';
 import type { ContactDto } from '../../../../shared/dtos/contact.dto';
 import type { OrderDto } from '../../../../shared/dtos/order.dto';
 import type { TransactionDto } from '../../../../shared/dtos/transaction.dto';
+import usePopups from '../../hooks/usePopups';
+import ResourceFormPopup from './ResourceFormPopup';
+import UserForm from '../forms/UserForm';
+import ContactForm from '../forms/ContactForm';
 
 export type ResourceType = 'user' | 'contact' | 'order' | 'transaction';
 export type PickableResourceType = 'user' | 'contact';
@@ -49,6 +53,9 @@ export default function ResourcePickerPopup({
 }: ResourcePickerProps) {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [page, setPage] = useState(0);
+
+	const { openFormPopup, handleOpenFormPopup, handleClosePopup } =
+		usePopups<PickableResource>();
 
 	const {
 		data: resourceData,
@@ -85,7 +92,7 @@ export default function ResourcePickerPopup({
 		setPage(0); // Reset to first page when searching
 	};
 
-	const handlePageChange = (event: unknown, newPage: number) => {
+	const handlePageChange = (newPage: number) => {
 		setPage(newPage);
 	};
 
@@ -111,8 +118,8 @@ export default function ResourcePickerPopup({
 						sx={{ mt: 0, mr: 2 }}
 					/>
 
-					<IconButton onClick={handleClose} size='small'>
-						<CloseIcon />
+					<IconButton onClick={() => handleOpenFormPopup(null)} size='small'>
+						<Add />
 					</IconButton>
 				</Box>
 			</DialogTitle>
@@ -171,7 +178,7 @@ export default function ResourcePickerPopup({
 								component='div'
 								count={pagination.total}
 								page={page}
-								onPageChange={handlePageChange}
+								onPageChange={(_, newPage) => handlePageChange(newPage)}
 								rowsPerPage={pageSize}
 								rowsPerPageOptions={[2, 5, 10, 25, 50]}
 								labelRowsPerPage='Lignes par page:'
@@ -184,6 +191,25 @@ export default function ResourcePickerPopup({
 					</>
 				)}
 			</DialogContent>
+
+			{openFormPopup && (
+				<ResourceFormPopup
+					onClose={handleClosePopup}
+					title={`Nouveau ${
+						resourceType === 'contact' ? 'client' : 'fournisseur'
+					}`}
+				>
+					{resourceType === 'contact' ? (
+						<ContactForm
+							init={null}
+							onClose={handleClosePopup}
+							type={'client'}
+						/>
+					) : (
+						<UserForm init={null} onClose={handleClosePopup} />
+					)}
+				</ResourceFormPopup>
+			)}
 		</Dialog>
 	);
 }

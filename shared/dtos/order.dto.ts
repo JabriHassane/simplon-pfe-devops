@@ -4,6 +4,7 @@ import { UserDto } from './user.dto';
 import { ContactDto } from './contact.dto';
 
 export const CreatePaymentDto = z.object({
+	ref: z.string().nullish(),
 	date: z.string().min(1, 'Date requise'),
 	amount: z.number().min(0, 'Le montant doit être positif'),
 	agentId: z.string(),
@@ -31,6 +32,7 @@ export const CreateOrderDto = z.object({
 
 	totalPrice: z.number(),
 	totalPaid: z.number(),
+	totalDue: z.number(),
 
 	payments: z.array(CreatePaymentDto),
 });
@@ -39,8 +41,8 @@ export const UpdateOrderDto = CreateOrderDto;
 
 export const PaymentDto = z.object({
 	id: z.string(),
-	ref: z.string(),
 	...CreatePaymentDto.shape,
+	ref: z.string(),
 	agent: UserDto.nullish(),
 });
 

@@ -214,10 +214,15 @@ export const OrderController = {
 				}
 			}
 
+			const newPayments = body.payments.filter((payment) => !payment.ref);
+			const updatedPayments = body.payments.filter((payment) => payment.ref);
+
 			// Generate refs for payments before transaction
-			const paymentRefs = await Promise.all(
-				body.payments.map(() => getNextRef('transactions'))
-			);
+			const newRefs: string[] = [];
+
+			for (const _ of newPayments) {
+				newRefs.push(await getNextRef('transactions'));
+			}
 
 			const order = await prisma.order.update({
 				where: { id },
@@ -229,14 +234,14 @@ export const OrderController = {
 					payments: {
 						deleteMany: {},
 						createMany: {
-							data: body.payments.map((item, index) => ({
-								ref: paymentRefs[index],
+							data: [...newPayments, ...updatedPayments].map((item, index) => ({
+								ref: newRefs[index] || item.ref!,
 								amount: item.amount,
 								date: item.date,
 								method: item.method as TransactionMethod,
 								type: body.type as TransactionType,
 								agentId: item.agentId,
-								createdById: userId,
+								[item.ref ? 'updatedById' : 'createdById']: userId,
 							})),
 						},
 					},

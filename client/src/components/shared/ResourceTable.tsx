@@ -1,4 +1,10 @@
-import { Chip, IconButton, TablePagination, Tooltip } from '@mui/material';
+import {
+	Badge,
+	Chip,
+	IconButton,
+	TablePagination,
+	Tooltip,
+} from '@mui/material';
 
 import {
 	Table,
@@ -19,7 +25,10 @@ import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
 import type { OrderDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
-import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
+import {
+	ORDER_STATUS_COLOR_MAP,
+	PAYMENT_METHODS_COLOR_MAP,
+} from '../../../../shared/constants';
 import type { Pagination } from '../../types/pagination.types';
 import {
 	useCashPayment,
@@ -110,7 +119,7 @@ function ResourceTable({
 				<TablePagination
 					component='div'
 					count={pagination.total}
-					page={pagination.page}
+					page={pagination.page - 1}
 					onPageChange={(_, newPage) => onPageChange?.(newPage)}
 					rowsPerPage={pagination.pageSize}
 					onRowsPerPageChange={(event) =>
@@ -202,9 +211,9 @@ function Row({
 	const paymentsHeaders = [
 		{ id: 'ref', name: 'Ref' },
 		{ id: 'date', name: 'Date' },
-		{ id: 'amount', name: 'Montant' },
 		{ id: 'agent', name: 'Agent' },
-		{ id: 'method', name: 'Méthode de paiement' },
+		{ id: 'amount', name: 'Montant' },
+		{ id: 'method', name: 'Méthode' },
 	];
 
 	const order = row.item as OrderDto;
@@ -325,7 +334,9 @@ function Row({
 								color={showPayments ? 'info' : 'default'}
 								disabled={payments.length === 0}
 							>
-								<HistoryOutlined />
+								<Badge badgeContent={payments.length} color='info'>
+									<HistoryOutlined />
+								</Badge>
 							</IconButton>
 						</Tooltip>
 					)}

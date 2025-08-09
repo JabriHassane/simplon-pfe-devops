@@ -44,6 +44,8 @@ async function main() {
 		},
 	});
 
+	return;
+
 	// Create admin users
 	const admin1 = await prisma.user.create({
 		data: {

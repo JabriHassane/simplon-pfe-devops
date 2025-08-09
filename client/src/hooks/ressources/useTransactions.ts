@@ -118,7 +118,9 @@ export const useCashPayment = (callback?: () => void) => {
 				await TransactionService.cashPayment(data);
 
 				queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-				queryClient.removeQueries({ queryKey: transactionKeys.detail(data.id) });
+				queryClient.removeQueries({
+					queryKey: transactionKeys.detail(data.id),
+				});
 
 				queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
 
@@ -142,7 +144,9 @@ export const useDepositPayment = (callback?: () => void) => {
 				await TransactionService.depositPaymentToBank(data);
 
 				queryClient.invalidateQueries({ queryKey: transactionKeys.lists() });
-				queryClient.removeQueries({ queryKey: transactionKeys.detail(data.id) });
+				queryClient.removeQueries({
+					queryKey: transactionKeys.detail(data.id),
+				});
 
 				queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
 

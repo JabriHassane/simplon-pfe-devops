@@ -10,6 +10,7 @@ import {
 	useCreateContact,
 	useUpdateContact,
 } from '../../hooks/ressources/useContacts';
+import useAutoFocus from '../../hooks/useAutoFocus';
 
 interface ContactFormProps {
 	init: ContactDto | null;
@@ -18,6 +19,8 @@ interface ContactFormProps {
 }
 
 export default function ContactForm({ init, onClose, type }: ContactFormProps) {
+	const ref = useAutoFocus(!init);
+
 	const {
 		register,
 		handleSubmit,
@@ -65,6 +68,7 @@ export default function ContactForm({ init, onClose, type }: ContactFormProps) {
 						error={!!errors.name}
 						helperText={errors.name?.message as string}
 						required
+						inputRef={(element) => (ref.current = element)}
 					/>
 				</Grid>
 				<Grid size={6}>

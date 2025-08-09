@@ -5,6 +5,7 @@ import {
 	FormHelperText,
 	IconButton,
 	Box,
+	InputAdornment,
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 import ResourcePickerPopup, {
@@ -26,7 +27,7 @@ interface ResourcePickerFieldProps {
 	helperText?: string;
 	required?: boolean;
 	disabled?: boolean;
-	showClearButton?: boolean;
+	clearButtonPosition?: 'start' | 'end';
 }
 
 export default function ResourcePickerField({
@@ -39,7 +40,7 @@ export default function ResourcePickerField({
 	helperText,
 	required = false,
 	disabled = false,
-	showClearButton = false,
+	clearButtonPosition = 'end',
 }: ResourcePickerFieldProps) {
 	const [open, setOpen] = useState(false);
 	const [selectedResource, setSelectedResource] = useState<Resource | null>(
@@ -62,40 +63,45 @@ export default function ResourcePickerField({
 		setOpen(false);
 	};
 
-	const handleClear = () => {
+	const handleClear = (e: React.MouseEvent<HTMLButtonElement>) => {
+		e.stopPropagation();
 		setSelectedResource(null);
 		onChange({ id: '', name: '' });
 	};
 
 	return (
-		<Box display='flex' alignItems='center' gap={1}>
-			{showClearButton && (
-				<IconButton size='small' onClick={handleClear} disabled={!init}>
-					<Clear />
-				</IconButton>
-			)}
+		<FormControl fullWidth error={error} required={required}>
+			<TextField
+				label={label}
+				value={selectedResource?.name || init || ''}
+				placeholder={placeholder}
+				onClick={handleOpen}
+				disabled={disabled}
+				error={error}
+				required={required}
+				slotProps={{
+					input: {
+						readOnly: true,
+						[clearButtonPosition + 'Adornment']: !required && (
+							<InputAdornment position={clearButtonPosition}>
+								<IconButton size='small' onClick={handleClear}>
+									<Clear />
+								</IconButton>
+							</InputAdornment>
+						),
+					},
+				}}
+				fullWidth
+			/>
+			{helperText && <FormHelperText>{helperText}</FormHelperText>}
 
-			<FormControl fullWidth error={error} required={required}>
-				<TextField
-					label={label}
-					value={selectedResource?.name || init || ''}
-					placeholder={placeholder}
-					onClick={handleOpen}
-					disabled={disabled}
-					error={error}
-					required={required}
-					fullWidth
+			{open && (
+				<ResourcePickerPopup
+					onClose={handleClose}
+					resourceType={resourceType}
+					onSelect={handleSelect}
 				/>
-				{helperText && <FormHelperText>{helperText}</FormHelperText>}
-
-				{open && (
-					<ResourcePickerPopup
-						onClose={handleClose}
-						resourceType={resourceType}
-						onSelect={handleSelect}
-					/>
-				)}
-			</FormControl>
-		</Box>
+			)}
+		</FormControl>
 	);
 }

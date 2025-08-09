@@ -22,6 +22,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import ResourcePickerField from '../shared/ResourcePickerField';
 import { useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
+import useAutoFocus from '../../hooks/useAutoFocus';
 
 interface TransactionFormProps {
 	init: TransactionDto | null;
@@ -34,6 +35,8 @@ export default function TransactionForm({
 }: TransactionFormProps) {
 	const [user] = useContext(AuthContext);
 
+	const ref = useAutoFocus(!init);
+
 	const {
 		register,
 		handleSubmit,
@@ -43,9 +46,9 @@ export default function TransactionForm({
 	} = useForm({
 		resolver: zodResolver(CreateTransactionDto),
 		defaultValues: {
-			date: init?.date || '',
-			agentId: init?.agentId || user?.id || '',
-			amount: init?.amount || 0,
+			date: init?.date || dayjs().toISOString(),
+			agentId: init?.agentId || user?.id,
+			amount: init?.amount,
 			type: init?.type || 'cashing',
 			method: init?.method || 'cash',
 			orderId: init?.orderId || '',
@@ -119,13 +122,12 @@ export default function TransactionForm({
 				<Grid size={6}>
 					<ResourcePickerField
 						label='Agent'
-						init={init?.agent?.name}
-						onChange={({ id }) => {
-							setValue('agentId', id);
-						}}
+						init={init?.agent?.name || user?.name}
+						onChange={({ id }) => setValue('agentId', id)}
 						resourceType='user'
 						error={!!errors.agentId}
 						helperText={errors.agentId?.message as string}
+						required
 					/>
 				</Grid>
 
@@ -138,6 +140,7 @@ export default function TransactionForm({
 						error={!!errors.amount}
 						helperText={errors.amount?.message as string}
 						required
+						inputRef={(element: any) => (ref.current = element)}
 						slotProps={{
 							htmlInput: {
 								min: 0,

@@ -4,8 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import ResourcePickerField from '../../shared/ResourcePickerField';
 import {
 	CreateOrderDto,
-	CreatePaymentDto,
-	PaymentDto,
 	type OrderDto,
 } from '../../../../../shared/dtos/order.dto';
 import dayjs from 'dayjs';
@@ -16,12 +14,9 @@ import {
 	useUpdateOrder,
 } from '../../../hooks/ressources/useOrders';
 import { OrderPayments } from './OrderPayments';
-import type { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
 import { useContext, useEffect } from 'react';
 import { AuthContext } from '../../../contexts/AuthContext';
-import PaymentFormPopup from './OrderPaymentFormPopup';
-import usePopups from '../../../hooks/usePopups';
-import ConfirmationPopup from '../../shared/ConfirmationPopup';
+import useAutoFocus from '../../../hooks/useAutoFocus';
 
 interface OrderFormProps {
 	init: OrderDto | null;
@@ -31,6 +26,8 @@ interface OrderFormProps {
 
 export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 	const [user] = useContext(AuthContext);
+
+	const ref = useAutoFocus(!init);
 
 	const methods = useForm({
 		resolver: zodResolver(CreateOrderDto),
@@ -55,42 +52,8 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 		watch,
 	} = methods;
 
-	console.log('payments', init?.payments);
-	console.log('errors', errors);
-
 	const createOrderMutation = useCreateOrder(onClose);
 	const updateOrderMutation = useUpdateOrder(onClose);
-
-	const {
-		openFormPopup,
-		openDeletePopup,
-		selectedResource: selectedPayment,
-		selectedIndex,
-		handleOpenFormPopup,
-		handleOpenDeletePopup,
-		handleClosePopup,
-	} = usePopups<TransactionDto>();
-
-	const orderPayments = (watch('payments') || []) as TransactionDto[];
-
-	const handlePaymentSubmit = (payment: CreatePaymentDto) => {
-		const newPayments = [...orderPayments];
-		if (selectedPayment) {
-			newPayments[selectedIndex] = payment as TransactionDto;
-		} else {
-			newPayments.push(payment as TransactionDto);
-		}
-		setValue('payments', newPayments as PaymentDto[]);
-		console.log(newPayments);
-		handleClosePopup();
-	};
-
-	const handlePaymentRemove = () => {
-		const newPayments = [...orderPayments];
-		newPayments.splice(selectedIndex, 1);
-		setValue('payments', newPayments as PaymentDto[]);
-		handleClosePopup();
-	};
 
 	const onSubmit = async (data: CreateOrderDto) => {
 		if (init) {
@@ -113,6 +76,7 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 
 	useEffect(() => {
 		setValue('totalPaid', totalPaid);
+		setValue('totalDue', totalDue);
 	}, [totalPaid]);
 
 	return (
@@ -147,24 +111,24 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 
 					<Grid size={6}>
 						<ResourcePickerField
-							label='Contact'
-							init={init?.contact?.name}
-							onChange={({ id }) => setValue('contactId', id)}
-							resourceType='contact'
-							error={!!errors.contactId}
-							helperText={errors.contactId?.message as string}
-							required
-						/>
-					</Grid>
-
-					<Grid size={6}>
-						<ResourcePickerField
 							label='Agent'
 							init={init?.agent?.name || user?.name}
 							onChange={({ id }) => setValue('agentId', id)}
 							resourceType='user'
 							error={!!errors.agentId}
 							helperText={errors.agentId?.message as string}
+							required
+						/>
+					</Grid>
+
+					<Grid size={6}>
+						<ResourcePickerField
+							label='Contact'
+							init={init?.contact?.name}
+							onChange={({ id }) => setValue('contactId', id)}
+							resourceType='contact'
+							error={!!errors.contactId}
+							helperText={errors.contactId?.message as string}
 						/>
 					</Grid>
 
@@ -200,6 +164,7 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 							error={!!errors.totalPrice}
 							helperText={errors.totalPrice?.message as string}
 							required
+							inputRef={(element: any) => (ref.current = element)}
 						/>
 					</Grid>
 
@@ -234,32 +199,10 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 					</Grid>
 
 					<Grid size={12}>
-						<OrderPayments
-							payments={orderPayments}
-							onOpenFormPopup={handleOpenFormPopup}
-							onOpenDeletePopup={handleOpenDeletePopup}
-							showRef={!!init}
-						/>
+						<OrderPayments showRef={!!init?.id} />
 					</Grid>
 				</Grid>
 			</ResourceForm>
-
-			{openFormPopup && (
-				<PaymentFormPopup
-					init={selectedPayment}
-					onSubmit={handlePaymentSubmit}
-					onClose={handleClosePopup}
-				/>
-			)}
-
-			{openDeletePopup && (
-				<ConfirmationPopup
-					onClose={handleClosePopup}
-					title={`Supprimer ${selectedPayment?.ref}`}
-					description='Voulez-vous vraiment supprimer ce paiement ?'
-					onDelete={handlePaymentRemove}
-				/>
-			)}
 		</FormProvider>
 	);
 }

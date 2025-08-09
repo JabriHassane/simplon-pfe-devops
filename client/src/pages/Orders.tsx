@@ -68,7 +68,11 @@ export default function Orders({ type }: OrdersPageProps) {
 				error={!!error}
 			/>
 
-			<OrderFilters filters={filters} onFiltersChange={handleFiltersChange} />
+			<OrderFilters
+				type={type}
+				filters={filters}
+				onFiltersChange={handleFiltersChange}
+			/>
 
 			<ResourceTable
 				headers={[

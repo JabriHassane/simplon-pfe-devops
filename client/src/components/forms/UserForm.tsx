@@ -15,6 +15,7 @@ import {
 } from '../../../../shared/dtos/user.dto';
 import ResourceForm from './ResourceForm';
 import { useCreateUser, useUpdateUser } from '../../hooks/ressources/useUsers';
+import useAutoFocus from '../../hooks/useAutoFocus';
 
 interface UserFormProps {
 	init: UserDto | null;
@@ -22,6 +23,8 @@ interface UserFormProps {
 }
 
 export default function UserForm({ init, onClose }: UserFormProps) {
+	const ref = useAutoFocus(!init);
+
 	const {
 		register,
 		handleSubmit,
@@ -72,6 +75,7 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 						error={!!errors.name}
 						helperText={errors.name?.message as string}
 						required
+						inputRef={(element: any) => (ref.current = element)}
 					/>
 				</Grid>
 
@@ -82,7 +86,7 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 						defaultValue='agent'
 						disabled={init?.role === 'super_admin'}
 						render={({ field }) => (
-							<FormControl fullWidth error={!!errors.role}>
+							<FormControl fullWidth error={!!errors.role} required>
 								<InputLabel>Rôle</InputLabel>
 								<Select {...field} label='Rôle'>
 									<MenuItem value='agent'>Agent</MenuItem>
@@ -93,20 +97,20 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 						)}
 					/>
 				</Grid>
-			</Grid>
 
-			<Grid size={6}>
-				<TextField
-					fullWidth
-					label='Mot de passe'
-					type='password'
-					{...register('password')}
-					variant='outlined'
-					error={!!errors.password}
-					helperText={errors.password?.message as string}
-					required={!init}
-					autoComplete='new-password'
-				/>
+				<Grid size={12}>
+					<TextField
+						fullWidth
+						label='Mot de passe'
+						type='password'
+						{...register('password')}
+						variant='outlined'
+						error={!!errors.password}
+						helperText={errors.password?.message as string}
+						required={!init}
+						autoComplete='new-password'
+					/>
+				</Grid>
 			</Grid>
 		</ResourceForm>
 	);

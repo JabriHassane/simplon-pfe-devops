@@ -123,8 +123,9 @@ model Order {
   receiptNumber String?
   invoiceNumber String?
 
-  totalPrice Float
-  totalPaid  Float
+  totalPrice Float @default(0)
+  totalPaid  Float @default(0)
+  totalDue   Float @default(0)
 
   type OrderType
 

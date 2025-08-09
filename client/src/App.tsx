@@ -1,108 +1,31 @@
 import Box from '@mui/material/Box';
-import Drawer from '@mui/material/Drawer';
 import CssBaseline from '@mui/material/CssBaseline';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
-import Divider from '@mui/material/Divider';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import { ListItemIcon, ThemeProvider } from '@mui/material';
-import {
-	BrowserRouter as Router,
-	Routes,
-	Route,
-	useNavigate,
-	useLocation,
-} from 'react-router-dom';
+import { ThemeProvider } from '@mui/material';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SnackbarProvider } from 'notistack';
-import { AuthContext, AuthProvider } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import { theme } from './theme';
-import { navigationItems } from './config/navigation';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { useLogout } from './hooks/useAuth';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Users from './pages/Users';
-import { AccountCircleOutlined } from '@mui/icons-material';
-import { useContext } from 'react';
 import Orders from './pages/Orders';
 import Contacts from './pages/Contacts';
-
-const drawerWidth = 240;
+import Sidebar from './components/Sidebar';
 
 function AppContent() {
-	const navigate = useNavigate();
-	const location = useLocation();
-	const logoutMutation = useLogout();
-	const [user] = useContext(AuthContext);
-
-	const handleNavigation = async (path: string) => {
-		if (path === '/logout') {
-			await logoutMutation.mutateAsync();
-		} else {
-			navigate(path);
-		}
-	};
-
 	return (
 		<ThemeProvider theme={theme}>
 			<LocalizationProvider dateAdapter={AdapterDayjs}>
 				<Box sx={{ display: 'flex' }}>
 					<CssBaseline />
-
-					<Drawer
-						sx={{
-							width: drawerWidth,
-							flexShrink: 0,
-							'& .MuiDrawer-paper': {
-								width: drawerWidth,
-								boxSizing: 'bsale-box',
-							},
-						}}
-						variant='permanent'
-						anchor='left'
-					>
-						<Toolbar>
-							<Box padding={3}>
-								{/* <img src={logo} alt='logo' style={{ width: '100%' }} /> */}
-							</Box>
-						</Toolbar>
-
-						<List>
-							<ListItem>
-								<ListItemIcon>
-									<AccountCircleOutlined />
-								</ListItemIcon>
-								<ListItemText primary={user?.name} />
-							</ListItem>
-
-							<Divider sx={{ marginY: 1 }} />
-
-							{navigationItems.map((item, index) =>
-								item ? (
-									<ListItem key={index} disablePadding>
-										<ListItemButton
-											onClick={() => handleNavigation(item.path)}
-											selected={location.pathname === item.path}
-										>
-											<ListItemIcon>{item.icon}</ListItemIcon>
-											<ListItemText primary={item.name} />
-										</ListItemButton>
-									</ListItem>
-								) : (
-									<Divider sx={{ marginY: 1 }} />
-								)
-							)}
-						</List>
-					</Drawer>
-
+					<Sidebar />
 					<Box
 						component='main'
 						sx={{ flexGrow: 1, bgcolor: 'white', p: 3, height: '100vh' }}
@@ -124,7 +47,15 @@ function AppContent() {
 }
 
 // Create a client
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: true,
+			staleTime: 0,
+			gcTime: 0,
+		},
+	},
+});
 
 export default function App() {
 	return (

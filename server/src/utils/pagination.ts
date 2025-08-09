@@ -58,30 +58,25 @@ export const getOrderPaginationCondition = (
 
 	if (dateFrom || dateTo) {
 		whereClause.date = {};
-		if (dateFrom) {
-			whereClause.date.gte = new Date(dateFrom);
-		}
-		if (dateTo) {
-			whereClause.date.lte = new Date(dateTo);
-		}
+		whereClause.date.gte = dateFrom ? new Date(dateFrom) : undefined;
+		whereClause.date.lte = dateTo ? new Date(dateTo) : undefined;
 	}
 
 	// Agent filter
-	const agentId = req.query.agentId as string;
-	if (agentId) {
-		whereClause.agentId = agentId;
-	}
 
-	// Client filter
-	const clientId = req.query.clientId as string;
-	if (clientId) {
-		whereClause.clientId = clientId;
-	}
+	whereClause.agentId = req.query.agentId || undefined;
+
+	// Contact filter
+	whereClause.contactId = req.query.contactId || undefined;
 
 	// Status filter
-	const status = req.query.status as string;
-	if (status) {
-		whereClause.status = status;
+	const status = req.query.status;
+	if (status === 'paid') {
+		whereClause.totalDue = 0;
+	} else if (status === 'partially_paid') {
+		whereClause.totalDue = {
+			gt: 0,
+		};
 	}
 
 	return {

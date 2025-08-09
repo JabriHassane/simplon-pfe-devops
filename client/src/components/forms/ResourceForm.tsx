@@ -1,5 +1,5 @@
 import { Save } from '@mui/icons-material';
-import { Box, Button, Divider } from '@mui/material';
+import { Box, Button, CircularProgress, Divider } from '@mui/material';
 
 interface ResourceFormProps {
 	onSubmit: (data: any) => void;
@@ -9,7 +9,7 @@ interface ResourceFormProps {
 
 function ResourceForm({ onSubmit, isLoading, children }: ResourceFormProps) {
 	return (
-		<Box component='form' onSubmit={onSubmit}>
+		<Box>
 			<Divider sx={{ mb: 1 }} />
 
 			<Box sx={{ px: 2, pt: 2, pb: 1 }}>{children}</Box>
@@ -18,12 +18,12 @@ function ResourceForm({ onSubmit, isLoading, children }: ResourceFormProps) {
 
 			<Box sx={{ p: 2 }}>
 				<Button
-					type='submit'
+					onClick={onSubmit}
 					variant='contained'
-					startIcon={<Save />}
-					// disabled={isLoading || !isValid}
+					startIcon={isLoading ? <CircularProgress size={20} /> : <Save />}
 					fullWidth
 					size='large'
+					disabled={isLoading}
 					disableElevation
 				>
 					{isLoading ? 'Enregistrement...' : 'Enregistrer'}
