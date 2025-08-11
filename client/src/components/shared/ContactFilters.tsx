@@ -1,24 +1,10 @@
-import {
-	Box,
-	TextField,
-	FormControl,
-	InputLabel,
-	Select,
-	MenuItem,
-	Grid,
-	IconButton,
-} from '@mui/material';
+import { Box, TextField, Grid, IconButton } from '@mui/material';
 import { Clear } from '@mui/icons-material';
-import { ContactType } from '../../../../shared/dtos/contact.dto';
-
-export interface ContactFiltersData {
-	type?: ContactType;
-	search?: string;
-}
+import type { ContactFilterParams } from '../../types/filters.types';
 
 interface Props {
-	filters: ContactFiltersData;
-	onFiltersChange: (newFilters: Partial<ContactFiltersData>) => void;
+	filters: ContactFilterParams;
+	onFiltersChange: (newFilters: Partial<ContactFilterParams>) => void;
 }
 
 export default function ContactFilters({ filters, onFiltersChange }: Props) {

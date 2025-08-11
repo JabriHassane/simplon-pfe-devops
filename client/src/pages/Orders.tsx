@@ -5,18 +5,16 @@ import type { OrderDto } from '../../../shared/dtos/order.dto';
 import { formatDate } from '../utils/date.utils';
 import ConfirmationPopup from '../components/shared/ConfirmationPopup';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
-import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import usePopups from '../hooks/usePopups';
 import { DICT } from '../i18n/fr';
 import { ORDER_STATUS_COLOR_MAP } from '../../../shared/constants';
 import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
-import OrderFilters, {
-	type OrderFiltersData,
-} from '../components/shared/OrderFilters';
+import OrderFilters from '../components/shared/OrderFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
+import type { OrderFilterParams } from '../types/filters.types';
 
 interface OrdersPageProps {
 	type: 'sale' | 'purchase';
@@ -35,11 +33,11 @@ export default function Orders({ type }: OrdersPageProps) {
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters<OrderFiltersData>(() => {
+	const { filters, handleFiltersChange } = useFilters<OrderFilterParams>(() => {
 		handlePageChange(0);
 	});
 
-	const { data, isLoading, error } = useOrders({
+	const { data, error } = useOrders({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -55,10 +53,6 @@ export default function Orders({ type }: OrdersPageProps) {
 			deleteOrderMutation.mutateAsync(selectedOrder.id);
 		}
 	};
-
-	if (isLoading) {
-		return <ResourceLoader />;
-	}
 
 	return (
 		<>
@@ -76,10 +70,12 @@ export default function Orders({ type }: OrdersPageProps) {
 
 			<ResourceTable
 				headers={[
-					{ id: 'ref', name: 'Ref' },
+					{ id: 'ref', name: 'Réf' },
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
 					{ id: 'contact', name: type === 'sale' ? 'Client' : 'Fournisseur' },
+					{ id: 'receiptNumber', name: 'Bon' },
+					{ id: 'invoiceNumber', name: 'Facture' },
 					{ id: 'total', name: 'Total' },
 					{ id: 'paid', name: 'Payé' },
 					{ id: 'due', name: 'Reste' },
@@ -97,6 +93,8 @@ export default function Orders({ type }: OrdersPageProps) {
 								date: formatDate(order.date),
 								agent: order.agent?.name,
 								contact: order.contact?.name,
+								receiptNumber: order.receiptNumber,
+								invoiceNumber: order.invoiceNumber,
 								total: formatPrice(order.totalPrice),
 								paid: formatPrice(order.totalPaid),
 								due: formatPrice(order.totalPrice - order.totalPaid),

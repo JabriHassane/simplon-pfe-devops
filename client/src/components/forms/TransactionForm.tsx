@@ -10,12 +10,13 @@ import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateTransactionDto,
+	UpdateTransactionDto,
 	type TransactionDto,
 } from '../../../../shared/dtos/transaction.dto';
 import ResourceForm from './ResourceForm';
 import { useCreateTransaction } from '../../hooks/ressources/useTransactions';
 import { useUpdateTransaction } from '../../hooks/ressources/useTransactions';
-import { OPERATION_TYPES } from '../../../../shared/constants';
+import { OPERATION_TYPES, TRANSFER_ACTORS } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
 import dayjs from 'dayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -27,11 +28,13 @@ import useAutoFocus from '../../hooks/useAutoFocus';
 interface TransactionFormProps {
 	init: TransactionDto | null;
 	onClose: () => void;
+	transferType?: 'cash' | 'deposit' | null;
 }
 
 export default function TransactionForm({
 	init,
 	onClose,
+	transferType,
 }: TransactionFormProps) {
 	const [user] = useContext(AuthContext);
 
@@ -42,6 +45,7 @@ export default function TransactionForm({
 		handleSubmit,
 		control,
 		setValue,
+		watch,
 		formState: { errors },
 	} = useForm({
 		resolver: zodResolver(CreateTransactionDto),
@@ -49,9 +53,9 @@ export default function TransactionForm({
 			date: init?.date || dayjs().toISOString(),
 			agentId: init?.agentId || user?.id,
 			amount: init?.amount,
-			type: init?.type || 'cashing',
+			type: init?.type || 'send',
 			method: init?.method || 'cash',
-			orderId: init?.orderId || '',
+			transferActor: init?.transferActor,
 		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
@@ -64,12 +68,14 @@ export default function TransactionForm({
 		if (init) {
 			await updateTransactionMutation.mutateAsync({
 				id: init.id,
-				data,
+				data: data as UpdateTransactionDto,
 			});
 		} else {
-			await createTransactionMutation.mutateAsync(data);
+			await createTransactionMutation.mutateAsync(data as CreateTransactionDto);
 		}
 	};
+
+	const type = watch('type');
 
 	return (
 		<ResourceForm
@@ -102,24 +108,6 @@ export default function TransactionForm({
 				</Grid>
 
 				<Grid size={6}>
-					<FormControl fullWidth required>
-						<InputLabel>Type</InputLabel>
-						<Select
-							{...register('type')}
-							label='Type'
-							error={!!errors.type}
-							defaultValue='cashing'
-						>
-							{OPERATION_TYPES.map((type) => (
-								<MenuItem key={type} value={type}>
-									{DICT.transactionType[type]}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Grid>
-
-				<Grid size={6}>
 					<ResourcePickerField
 						label='Agent'
 						init={init?.agent?.name || user?.name}
@@ -131,24 +119,64 @@ export default function TransactionForm({
 					/>
 				</Grid>
 
-				<Grid size={6}>
-					<TextField
-						fullWidth
-						label='Montant'
-						type='number'
-						{...register('amount', { valueAsNumber: true })}
-						error={!!errors.amount}
-						helperText={errors.amount?.message as string}
-						required
-						inputRef={(element: any) => (ref.current = element)}
-						slotProps={{
-							htmlInput: {
-								min: 0,
-								step: 1,
-							},
-						}}
-					/>
-				</Grid>
+				{!transferType && (
+					<>
+						<Grid size={4}>
+							<FormControl fullWidth required>
+								<InputLabel>Type</InputLabel>
+								<Select
+									{...register('type')}
+									label='Type'
+									error={!!errors.type}
+									defaultValue='send'
+								>
+									{OPERATION_TYPES.map((type) => (
+										<MenuItem key={type} value={type}>
+											{DICT.transactionType[type]}
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
+						</Grid>
+
+						<Grid size={4}>
+							<FormControl fullWidth required>
+								<InputLabel>{type === 'send' ? 'Vers' : 'Depuis'}</InputLabel>
+								<Select
+									{...register('transferActor')}
+									label={type === 'send' ? 'Vers' : 'Depuis'}
+									error={!!errors.transferActor}
+									defaultValue='Nabil'
+								>
+									{TRANSFER_ACTORS.map((actor) => (
+										<MenuItem key={actor} value={actor}>
+											{actor}
+										</MenuItem>
+									))}
+								</Select>
+							</FormControl>
+						</Grid>
+
+						<Grid size={4}>
+							<TextField
+								fullWidth
+								label='Montant'
+								type='number'
+								{...register('amount', { valueAsNumber: true })}
+								error={!!errors.amount}
+								helperText={errors.amount?.message as string}
+								required
+								inputRef={(element: any) => (ref.current = element)}
+								slotProps={{
+									htmlInput: {
+										min: 0,
+										step: 1,
+									},
+								}}
+							/>
+						</Grid>
+					</>
+				)}
 			</Grid>
 		</ResourceForm>
 	);

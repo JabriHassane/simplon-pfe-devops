@@ -3,15 +3,13 @@ import ContactForm from '../components/forms/ContactForm';
 import type { ContactDto } from '../../../shared/dtos/contact.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
-import ResourceLoader from '../components/shared/ResourceLoader';
 import ConfirmationPopup from '../components/shared/ConfirmationPopup';
 import usePopups from '../hooks/usePopups';
 import ResourceTable from '../components/shared/ResourceTable';
-import ContactFilters, {
-	type ContactFiltersData,
-} from '../components/shared/ContactFilters';
+import ContactFilters from '../components/shared/ContactFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
+import type { ContactFilterParams } from '../types/filters.types';
 
 interface Props {
 	type: 'client' | 'supplier';
@@ -30,11 +28,11 @@ export default function Contacts({ type }: Props) {
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters<ContactFiltersData>(() =>
+	const { filters, handleFiltersChange } = useFilters<ContactFilterParams>(() =>
 		handlePageChange(0)
 	);
 
-	const { data, isLoading, error } = useContacts({
+	const { data, error } = useContacts({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -51,10 +49,6 @@ export default function Contacts({ type }: Props) {
 		}
 	};
 
-	if (isLoading) {
-		return <ResourceLoader />;
-	}
-
 	return (
 		<>
 			<ResourceHeader
@@ -67,7 +61,7 @@ export default function Contacts({ type }: Props) {
 
 			<ResourceTable
 				headers={[
-					{ id: 'ref', name: 'Ref' },
+					{ id: 'ref', name: 'Réf' },
 					{ id: 'name', name: 'Nom' },
 					{ id: 'phone', name: 'Téléphone' },
 					{ id: 'address', name: 'Adresse' },

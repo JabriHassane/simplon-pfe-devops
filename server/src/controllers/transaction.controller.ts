@@ -31,6 +31,16 @@ export const TransactionController = {
 								name: true,
 							},
 						},
+						cashedPayment: {
+							select: {
+								method: true,
+							},
+						},
+						depositedPayment: {
+							select: {
+								method: true,
+							},
+						},
 					},
 					orderBy: { date: 'desc' },
 					skip,
@@ -150,9 +160,9 @@ export const TransactionController = {
 				where: { id },
 				data: {
 					...body,
+					method: body.method as TransactionMethod,
 					updatedAt: new Date(),
 					updatedById: userId,
-					method: body.method as TransactionMethod,
 				},
 				include: {
 					order: true,
@@ -461,7 +471,9 @@ export const TransactionController = {
 	},
 };
 
-const getBalance = async (method: TransactionMethod) => {
+const getBalance = async (method: Exclude<TransactionMethod, 'cash'>) => {
+	const positiveTypes: TransactionType[] = ['sale', 'receive'];
+
 	const positiveBalance = await prisma.transaction.aggregate({
 		_sum: {
 			amount: true,
@@ -470,10 +482,12 @@ const getBalance = async (method: TransactionMethod) => {
 			deletedAt: null,
 			method,
 			type: {
-				in: ['sale', 'receive'],
+				in: positiveTypes,
 			},
 		},
 	});
+
+	const negativeTypes: TransactionType[] = ['purchase', 'send', 'cashing'];
 
 	const negativeBalance = await prisma.transaction.aggregate({
 		_sum: {
@@ -483,8 +497,10 @@ const getBalance = async (method: TransactionMethod) => {
 			deletedAt: null,
 			method,
 			type: {
-				in: ['purchase', 'send', 'cashing'],
+				in: negativeTypes,
 			},
+			cashingTransactionId: null,
+			depositTransactionId: null,
 		},
 	});
 

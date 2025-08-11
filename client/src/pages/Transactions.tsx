@@ -1,4 +1,4 @@
-import { Chip } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import {
 	useTransactions,
 	useDeleteTransaction,
@@ -7,7 +7,6 @@ import TransactionForm from '../components/forms/TransactionForm';
 import type { TransactionDto } from '../../../shared/dtos/transaction.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ConfirmationPopup from '../components/shared/ConfirmationPopup';
-import ResourceLoader from '../components/shared/ResourceLoader';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import { DICT } from '../i18n/fr';
 import { formatPrice } from '../utils/price.utils';
@@ -24,6 +23,7 @@ import TransactionFilters, {
 } from '../components/shared/TransactionFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
+import { useState } from 'react';
 
 export default function Transactions() {
 	const {
@@ -35,6 +35,10 @@ export default function Transactions() {
 		handleClosePopup,
 	} = usePopups<TransactionDto>();
 
+	const [transferType, setTransferType] = useState<'cash' | 'deposit' | null>(
+		null
+	);
+
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
@@ -44,7 +48,7 @@ export default function Transactions() {
 		}
 	);
 
-	const { data, isLoading, error } = useTransactions({
+	const { data, error } = useTransactions({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -60,9 +64,16 @@ export default function Transactions() {
 		}
 	};
 
-	if (isLoading) {
-		return <ResourceLoader />;
-	}
+	const handleEdit = (transaction: TransactionDto) => {
+		if (transaction.cashedPayment) {
+			setTransferType('cash');
+		} else if (transaction.depositedPayment) {
+			setTransferType('deposit');
+		} else {
+			setTransferType(null);
+		}
+		handleOpenFormPopup(transaction);
+	};
 
 	return (
 		<>
@@ -79,45 +90,56 @@ export default function Transactions() {
 
 			<ResourceTable
 				headers={[
-					{ id: 'ref', name: 'Ref' },
+					{ id: 'ref', name: 'Réf' },
 					{ id: 'date', name: 'Date' },
 					{ id: 'agent', name: 'Agent' },
 					{ id: 'type', name: 'Opération' },
-					{ id: 'method', name: 'Méthode' },
 					{ id: 'amount', name: 'Montant' },
 				]}
 				rows={
-					transactions?.map((transaction: TransactionDto) => ({
-						item: transaction,
-						data: {
-							ref: transaction.ref,
-							date: formatDate(transaction.date),
-							agent: transaction.agent?.name || '-',
-							type: (
-								<Chip
-									label={DICT.transactionType[transaction.type]}
-									color={TRANSACTION_TYPE_COLOR_MAP[transaction.type]}
-									size='small'
-									sx={{ px: 0.5 }}
-								/>
-							),
-							method: (
-								<Chip
-									label={DICT.methods[transaction.method as TransactionMethod]}
-									color={
-										PAYMENT_METHODS_COLOR_MAP[
-											transaction.method as TransactionMethod
-										]
-									}
-									size='small'
-									sx={{ px: 0.5 }}
-								/>
-							),
-							amount: formatPrice(transaction.amount),
-						},
-					})) || []
+					transactions?.map((transaction: TransactionDto) => {
+						const transferTransaction =
+							transaction.cashedPayment || transaction.depositedPayment;
+
+						return {
+							item: transaction,
+							data: {
+								ref: transaction.ref,
+								date: formatDate(transaction.date),
+								agent: transaction.agent?.name || '-',
+								type: (
+									<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+										<Chip
+											label={DICT.transactionType[transaction.type]}
+											color={TRANSACTION_TYPE_COLOR_MAP[transaction.type]}
+											size='small'
+											sx={{ px: 0.5 }}
+										/>
+
+										{transferTransaction && (
+											<Chip
+												label={
+													DICT.methods[
+														transferTransaction?.method as TransactionMethod
+													]
+												}
+												color={
+													PAYMENT_METHODS_COLOR_MAP[
+														transferTransaction?.method as TransactionMethod
+													]
+												}
+												size='small'
+												sx={{ px: 0.5 }}
+											/>
+										)}
+									</Box>
+								),
+								amount: formatPrice(transaction.amount),
+							},
+						};
+					}) || []
 				}
-				onEdit={handleOpenFormPopup}
+				onEdit={handleEdit}
 				onDelete={handleOpenDeletePopup}
 				pagination={pagination}
 				onPageChange={handlePageChange}
@@ -136,6 +158,7 @@ export default function Transactions() {
 					<TransactionForm
 						init={selectedTransaction}
 						onClose={handleClosePopup}
+						transferType={transferType}
 					/>
 				</ResourceFormPopup>
 			)}

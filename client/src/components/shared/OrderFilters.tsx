@@ -15,20 +15,12 @@ import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
 import { ORDER_STATUSES, type OrderType } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
-
-export interface OrderFiltersData {
-	ref?: string;
-	dateFrom?: string;
-	dateTo?: string;
-	agentId?: string;
-	contactId?: string;
-	status?: string;
-}
+import type { OrderFilterParams } from '../../types/filters.types';
 
 interface Props {
 	type: OrderType;
-	filters: OrderFiltersData;
-	onFiltersChange: (newFilters: Partial<OrderFiltersData>) => void;
+	filters: OrderFilterParams;
+	onFiltersChange: (newFilters: Partial<OrderFilterParams>) => void;
 }
 
 export default function OrderFilters({
@@ -41,8 +33,8 @@ export default function OrderFilters({
 			<Grid container spacing={1}>
 				<Grid size={2}>
 					<TextField
-						value={filters.ref}
-						onChange={(e) => onFiltersChange({ ref: e.target.value })}
+						value={filters.search}
+						onChange={(e) => onFiltersChange({ search: e.target.value })}
 						label='Référence'
 						variant='outlined'
 						placeholder='Rechercher par référence...'
@@ -53,7 +45,7 @@ export default function OrderFilters({
 									<InputAdornment position='start'>
 										<IconButton
 											size='small'
-											onClick={() => onFiltersChange({ ref: '' })}
+											onClick={() => onFiltersChange({ search: '' })}
 										>
 											<Clear />
 										</IconButton>
@@ -154,7 +146,7 @@ export default function OrderFilters({
 								<InputAdornment position='start'>
 									<IconButton
 										size='small'
-										onClick={() => onFiltersChange({ status: '' })}
+										onClick={() => onFiltersChange({ status: undefined })}
 									>
 										<Clear />
 									</IconButton>

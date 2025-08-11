@@ -6,16 +6,9 @@ import type {
 	UpdateTransactionDto,
 } from '../../../../shared/dtos/transaction.dto';
 import type { PaginationParams } from '../../types/pagination.types';
-import type { TransactionAccount } from '../../../../shared/constants';
 import { orderKeys } from './useOrders';
 import type { PaymentCashingDto } from '../../../../shared/dtos/order.dto';
-
-export interface TransactionFilters {
-	search?: string;
-	dateFrom?: string;
-	dateTo?: string;
-	account?: TransactionAccount;
-}
+import type { TransactionFilterParams } from '../../types/filters.types';
 
 // Query keys
 export const transactionKeys = {
@@ -25,7 +18,7 @@ export const transactionKeys = {
 
 // Get all transactions
 export const useTransactions = (
-	params?: PaginationParams & TransactionFilters
+	params?: PaginationParams & TransactionFilterParams
 ) => {
 	const { showError } = useSnackbar();
 

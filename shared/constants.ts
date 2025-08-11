@@ -4,10 +4,7 @@ export type Role = (typeof ROLES)[number];
 export const ORDER_TYPES = ['sale', 'purchase'] as const;
 export type OrderType = (typeof ORDER_TYPES)[number];
 
-export const ORDER_STATUSES = [
-	'partially_paid',
-	'paid',
-] as const;
+export const ORDER_STATUSES = ['partially_paid', 'paid'] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 export const ORDER_STATUS_COLOR_MAP = {
@@ -25,7 +22,7 @@ export const TRANSACTION_TYPES = [
 ] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 
-export const OPERATION_TYPES = ['cashing', 'send', 'receive'] as const;
+export const OPERATION_TYPES = ['send', 'receive'] as const;
 export type OperationType = (typeof OPERATION_TYPES)[number];
 
 export const TRANSACTION_TYPE_COLOR_MAP = {
@@ -52,10 +49,10 @@ export const PAYMENT_METHODS_COLOR_MAP = {
 	bank_transfer: 'secondary',
 } as const;
 
-export const TRANSACTION_ACCOUNTS = [
-	'nabil',
-	'faycal',
-	'redouane',
-	'bank',
+export const TRANSFER_ACTORS = [
+	'Nabil',
+	'Faycal',
+	'Redouane',
+	'Banque',
 ] as const;
-export type TransactionAccount = (typeof TRANSACTION_ACCOUNTS)[number];
+export type TransferActor = (typeof TRANSFER_ACTORS)[number];

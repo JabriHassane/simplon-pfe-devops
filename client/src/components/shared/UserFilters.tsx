@@ -10,15 +10,11 @@ import {
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 import { ROLES } from '../../../../shared/constants';
-
-export interface UserFiltersData {
-	search?: string;
-	role?: string;
-}
+import type { UserFilterParams } from '../../types/filters.types';
 
 interface Props {
-	filters: UserFiltersData;
-	onFiltersChange: (newFilters: Partial<UserFiltersData>) => void;
+	filters: UserFilterParams;
+	onFiltersChange: (newFilters: Partial<UserFilterParams>) => void;
 }
 
 export default function UserFilters({ filters, onFiltersChange }: Props) {
@@ -29,7 +25,7 @@ export default function UserFilters({ filters, onFiltersChange }: Props) {
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ search: '' })}
+							onClick={() => onFiltersChange({ search: undefined })}
 							disabled={!filters.search}
 						>
 							<Clear />
@@ -49,7 +45,7 @@ export default function UserFilters({ filters, onFiltersChange }: Props) {
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ role: '' })}
+							onClick={() => onFiltersChange({ role: undefined })}
 							disabled={!filters.role}
 						>
 							<Clear />
@@ -69,7 +65,6 @@ export default function UserFilters({ filters, onFiltersChange }: Props) {
 									},
 								}}
 							>
-								<MenuItem value=''>Tous</MenuItem>
 								{ROLES.map((role) => (
 									<MenuItem key={role} value={role}>
 										{role === 'super_admin' && 'Super Admin'}

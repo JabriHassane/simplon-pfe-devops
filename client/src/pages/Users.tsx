@@ -1,18 +1,15 @@
-import { Box } from '@mui/material';
 import { useUsers, useDeleteUser } from '../hooks/ressources/useUsers';
 import UserForm from '../components/forms/UserForm';
 import type { UserDto } from '../../../shared/dtos/user.dto';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
-import ResourceLoader from '../components/shared/ResourceLoader';
 import ConfirmationPopup from '../components/shared/ConfirmationPopup';
 import usePopups from '../hooks/usePopups';
 import ResourceTable from '../components/shared/ResourceTable';
-import UserFilters, {
-	type UserFiltersData,
-} from '../components/shared/UserFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
+import UserFilters from '../components/shared/UserFilters';
+import type { UserFilterParams } from '../types/filters.types';
 
 export default function Users() {
 	const {
@@ -27,11 +24,11 @@ export default function Users() {
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
 		usePagination();
 
-	const { filters, handleFiltersChange } = useFilters<UserFiltersData>(() => {
+	const { filters, handleFiltersChange } = useFilters<UserFilterParams>(() => {
 		handlePageChange(0);
 	});
 
-	const { data, isLoading, error } = useUsers({
+	const { data, error } = useUsers({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -47,10 +44,6 @@ export default function Users() {
 		}
 	};
 
-	if (isLoading) {
-		return <ResourceLoader />;
-	}
-
 	return (
 		<>
 			<ResourceHeader
@@ -63,7 +56,7 @@ export default function Users() {
 
 			<ResourceTable
 				headers={[
-					{ id: 'ref', name: 'Ref' },
+					{ id: 'ref', name: 'Réf' },
 					{ id: 'name', name: 'Nom' },
 					{ id: 'role', name: 'Rôle' },
 				]}

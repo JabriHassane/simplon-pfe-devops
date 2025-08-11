@@ -30,8 +30,10 @@ export const TransactionService = {
 	},
 
 	async cashPayment(data: PaymentCashingDto) {
-		console.log(data);
-		return ApiService.post<TransactionDto>(`/transactions/${data.id}/cash`, data);
+		return ApiService.post<TransactionDto>(
+			`/transactions/${data.id}/cash`,
+			data
+		);
 	},
 
 	async undoPaymentCashing(id: string) {
@@ -39,7 +41,10 @@ export const TransactionService = {
 	},
 
 	async depositPaymentToBank(data: PaymentCashingDto) {
-		return ApiService.post<TransactionDto>(`/transactions/${data.id}/deposit`);
+		return ApiService.post<TransactionDto>(
+			`/transactions/${data.id}/deposit`,
+			data
+		);
 	},
 
 	async undoPaymentDeposit(id: string) {

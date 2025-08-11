@@ -195,11 +195,14 @@ export const OrderController = {
 			const body = req.body as UpdateOrderDto;
 
 			// Check if order exists
-			const isExists = await prisma.order.findUnique({
+			const order = await prisma.order.findUnique({
 				where: { id },
+				include: {
+					payments: true,
+				},
 			});
 
-			if (!isExists) {
+			if (!order) {
 				throw new Error('Order not found');
 			}
 
@@ -214,17 +217,32 @@ export const OrderController = {
 				}
 			}
 
-			const newPayments = body.payments.filter((payment) => !payment.ref);
-			const updatedPayments = body.payments.filter((payment) => payment.ref);
+			const existingPayments = order.payments;
+			const newPayments = body.payments.filter(
+				(payment) => !existingPayments.some((p) => p.ref === payment.ref)
+			);
+			const updatedPayments = body.payments.filter((payment) =>
+				existingPayments.some((p) => p.ref === payment.ref)
+			);
+			const deletedPaymentsIds = existingPayments
+				.filter((payment) => !body.payments.some((p) => p.ref === payment.ref))
+				.map((p) => p.id);
 
-			// Generate refs for payments before transaction
+			console.log('--------------------------------');
+			console.log('newPayments', newPayments);
+			console.log('--------------------------------');
+			console.log('updatedPayments', updatedPayments);
+			console.log('--------------------------------');
+			console.log('deletedPaymentsIds', deletedPaymentsIds);
+			console.log('--------------------------------');
+
+			// Generate refs for new payments
 			const newRefs: string[] = [];
-
 			for (const _ of newPayments) {
 				newRefs.push(await getNextRef('transactions'));
 			}
 
-			const order = await prisma.order.update({
+			const newOrder = await prisma.order.update({
 				where: { id },
 				data: {
 					...body,
@@ -232,18 +250,31 @@ export const OrderController = {
 					totalPaid: body.totalPaid,
 
 					payments: {
-						deleteMany: {},
+						deleteMany: {
+							id: { in: deletedPaymentsIds },
+						},
 						createMany: {
-							data: [...newPayments, ...updatedPayments].map((item, index) => ({
+							data: newPayments.map((item, index) => ({
 								ref: newRefs[index] || item.ref!,
 								amount: item.amount,
 								date: item.date,
 								method: item.method as TransactionMethod,
 								type: body.type as TransactionType,
 								agentId: item.agentId,
-								[item.ref ? 'updatedById' : 'createdById']: userId,
+								createdById: userId,
 							})),
 						},
+						updateMany: updatedPayments.map((item) => ({
+							where: { ref: item.ref! },
+							data: {
+								amount: item.amount,
+								date: item.date,
+								method: item.method as TransactionMethod,
+								type: body.type as TransactionType,
+								agentId: item.agentId,
+								updatedById: userId,
+							},
+						})),
 					},
 
 					updatedAt: new Date(),
@@ -260,7 +291,7 @@ export const OrderController = {
 				},
 			});
 
-			return res.json(order);
+			return res.json(newOrder);
 		} catch (error: any) {
 			console.error('Error in OrderController.update', error);
 			return res

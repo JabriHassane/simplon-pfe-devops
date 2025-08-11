@@ -11,14 +11,16 @@ import {
 import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import ResourcePickerField from './ResourcePickerField';
-import { TRANSACTION_ACCOUNTS } from '../../../../shared/constants';
+import {
+	TRANSFER_ACTORS,
+	type TransferActor,
+} from '../../../../shared/constants';
 
 export interface TransactionFiltersData {
 	search?: string;
 	dateFrom?: string;
 	dateTo?: string;
-	account?: string;
+	transferActor?: TransferActor;
 }
 
 interface Props {
@@ -37,7 +39,7 @@ export default function TransactionFilters({
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ search: '' })}
+							onClick={() => onFiltersChange({ search: undefined })}
 							disabled={!filters.search}
 						>
 							<Clear />
@@ -57,7 +59,7 @@ export default function TransactionFilters({
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ dateFrom: '' })}
+							onClick={() => onFiltersChange({ dateFrom: undefined })}
 							disabled={!filters.dateFrom}
 						>
 							<Clear />
@@ -77,7 +79,7 @@ export default function TransactionFilters({
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ dateTo: '' })}
+							onClick={() => onFiltersChange({ dateTo: undefined })}
 							disabled={!filters.dateTo}
 						>
 							<Clear />
@@ -97,8 +99,8 @@ export default function TransactionFilters({
 					<Box display='flex' alignItems='center' gap={1}>
 						<IconButton
 							size='small'
-							onClick={() => onFiltersChange({ account: '' })}
-							disabled={!filters.account}
+							onClick={() => onFiltersChange({ transferActor: undefined })}
+							disabled={!filters.transferActor}
 						>
 							<Clear />
 						</IconButton>
@@ -106,8 +108,10 @@ export default function TransactionFilters({
 						<FormControl fullWidth>
 							<InputLabel>Compte</InputLabel>
 							<Select
-								value={filters.account}
-								onChange={(e) => onFiltersChange({ account: e.target.value })}
+								value={filters.transferActor}
+								onChange={(e) =>
+									onFiltersChange({ transferActor: e.target.value })
+								}
 								label='Compte'
 								MenuProps={{
 									PaperProps: {
@@ -118,7 +122,7 @@ export default function TransactionFilters({
 								}}
 							>
 								<MenuItem value=''>Tous</MenuItem>
-								{TRANSACTION_ACCOUNTS.map((account) => (
+								{TRANSFER_ACTORS.map((account) => (
 									<MenuItem key={account} value={account}>
 										{account.charAt(0).toUpperCase() + account.slice(1)}
 									</MenuItem>

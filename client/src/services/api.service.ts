@@ -31,7 +31,6 @@ export const ApiService = {
 
 	async post<T, Dto = any>(endpoint: string, data?: Dto) {
 		const response = await Axios.post<T>(endpoint, data);
-		console.log(response.data);
 		return response.data;
 	},
 

@@ -6,17 +6,7 @@ import type {
 } from '../../../../shared/dtos/order.dto';
 import { useSnackbar } from '../useSnackbar';
 import type { PaginationParams } from '../../types/pagination.types';
-import type { OrderStatus, OrderType } from '../../../../shared/constants';
-
-export interface OrderFilters {
-	search?: string;
-	type?: OrderType;
-	dateFrom?: string;
-	dateTo?: string;
-	agentId?: string;
-	contactId?: string;
-	status?: OrderStatus;
-}
+import type { OrderFilterParams } from '../../types/filters.types';
 
 // Query keys
 export const orderKeys = {
@@ -30,7 +20,7 @@ export const orderKeys = {
 };
 
 // Get paginated orders
-export const useOrders = (params?: PaginationParams & OrderFilters) => {
+export const useOrders = (params?: PaginationParams & OrderFilterParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({

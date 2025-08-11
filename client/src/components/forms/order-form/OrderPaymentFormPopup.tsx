@@ -39,6 +39,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 	} = useForm({
 		resolver: zodResolver(CreatePaymentDto),
 		defaultValues: {
+			ref: init?.ref,
 			date: init?.date || dayjs().toISOString(),
 			agentId: init?.agentId || user?.id,
 			agent: init?.agent || user,
@@ -95,10 +96,10 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 
 					<Grid size={6}>
 						<FormControl fullWidth required>
-							<InputLabel>Mode de paiement</InputLabel>
+							<InputLabel>Méthode</InputLabel>
 							<Select
 								{...register('method')}
-								label='Mode de paiement'
+								label='Méthode'
 								error={!!errors.method}
 								required
 								defaultValue={init?.method || 'cash'}

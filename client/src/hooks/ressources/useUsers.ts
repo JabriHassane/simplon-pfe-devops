@@ -7,10 +7,7 @@ import type {
 } from '../../../../shared/dtos/user.dto';
 import { useSnackbar } from '../useSnackbar';
 import type { PaginationParams } from '../../types/pagination.types';
-
-export interface UserFilters {
-	search?: string;
-}
+import type { UserFilterParams } from '../../types/filters.types';
 
 // Query keys
 export const userKeys = {
@@ -20,7 +17,7 @@ export const userKeys = {
 };
 
 // Get paginated users
-export const useUsers = (params?: PaginationParams & UserFilters) => {
+export const useUsers = (params?: PaginationParams & UserFilterParams) => {
 	const { showError } = useSnackbar();
 
 	return useQuery({
