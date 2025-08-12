@@ -484,10 +484,12 @@ const getBalance = async (method: Exclude<TransactionMethod, 'cash'>) => {
 			type: {
 				in: positiveTypes,
 			},
+			cashingTransactionId: null,
+			depositTransactionId: null,
 		},
 	});
 
-	const negativeTypes: TransactionType[] = ['purchase', 'send', 'cashing'];
+	const negativeTypes: TransactionType[] = ['purchase', 'send'];
 
 	const negativeBalance = await prisma.transaction.aggregate({
 		_sum: {
@@ -499,8 +501,6 @@ const getBalance = async (method: Exclude<TransactionMethod, 'cash'>) => {
 			type: {
 				in: negativeTypes,
 			},
-			cashingTransactionId: null,
-			depositTransactionId: null,
 		},
 	});
 

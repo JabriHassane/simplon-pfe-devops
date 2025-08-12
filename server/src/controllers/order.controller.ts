@@ -228,14 +228,6 @@ export const OrderController = {
 				.filter((payment) => !body.payments.some((p) => p.ref === payment.ref))
 				.map((p) => p.id);
 
-			console.log('--------------------------------');
-			console.log('newPayments', newPayments);
-			console.log('--------------------------------');
-			console.log('updatedPayments', updatedPayments);
-			console.log('--------------------------------');
-			console.log('deletedPaymentsIds', deletedPaymentsIds);
-			console.log('--------------------------------');
-
 			// Generate refs for new payments
 			const newRefs: string[] = [];
 			for (const _ of newPayments) {
