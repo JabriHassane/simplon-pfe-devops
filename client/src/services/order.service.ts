@@ -3,12 +3,12 @@ import type {
 	UpdateOrderDto,
 } from '../../../shared/dtos/order.dto';
 import type { OrderDto } from '../../../shared/dtos/order.dto';
-import type { OrderFilters } from '../hooks/ressources/useOrders';
+import type { OrderFilterParams } from '../types/filters.types';
 import type { PaginationParams } from '../types/pagination.types';
 import { ApiService } from './api.service';
 
 export const OrderService = {
-	async getPage(params?: PaginationParams & OrderFilters) {
+	async getPage(params?: PaginationParams & OrderFilterParams) {
 		return ApiService.getPaginated<OrderDto>('/orders', params);
 	},
 

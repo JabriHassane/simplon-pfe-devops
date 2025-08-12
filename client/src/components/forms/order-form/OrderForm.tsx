@@ -69,7 +69,7 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 	const totalPrice = watch('totalPrice') || 0;
 	const formPayments = watch('payments') || [];
 	const totalPaid = formPayments.reduce(
-		(acc, payment) => acc + (payment.amount || 0),
+		(acc: number, payment: { amount?: number }) => acc + (payment.amount || 0),
 		0
 	);
 	const totalDue = totalPrice - totalPaid;

@@ -4,7 +4,6 @@ import {
 	FormControl,
 	FormHelperText,
 	IconButton,
-	Box,
 	InputAdornment,
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';

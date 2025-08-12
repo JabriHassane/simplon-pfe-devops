@@ -1,8 +1,6 @@
-import {
-	ApiService,
-	type PaginationParams,
-	type PaginatedResponse,
-} from './api.service';
+import { ApiService } from './api.service';
+import type { PaginationParams } from '../types/pagination.types';
+import type { PaginatedResponse } from '../types/pagination.types';
 import type { CreateUserDto, UserDto } from '../../../shared/dtos/user.dto';
 import type { UpdateUserDto } from '../../../shared/dtos/user.dto';
 

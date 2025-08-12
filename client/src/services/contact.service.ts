@@ -3,11 +3,9 @@ import type {
 	UpdateContactDto,
 } from '../../../shared/dtos/contact.dto';
 import type { ContactDto } from '../../../shared/dtos/contact.dto';
-import {
-	ApiService,
-	type PaginationParams,
-	type PaginatedResponse,
-} from './api.service';
+import { ApiService } from './api.service';
+import type { PaginationParams } from '../types/pagination.types';
+import type { PaginatedResponse } from '../types/pagination.types';
 
 export const ContactService = {
 	async getPage(

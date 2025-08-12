@@ -1,8 +1,8 @@
 import { Axios } from '../config/axios.config';
-import type {
-	PaginatedResponse,
-	PaginationParams,
-} from '../types/pagination.types';
+import type { PaginatedResponse } from '../types/pagination.types';
+import type { PaginationParams } from '../types/pagination.types';
+
+export type { PaginatedResponse, PaginationParams };
 
 export const ApiService = {
 	async get<T>(endpoint: string, params?: Record<string, any>) {

@@ -9,19 +9,15 @@ import {
 	TableCell,
 	TableContainer,
 	TableHead,
-	TableRow,
-	Button,
-	IconButton,
+	TableRow, IconButton,
 	Box,
 	Typography,
 	InputAdornment,
 	Divider,
-	TablePagination,
+	TablePagination
 } from '@mui/material';
 import {
-	Search as SearchIcon,
-	Check as CheckIcon,
-	Add,
+	Search as SearchIcon, Add
 } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
 import type { UserDto } from '../../../../shared/dtos/user.dto';

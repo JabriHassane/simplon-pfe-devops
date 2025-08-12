@@ -1,15 +1,14 @@
 import {
-	useContacts,
-	type ContactFilters,
+	useContacts
 } from '../../hooks/ressources/useContacts';
-import { useUsers, type UserFilters } from '../../hooks/ressources/useUsers';
+import { useUsers } from '../../hooks/ressources/useUsers';
 import type { ResourceType } from '../../components/shared/ResourcePickerPopup';
 import type {
 	PaginatedResponse,
 	PaginationParams,
 } from '../../types/pagination.types';
-import { useOrders, type OrderFilters } from './useOrders';
-import { useTransactions, type TransactionFilters } from './useTransactions';
+import { useOrders } from './useOrders';
+import { useTransactions } from './useTransactions';
 import type { UseQueryResult } from '@tanstack/react-query';
 
 export const useResource = <T>(

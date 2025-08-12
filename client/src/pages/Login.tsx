@@ -3,12 +3,10 @@ import {
 	Box,
 	Paper,
 	TextField,
-	Button,
-	Alert,
-	CircularProgress,
+	Button, CircularProgress,
 	InputAdornment,
 	IconButton,
-	Container,
+	Container
 } from '@mui/material';
 import {
 	Visibility,

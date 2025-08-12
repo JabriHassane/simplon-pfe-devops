@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
+import { Box, Card, CardContent, Typography } from '@mui/material';
 import { usePaymentMethodStats } from '../hooks/ressources/useTransactions';
 import { formatPrice } from '../utils/price.utils';
 import {

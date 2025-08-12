@@ -15,10 +15,8 @@ import {
 } from '@mui/material';
 import {
 	AccountBalanceOutlined,
-	DeleteOutline,
-	EditOutlined,
-	HistoryOutlined,
-	PaidOutlined,
+	DeleteOutline, HistoryOutlined,
+	PaidOutlined
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
@@ -27,8 +25,7 @@ import type { OrderDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
 import {
 	ORDER_STATUS_COLOR_MAP,
-	PAYMENT_METHODS_COLOR_MAP,
-	type OrderStatus,
+	PAYMENT_METHODS_COLOR_MAP
 } from '../../../../shared/constants';
 import type { Pagination } from '../../types/pagination.types';
 import {
