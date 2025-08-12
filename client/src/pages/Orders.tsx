@@ -1,4 +1,4 @@
-import { Chip } from '@mui/material';
+import { Box, Chip } from '@mui/material';
 import OrderForm from '../components/forms/order-form/OrderForm';
 import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
 import type { OrderDto } from '../../../shared/dtos/order.dto';
@@ -8,7 +8,11 @@ import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import usePopups from '../hooks/usePopups';
 import { DICT } from '../i18n/fr';
-import { ORDER_STATUS_COLOR_MAP } from '../../../shared/constants';
+import {
+	ORDER_STATUS_COLOR_MAP,
+	PAGE_SIZE,
+	type OrderStatus,
+} from '../../../shared/constants';
 import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
 import OrderFilters from '../components/shared/OrderFilters';
@@ -18,9 +22,10 @@ import type { OrderFilterParams } from '../types/filters.types';
 
 interface OrdersPageProps {
 	type: 'sale' | 'purchase';
+	status?: OrderStatus;
 }
 
-export default function Orders({ type }: OrdersPageProps) {
+export default function Orders({ type, status }: OrdersPageProps) {
 	const {
 		openFormPopup,
 		openDeletePopup,
@@ -31,7 +36,7 @@ export default function Orders({ type }: OrdersPageProps) {
 	} = usePopups<OrderDto>();
 
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
-		usePagination();
+		usePagination(status === 'partially_paid' ? 5 : PAGE_SIZE);
 
 	const { filters, handleFiltersChange } = useFilters<OrderFilterParams>(() => {
 		handlePageChange(0);
@@ -41,6 +46,7 @@ export default function Orders({ type }: OrdersPageProps) {
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
+		status: status || filters.status,
 		type,
 	});
 
@@ -55,10 +61,18 @@ export default function Orders({ type }: OrdersPageProps) {
 	};
 
 	return (
-		<>
+		<Box>
 			<ResourceHeader
-				title={type === 'sale' ? 'Ventes' : 'Achats'}
-				handleAdd={() => handleOpenFormPopup(null)}
+				title={
+					type === 'sale'
+						? status === 'partially_paid'
+							? 'Ventes en cours'
+							: 'Ventes'
+						: status === 'partially_paid'
+						? 'Achats en cours'
+						: 'Achats'
+				}
+				handleAdd={status ? undefined : () => handleOpenFormPopup(null)}
 				error={!!error}
 			/>
 
@@ -66,6 +80,7 @@ export default function Orders({ type }: OrdersPageProps) {
 				type={type}
 				filters={filters}
 				onFiltersChange={handleFiltersChange}
+				hideStatus={status}
 			/>
 
 			<ResourceTable
@@ -147,6 +162,6 @@ export default function Orders({ type }: OrdersPageProps) {
 					onDelete={handleDelete}
 				/>
 			)}
-		</>
+		</Box>
 	);
 }

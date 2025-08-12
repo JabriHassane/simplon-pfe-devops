@@ -30,6 +30,7 @@ export const OrderController = {
 						include: {
 							agent: true,
 						},
+						orderBy: { date: 'desc' },
 					},
 					agent: {
 						select: {

@@ -154,19 +154,14 @@ export default function ResourcePickerPopup({
 
 								<TableBody>
 									{resources.map((resource) => (
-										<TableRow key={resource.id} hover>
+										<TableRow
+											key={resource.id}
+											hover
+											onClick={() => handleSelect(resource)}
+											sx={{ cursor: 'pointer' }}
+										>
 											<TableCell>{resource.ref}</TableCell>
 											<TableCell>{resource.name}</TableCell>
-											<TableCell align='right'>
-												<Button
-													variant='outlined'
-													size='small'
-													startIcon={<CheckIcon />}
-													onClick={() => handleSelect(resource)}
-												>
-													Choisir
-												</Button>
-											</TableCell>
 										</TableRow>
 									))}
 								</TableBody>

@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
 import { usePaymentMethodStats } from '../hooks/ressources/useTransactions';
 import { formatPrice } from '../utils/price.utils';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../../shared/constants';
 import { DICT } from '../i18n/fr';
 import ResourceHeader from '../components/shared/ResourceHeader';
+import Orders from './Orders';
 
 const PaymentMethodCard = ({
 	title,
@@ -77,22 +78,28 @@ function Dashboard() {
 		<>
 			<ResourceHeader title='Opérations' error={!!error} />
 
-			<Box
-				sx={{
-					display: 'grid',
-					gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' },
-					gap: 3,
-				}}
-			>
-				{TRANSACTION_METHODS.map((method, index) => (
-					<PaymentMethodCard
-						key={index}
-						title={method}
-						amount={paymentStats?.[method] || 0}
-						color={PAYMENT_METHODS_COLOR_MAP[method]}
-						type={method}
-					/>
-				))}
+			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+				<Box
+					sx={{
+						display: 'grid',
+						gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' },
+						gap: 3,
+					}}
+				>
+					{TRANSACTION_METHODS.map((method, index) => (
+						<PaymentMethodCard
+							key={index}
+							title={method}
+							amount={paymentStats?.[method] || 0}
+							color={PAYMENT_METHODS_COLOR_MAP[method]}
+							type={method}
+						/>
+					))}
+				</Box>
+
+				<Orders type='sale' status='partially_paid' />
+
+				<Orders type='purchase' status='partially_paid' />
 			</Box>
 		</>
 	);

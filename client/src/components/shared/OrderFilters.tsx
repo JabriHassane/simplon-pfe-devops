@@ -13,7 +13,11 @@ import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
-import { ORDER_STATUSES, type OrderType } from '../../../../shared/constants';
+import {
+	ORDER_STATUSES,
+	type OrderStatus,
+	type OrderType,
+} from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
 import type { OrderFilterParams } from '../../types/filters.types';
 
@@ -21,12 +25,14 @@ interface Props {
 	type: OrderType;
 	filters: OrderFilterParams;
 	onFiltersChange: (newFilters: Partial<OrderFilterParams>) => void;
+	hideStatus?: OrderStatus;
 }
 
 export default function OrderFilters({
 	type,
 	filters,
 	onFiltersChange,
+	hideStatus,
 }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
@@ -134,41 +140,43 @@ export default function OrderFilters({
 					/>
 				</Grid>
 
-				<Grid size={2}>
-					<FormControl fullWidth>
-						<InputLabel>Statut</InputLabel>
-						<Select
-							value={filters.status || ''}
-							onChange={(e) => onFiltersChange({ status: e.target.value })}
-							label='Statut'
-							displayEmpty
-							startAdornment={
-								<InputAdornment position='start'>
-									<IconButton
-										size='small'
-										onClick={() => onFiltersChange({ status: undefined })}
-									>
-										<Clear />
-									</IconButton>
-								</InputAdornment>
-							}
-							MenuProps={{
-								PaperProps: {
-									style: {
-										maxHeight: 300,
+				{!hideStatus && (
+					<Grid size={2}>
+						<FormControl fullWidth>
+							<InputLabel>Statut</InputLabel>
+							<Select
+								value={filters.status || ''}
+								onChange={(e) => onFiltersChange({ status: e.target.value })}
+								label='Statut'
+								displayEmpty
+								startAdornment={
+									<InputAdornment position='start'>
+										<IconButton
+											size='small'
+											onClick={() => onFiltersChange({ status: undefined })}
+										>
+											<Clear />
+										</IconButton>
+									</InputAdornment>
+								}
+								MenuProps={{
+									PaperProps: {
+										style: {
+											maxHeight: 300,
+										},
 									},
-								},
-							}}
-						>
-							<MenuItem value=''>Tous</MenuItem>
-							{ORDER_STATUSES.map((status) => (
-								<MenuItem key={status} value={status}>
-									{DICT.orderStatus[status]}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Grid>
+								}}
+							>
+								<MenuItem value=''>Tous</MenuItem>
+								{ORDER_STATUSES.map((status) => (
+									<MenuItem key={status} value={status}>
+										{DICT.orderStatus[status]}
+									</MenuItem>
+								))}
+							</Select>
+						</FormControl>
+					</Grid>
+				)}
 			</Grid>
 		</Box>
 	);

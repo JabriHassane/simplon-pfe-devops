@@ -1,3 +1,5 @@
+export const PAGE_SIZE = 20;
+
 export const ROLES = ['super_admin', 'admin', 'agent'] as const;
 export type Role = (typeof ROLES)[number];
 

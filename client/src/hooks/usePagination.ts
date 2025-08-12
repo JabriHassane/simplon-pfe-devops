@@ -1,10 +1,8 @@
 import { useState } from 'react';
+import { PAGE_SIZE } from '../../../shared/constants';
 
-function usePagination(
-	initialPage: number = 0,
-	initialRowsPerPage: number = 10
-) {
-	const [page, setPage] = useState(initialPage);
+function usePagination(initialRowsPerPage = PAGE_SIZE) {
+	const [page, setPage] = useState(0);
 	const [rowsPerPage, setRowsPerPage] = useState(initialRowsPerPage);
 
 	const handlePageChange = (newPage: number) => {

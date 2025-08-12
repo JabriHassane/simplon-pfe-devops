@@ -25,7 +25,11 @@ import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
 import type { OrderDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
-import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
+import {
+	ORDER_STATUS_COLOR_MAP,
+	PAYMENT_METHODS_COLOR_MAP,
+	type OrderStatus,
+} from '../../../../shared/constants';
 import type { Pagination } from '../../types/pagination.types';
 import {
 	useDeleteTransaction,
@@ -80,6 +84,16 @@ function ResourceTable({
 	onPageChange,
 	onRowsPerPageChange,
 }: Props) {
+	const [expandedOrderIndex, setExpandedOrderIndex] = useState<number | null>(null);
+
+	const handleToggleExpand = (index: number) => {
+		if (expandedOrderIndex === index) {
+			setExpandedOrderIndex(null);
+		} else {
+			setExpandedOrderIndex(index);
+		}
+	};		
+
 	return (
 		<>
 			<Table size='small'>
@@ -105,6 +119,8 @@ function ResourceTable({
 							onDelete={onDelete}
 							isOrder={isOrder}
 							isPayment={isPayment}
+							isExpanded={expandedOrderIndex === index}
+							onToggleExpand={() => handleToggleExpand(index)}
 						/>
 					))}
 				</TableBody>
@@ -142,6 +158,8 @@ interface RowProps {
 	onDelete: (item: any, index: number) => void;
 	isOrder?: boolean;
 	isPayment?: boolean;
+	isExpanded?: boolean;
+	onToggleExpand: () => void;
 }
 
 function Row({
@@ -152,9 +170,9 @@ function Row({
 	onDelete,
 	isOrder,
 	isPayment,
+	isExpanded,
+	onToggleExpand,
 }: RowProps) {
-	const [showPayments, setShowPayments] = useState(false);
-
 	const {
 		openFormPopup,
 		openDeletePopup,
@@ -237,9 +255,16 @@ function Row({
 
 	const payment = row.item as TransactionDto;
 
+	const orderStatus =
+		order.totalPrice === order.totalPaid ? 'paid' : 'partially_paid';
+
 	return (
 		<>
-			<TableRow>
+			<TableRow
+				hover={!isPayment}
+				sx={{ cursor: !isPayment ? 'pointer' : 'default' }}
+				onClick={() => !isPayment && onEdit(row.item, index)}
+			>
 				{headers.map((header) => (
 					<TableCell key={header.id}>{row.data[header.id]}</TableCell>
 				))}
@@ -324,12 +349,18 @@ function Row({
 					{isOrder && (
 						<Tooltip title='Historique des paiements'>
 							<IconButton
-								onClick={() => setShowPayments(!showPayments)}
+								onClick={(e) => {
+									e.stopPropagation();
+									onToggleExpand();
+								}}
 								size='small'
-								color={showPayments ? 'info' : 'default'}
+								color={isExpanded ? 'info' : 'default'}
 								disabled={payments.length === 0}
 							>
-								<Badge badgeContent={payments.length} color='info'>
+								<Badge
+									badgeContent={payments.length}
+									color={ORDER_STATUS_COLOR_MAP[orderStatus]}
+								>
 									<HistoryOutlined />
 								</Badge>
 							</IconButton>
@@ -337,68 +368,58 @@ function Row({
 					)}
 
 					{!isPayment && (
-						<>
-							<Tooltip title='Modifier'>
-								<IconButton
-									onClick={() => onEdit(row.item, index)}
-									size='small'
-								>
-									<EditOutlined />
-								</IconButton>
-							</Tooltip>
-
-							<Tooltip title='Supprimer'>
-								<IconButton
-									onClick={() => onDelete(row.item, index)}
-									size='small'
-								>
-									<DeleteOutline />
-								</IconButton>
-							</Tooltip>
-						</>
+						<Tooltip title='Supprimer'>
+							<IconButton
+								onClick={(e) => {
+									e.stopPropagation();
+									onDelete(row.item, index);
+								}}
+								size='small'
+							>
+								<DeleteOutline />
+							</IconButton>
+						</Tooltip>
 					)}
 				</TableCell>
 			</TableRow>
 
-			{isOrder && showPayments && (
+			{isOrder && isExpanded && (
 				<TableRow>
 					<TableCell sx={{ py: 0, pr: 0, px: 11 }} colSpan={12}>
-						{showPayments && (
-							<>
-								<ResourceTable
-									headers={paymentsHeaders}
-									rows={payments}
-									onEdit={handleOpenFormPopup}
-									onDelete={handleOpenDeletePopup}
-									isPayment
-								/>
+						<>
+							<ResourceTable
+								headers={paymentsHeaders}
+								rows={payments}
+								onEdit={handleOpenFormPopup}
+								onDelete={handleOpenDeletePopup}
+								isPayment
+							/>
 
-								{openFormPopup && (
-									<ResourceFormPopup
+							{openFormPopup && (
+								<ResourceFormPopup
+									onClose={handleClosePopup}
+									title={
+										selectedTransaction
+											? `Modifier ${selectedTransaction.ref}`
+											: 'Nouvelle transaction'
+									}
+								>
+									<TransactionForm
+										init={selectedTransaction}
 										onClose={handleClosePopup}
-										title={
-											selectedTransaction
-												? `Modifier ${selectedTransaction.ref}`
-												: 'Nouvelle transaction'
-										}
-									>
-										<TransactionForm
-											init={selectedTransaction}
-											onClose={handleClosePopup}
-										/>
-									</ResourceFormPopup>
-								)}
-
-								{openDeletePopup && (
-									<ConfirmationPopup
-										onClose={handleClosePopup}
-										title={`Supprimer ${selectedTransaction?.ref}`}
-										description='Voulez-vous vraiment supprimer cette transaction ?'
-										onDelete={handleDelete}
 									/>
-								)}
-							</>
-						)}
+								</ResourceFormPopup>
+							)}
+
+							{openDeletePopup && (
+								<ConfirmationPopup
+									onClose={handleClosePopup}
+									title={`Supprimer ${selectedTransaction?.ref}`}
+									description='Voulez-vous vraiment supprimer cette transaction ?'
+									onDelete={handleDelete}
+								/>
+							)}
+						</>
 					</TableCell>
 				</TableRow>
 			)}
