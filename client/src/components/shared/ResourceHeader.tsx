@@ -15,7 +15,7 @@ function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
 				display='flex'
 				justifyContent='space-between'
 				alignItems='center'
-				mb={3}
+				mb={4}
 			>
 				<Typography variant='h4'>{title}</Typography>
 				{handleAdd && (

@@ -41,9 +41,9 @@ export default function OrderFilters({
 					<TextField
 						value={filters.search}
 						onChange={(e) => onFiltersChange({ search: e.target.value })}
-						label='Référence'
+						label='Recherche'
 						variant='outlined'
-						placeholder='Rechercher par référence...'
+						placeholder='Référence, bon, facture'
 						fullWidth
 						slotProps={{
 							input: {
@@ -121,7 +121,7 @@ export default function OrderFilters({
 						label='Agent'
 						onChange={({ id }) => onFiltersChange({ agentId: id })}
 						resourceType='user'
-						placeholder='Sélectionner un agent...'
+						placeholder='Sélectionner'
 						clearButtonPosition='start'
 					/>
 				</Grid>
@@ -131,11 +131,7 @@ export default function OrderFilters({
 						label={type === 'sale' ? 'Client' : 'Fournisseur'}
 						onChange={({ id }) => onFiltersChange({ contactId: id })}
 						resourceType='contact'
-						placeholder={
-							type === 'sale'
-								? 'Sélectionner un client...'
-								: 'Sélectionner un fournisseur...'
-						}
+						placeholder={type === 'sale' ? 'Sélectionner' : 'Sélectionner'}
 						clearButtonPosition='start'
 					/>
 				</Grid>

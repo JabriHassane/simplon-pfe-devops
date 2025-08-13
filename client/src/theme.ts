@@ -10,6 +10,7 @@ export const theme = createTheme({
 			default: '#f5f5f5',
 			paper: '#ffffff',
 		},
+		divider: '#A4ABB1',
 	},
 	components: {
 		MuiButton: {
@@ -17,6 +18,7 @@ export const theme = createTheme({
 				root: {
 					textTransform: 'none',
 					bsaleRadius: 5,
+					borderColor: '#A4ABB1',
 				},
 			},
 		},
@@ -24,6 +26,7 @@ export const theme = createTheme({
 			styleOverrides: {
 				root: {
 					bsaleRadius: 10,
+					borderColor: '#A4ABB1',
 				},
 			},
 		},

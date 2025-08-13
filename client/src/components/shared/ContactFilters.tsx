@@ -1,6 +1,12 @@
-import { Box, TextField, Grid, IconButton } from '@mui/material';
-import { Clear } from '@mui/icons-material';
+import {
+	Box,
+	TextField,
+	Grid,
+	IconButton,
+	InputAdornment,
+} from '@mui/material';
 import type { ContactFilterParams } from '../../types/filters.types';
+import { Clear } from '@mui/icons-material';
 
 interface Props {
 	filters: ContactFilterParams;
@@ -11,24 +17,29 @@ export default function ContactFilters({ filters, onFiltersChange }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
 			<Grid container spacing={1}>
-				<Grid size={3}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ search: '' })}
-							disabled={!filters.search}
-						>
-							<Clear />
-						</IconButton>
-						<TextField
-							value={filters.search}
-							onChange={(e) => onFiltersChange({ search: e.target.value })}
-							label='Recherche'
-							variant='outlined'
-							placeholder='Rechercher par nom, téléphone...'
-							fullWidth
-						/>
-					</Box>
+				<Grid size={2}>
+					<TextField
+						value={filters.search}
+						onChange={(e) => onFiltersChange({ search: e.target.value })}
+						label='Recherche'
+						variant='outlined'
+						placeholder='Référence, nom, téléphone'
+						fullWidth
+						slotProps={{
+							input: {
+								startAdornment: (
+									<InputAdornment position='start'>
+										<IconButton
+											size='small'
+											onClick={() => onFiltersChange({ search: '' })}
+										>
+											<Clear />
+										</IconButton>
+									</InputAdornment>
+								),
+							},
+						}}
+					/>
 				</Grid>
 			</Grid>
 		</Box>

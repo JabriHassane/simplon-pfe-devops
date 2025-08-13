@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Typography } from '@mui/material';
+import { Box, Card, CardContent, Divider, Typography } from '@mui/material';
 import { usePaymentMethodStats } from '../hooks/ressources/useTransactions';
 import { formatPrice } from '../utils/price.utils';
 import {
@@ -48,35 +48,11 @@ const PaymentMethodCard = ({
 );
 
 function Dashboard() {
-	const { data: paymentStats, isLoading, error } = usePaymentMethodStats();
-
-	if (isLoading) {
-		return (
-			<Box sx={{ p: 3 }}>
-				<Typography variant='h4' gutterBottom>
-					Tableau de bord
-				</Typography>
-				<Typography>Chargement...</Typography>
-			</Box>
-		);
-	}
-
-	if (error) {
-		return (
-			<Box sx={{ p: 3 }}>
-				<Typography variant='h4' gutterBottom>
-					Tableau de bord
-				</Typography>
-				<Typography color='error'>
-					Erreur lors du chargement des données
-				</Typography>
-			</Box>
-		);
-	}
+	const { data: paymentStats, error } = usePaymentMethodStats();
 
 	return (
 		<>
-			<ResourceHeader title='Opérations' error={!!error} />
+			<ResourceHeader title='Tableau de bord' error={!!error} />
 
 			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
 				<Box
@@ -97,9 +73,13 @@ function Dashboard() {
 					))}
 				</Box>
 
-				<Orders type='sale' status='partially_paid' />
+				<Card variant='outlined' sx={{ p: 3 }}>
+					<Orders type='sale' status='partially_paid' />
+				</Card>
 
-				<Orders type='purchase' status='partially_paid' />
+				<Card variant='outlined' sx={{ p: 3 }}>
+					<Orders type='purchase' status='partially_paid' />
+				</Card>
 			</Box>
 		</>
 	);

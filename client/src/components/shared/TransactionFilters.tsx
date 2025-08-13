@@ -7,6 +7,7 @@ import {
 	MenuItem,
 	Grid,
 	IconButton,
+	InputAdornment,
 } from '@mui/material';
 import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -35,101 +36,123 @@ export default function TransactionFilters({
 	return (
 		<Box sx={{ my: 2 }}>
 			<Grid container spacing={1}>
-				<Grid size={3}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ search: undefined })}
-							disabled={!filters.search}
-						>
-							<Clear />
-						</IconButton>
-						<TextField
-							value={filters.search}
-							onChange={(e) => onFiltersChange({ search: e.target.value })}
-							label='Recherche'
-							variant='outlined'
-							placeholder='Rechercher par référence...'
-							fullWidth
-						/>
-					</Box>
+				<Grid size={2}>
+					<TextField
+						value={filters.search}
+						onChange={(e) => onFiltersChange({ search: e.target.value })}
+						label='Recherche'
+						variant='outlined'
+						placeholder='Référence'
+						fullWidth
+						slotProps={{
+							input: {
+								startAdornment: (
+									<InputAdornment position='start'>
+										<IconButton
+											size='small'
+											onClick={() => onFiltersChange({ search: '' })}
+										>
+											<Clear />
+										</IconButton>
+									</InputAdornment>
+								),
+							},
+						}}
+					/>
 				</Grid>
 
-				<Grid size={3}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ dateFrom: undefined })}
-							disabled={!filters.dateFrom}
-						>
-							<Clear />
-						</IconButton>
-						<DatePicker
-							sx={{ width: '100%' }}
-							label='Date de début'
-							value={filters.dateFrom ? dayjs(filters.dateFrom) : null}
-							onChange={(date) =>
-								onFiltersChange({ dateFrom: date?.toISOString() })
+				<Grid size={2}>
+					<DatePicker
+						sx={{ width: '100%' }}
+						label='Date de début'
+						value={filters.dateFrom ? dayjs(filters.dateFrom) : null}
+						onChange={(date) =>
+							onFiltersChange({ dateFrom: date?.toISOString() })
+						}
+						slotProps={{
+							textField: {
+								InputProps: {
+									startAdornment: (
+										<InputAdornment position='start'>
+											<IconButton
+												size='small'
+												onClick={() => onFiltersChange({ dateFrom: '' })}
+											>
+												<Clear />
+											</IconButton>
+										</InputAdornment>
+									),
+								},
+							},
+						}}
+					/>
+				</Grid>
+
+				<Grid size={2}>
+					<DatePicker
+						sx={{ width: '100%' }}
+						label='Date de fin'
+						value={filters.dateTo ? dayjs(filters.dateTo) : null}
+						onChange={(date) =>
+							onFiltersChange({ dateTo: date?.toISOString() })
+						}
+						slotProps={{
+							textField: {
+								InputProps: {
+									startAdornment: (
+										<InputAdornment position='start'>
+											<IconButton
+												size='small'
+												onClick={() => onFiltersChange({ dateTo: '' })}
+											>
+												<Clear />
+											</IconButton>
+										</InputAdornment>
+									),
+								},
+							},
+						}}
+					/>
+				</Grid>
+
+				<Grid size={2}>
+					<FormControl fullWidth>
+						<InputLabel>Compte</InputLabel>
+						<Select
+							value={filters.transferActor || ''}
+							onChange={(e) =>
+								onFiltersChange({ transferActor: e.target.value })
 							}
-						/>
-					</Box>
-				</Grid>
-
-				<Grid size={3}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ dateTo: undefined })}
-							disabled={!filters.dateTo}
-						>
-							<Clear />
-						</IconButton>
-						<DatePicker
-							sx={{ width: '100%' }}
-							label='Date de fin'
-							value={filters.dateTo ? dayjs(filters.dateTo) : null}
-							onChange={(date) =>
-								onFiltersChange({ dateTo: date?.toISOString() })
+							label='Compte'
+							displayEmpty
+							startAdornment={
+								<InputAdornment position='start'>
+									<IconButton
+										size='small'
+										onClick={() =>
+											onFiltersChange({ transferActor: undefined })
+										}
+									>
+										<Clear />
+									</IconButton>
+								</InputAdornment>
 							}
-						/>
-					</Box>
-				</Grid>
-
-				<Grid size={3}>
-					<Box display='flex' alignItems='center' gap={1}>
-						<IconButton
-							size='small'
-							onClick={() => onFiltersChange({ transferActor: undefined })}
-							disabled={!filters.transferActor}
-						>
-							<Clear />
-						</IconButton>
-
-						<FormControl fullWidth>
-							<InputLabel>Compte</InputLabel>
-							<Select
-								value={filters.transferActor}
-								onChange={(e) =>
-									onFiltersChange({ transferActor: e.target.value })
-								}
-								label='Compte'
-								MenuProps={{
-									PaperProps: {
-										style: {
-											maxHeight: 300,
-										},
+							MenuProps={{
+								PaperProps: {
+									style: {
+										maxHeight: 300,
 									},
-								}}
-							>
-								<MenuItem value=''>Tous</MenuItem>
-								{TRANSFER_ACTORS.map((account) => (
-									<MenuItem key={account} value={account}>
-										{account.charAt(0).toUpperCase() + account.slice(1)}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Box>
+								},
+							}}
+						>
+							<MenuItem value=''>Tous</MenuItem>
+							{TRANSFER_ACTORS.map((account) => (
+								<MenuItem key={account} value={account}>
+									{account.charAt(0).toUpperCase() + account.slice(1)}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 				</Grid>
 			</Grid>
 		</Box>
