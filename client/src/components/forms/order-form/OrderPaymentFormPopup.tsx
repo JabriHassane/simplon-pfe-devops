@@ -20,6 +20,7 @@ import { TransactionDto } from '../../../../../shared/dtos/transaction.dto';
 import { useContext } from 'react';
 import { AuthContext } from '../../../contexts/AuthContext';
 import { CreatePaymentDto } from '../../../../../shared/dtos/order.dto';
+import useAutoFocus from '../../../hooks/useAutoFocus';
 
 interface Props {
 	init: TransactionDto | null;
@@ -29,6 +30,8 @@ interface Props {
 
 function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 	const [user] = useContext(AuthContext);
+
+	const ref = useAutoFocus(!init);
 
 	const {
 		register,
@@ -43,7 +46,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 			date: init?.date || dayjs().toISOString(),
 			agentId: init?.agentId || user?.id,
 			agent: init?.agent || user,
-			amount: init?.amount,
+			amount: init?.amount || undefined,
 			method: init?.method || 'cash',
 			cashingTransactionId: init?.cashingTransactionId,
 			depositTransactionId: init?.depositTransactionId,
@@ -127,6 +130,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 							helperText={errors.amount?.message}
 							required
 							fullWidth
+							inputRef={(element: any) => (ref.current = element)}
 						/>
 					</Grid>
 				</Grid>
