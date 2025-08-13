@@ -27,7 +27,7 @@ app.use(helmet());
 const allowedOrigins = [
 	'http://localhost:5173',
 	'https://ppp-production-45fc.up.railway.app',
-	'https://a97842cb.ppp-3yt.pages.dev',
+	'https://ppp-3yt.pages.dev',
 	process.env.CLIENT_URL,
 ].filter(Boolean);
 
