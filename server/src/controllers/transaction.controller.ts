@@ -34,11 +34,13 @@ export const TransactionController = {
 						cashedPayment: {
 							select: {
 								method: true,
+								amount: true,
 							},
 						},
 						depositedPayment: {
 							select: {
 								method: true,
+								amount: true,
 							},
 						},
 					},

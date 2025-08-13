@@ -30,7 +30,11 @@ export const CreateOrderDto = z.object({
 	receiptNumber: z.string().nullish(),
 	invoiceNumber: z.string().nullish(),
 
-	totalPrice: z.number(),
+	totalPrice: z
+		.number({
+			message: 'Le prix total doit être positif',
+		})
+		.min(0, 'Le prix total doit être positif'),
 	totalPaid: z.number(),
 	totalDue: z.number(),
 

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -175,7 +172,7 @@ model Transaction {
   type          TransactionType
   method        TransactionMethod
   transferActor String?
-  amount        Float
+  amount        Float?
 
   cashingTransactionId String?      @unique
   cashingTransaction   Transaction? @relation("TransactionCashing", fields: [cashingTransactionId], references: [id])

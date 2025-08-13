@@ -15,6 +15,7 @@ import { navigationItems } from '../config/navigation';
 import { useContext } from 'react';
 import { AuthContext } from '../contexts/AuthContext';
 import { useLogout } from '../hooks/useAuth';
+import logo from '../assets/logo.png';
 
 const drawerWidth = 240;
 
@@ -47,7 +48,7 @@ export default function Sidebar() {
 		>
 			<Toolbar>
 				<Box padding={3}>
-					{/* <img src={logo} alt='logo' style={{ width: '100%' }} /> */}
+					<img src={logo} alt='logo' style={{ width: '100%' }} />
 				</Box>
 			</Toolbar>
 

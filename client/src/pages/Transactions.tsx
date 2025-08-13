@@ -134,7 +134,9 @@ export default function Transactions() {
 										)}
 									</Box>
 								),
-								amount: formatPrice(transaction.amount),
+								amount: formatPrice(
+									transaction.amount || transferTransaction?.amount || 0
+								),
 							},
 						};
 					}) || []
