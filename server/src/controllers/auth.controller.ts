@@ -50,14 +50,14 @@ export const AuthController = {
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
+				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 				maxAge: ms('15m'),
 			});
 
 			res.cookie('refreshToken', refreshToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
+				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 				maxAge: ms('7D'),
 			});
 
@@ -102,7 +102,7 @@ export const AuthController = {
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'lax',
+				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 				maxAge: ms('15m'),
 			});
 

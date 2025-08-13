@@ -19,8 +19,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginDto } from '../../../shared/dtos/auth.dto';
 import { useLogin } from '../hooks/useAuth';
-import { Axios } from '../config/axios.config';
-
 
 export default function Login() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -33,22 +31,11 @@ export default function Login() {
 		formState: { errors },
 	} = useForm({
 		resolver: zodResolver(LoginDto),
-		defaultValues: undefined,
 		mode: 'onChange',
 	});
 
 	const onSubmit = async (data: { name: string; password: string }) => {
-		// Axios.get('/health').then((res) => {
-		// 	console.log(res);
-		// });
-		// return;
 		await loginMutation.mutateAsync(data);
-	};
-
-	const handleKeyPress = (e: React.KeyboardEvent) => {
-		if (e.key === 'Enter') {
-			// The form will handle submission automatically
-		}
 	};
 
 	return (
@@ -95,7 +82,6 @@ export default function Login() {
 							fullWidth
 							label="Nom d'utilisateur"
 							{...register('name')}
-							onKeyPress={handleKeyPress}
 							variant='outlined'
 							error={!!errors.name}
 							helperText={errors.name?.message as string}
@@ -125,7 +111,6 @@ export default function Login() {
 							label='Mot de passe'
 							type={showPassword ? 'text' : 'password'}
 							{...register('password')}
-							onKeyPress={handleKeyPress}
 							variant='outlined'
 							error={!!errors.password}
 							helperText={errors.password?.message as string}

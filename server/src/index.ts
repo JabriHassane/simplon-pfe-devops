@@ -23,10 +23,28 @@ export const prisma = new PrismaClient();
 
 // Middleware
 app.use(helmet());
+// Configure CORS based on environment
+const allowedOrigins = [
+	'http://localhost:5173', // Development
+	'https://ppp-production-45fc.up.railway.app', // Production
+	process.env.CLIENT_URL, // Optional: from environment variable
+].filter(Boolean);
+
 app.use(
 	cors({
-		origin: 'http://localhost:5173',
+		origin: (origin, callback) => {
+			// Allow requests with no origin (like mobile apps or curl requests)
+			if (!origin) return callback(null, true);
+
+			if (allowedOrigins.indexOf(origin) !== -1) {
+				callback(null, true);
+			} else {
+				callback(new Error('Not allowed by CORS'));
+			}
+		},
 		credentials: true,
+		methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
 	})
 );
 // app.use(morgan('combined'));
