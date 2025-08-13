@@ -10,7 +10,7 @@ export const theme = createTheme({
 			default: '#f5f5f5',
 			paper: '#ffffff',
 		},
-		divider: '#C4C4C4',
+		divider: '#CBCBCB',
 	},
 	components: {
 		MuiButton: {
@@ -18,7 +18,7 @@ export const theme = createTheme({
 				root: {
 					textTransform: 'none',
 					bsaleRadius: 5,
-					borderColor: '#C4C4C4',
+					borderColor: '#CBCBCB',
 				},
 			},
 		},
@@ -26,7 +26,7 @@ export const theme = createTheme({
 			styleOverrides: {
 				root: {
 					bsaleRadius: 10,
-					borderColor: '#C4C4C4',
+					borderColor: '#CBCBCB',
 				},
 			},
 		},
