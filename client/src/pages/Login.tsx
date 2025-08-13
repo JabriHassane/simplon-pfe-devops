@@ -3,10 +3,11 @@ import {
 	Box,
 	Paper,
 	TextField,
-	Button, CircularProgress,
+	Button,
+	CircularProgress,
 	InputAdornment,
 	IconButton,
-	Container
+	Container,
 } from '@mui/material';
 import {
 	Visibility,
@@ -18,6 +19,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { LoginDto } from '../../../shared/dtos/auth.dto';
 import { useLogin } from '../hooks/useAuth';
+import { Axios } from '../config/axios.config';
 
 export default function Login() {
 	const [showPassword, setShowPassword] = useState(false);
@@ -35,6 +37,10 @@ export default function Login() {
 	});
 
 	const onSubmit = async (data: { name: string; password: string }) => {
+		Axios.get('https://ppp.railway.internal/health').then((res) => {
+			console.log(res);
+		});
+		return;
 		await loginMutation.mutateAsync(data);
 	};
 

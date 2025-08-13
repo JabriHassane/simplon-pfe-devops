@@ -8,7 +8,8 @@ declare module 'axios' {
 	}
 }
 
-const API_BASE_URL = 'http://localhost:3001/api';
+// const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://ppp-production-45fc.up.railway.app/api';
 
 export const Axios = axios.create({
 	baseURL: API_BASE_URL,
@@ -46,7 +47,7 @@ Axios.interceptors.response.use(
 		}
 
 		console.error('API request error:', error);
-		
+
 		const errorMessage = (error.response?.data as any).message as string;
 		if (errorMessage) {
 			throw new Error(errorMessage);

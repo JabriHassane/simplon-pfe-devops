@@ -16,7 +16,7 @@ import cookieParser from 'cookie-parser';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 8080;
 
 // Initialize Prisma
 export const prisma = new PrismaClient();
