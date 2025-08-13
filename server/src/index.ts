@@ -25,9 +25,10 @@ export const prisma = new PrismaClient();
 app.use(helmet());
 // Configure CORS based on environment
 const allowedOrigins = [
-	'http://localhost:5173', // Development
-	'https://ppp-production-45fc.up.railway.app', // Production
-	process.env.CLIENT_URL, // Optional: from environment variable
+	'http://localhost:5173',
+	'https://ppp-production-45fc.up.railway.app',
+	'https://a97842cb.ppp-3yt.pages.dev',
+	process.env.CLIENT_URL,
 ].filter(Boolean);
 
 app.use(
