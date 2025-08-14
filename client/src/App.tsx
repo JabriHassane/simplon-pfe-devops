@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SnackbarProvider } from 'notistack';
 import { AuthProvider } from './contexts/AuthContext';
+import { DrawerProvider } from './contexts/DrawerContext';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 
 import ProtectedRoute from './components/ProtectedRoute';
@@ -28,42 +29,52 @@ const Contacts = lazy(() => import('./pages/Contacts'));
 function AppContent() {
 	return (
 		<ThemeProvider theme={theme}>
-			<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='fr'>
-				<Box sx={{ display: 'flex' }}>
-					<CssBaseline />
-					<Sidebar />
-					<Box
-						component='main'
-						sx={{ flexGrow: 1, bgcolor: 'white', p: 3, height: '100vh' }}
-					>
-						<Suspense
-							fallback={
-								<Box
-									display='flex'
-									justifyContent='center'
-									alignItems='center'
-									height='100%'
-								>
-									<CircularProgress />
-								</Box>
-							}
+			<DrawerProvider>
+				<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='fr'>
+					<Box sx={{ display: 'flex' }}>
+						<CssBaseline />
+						<Sidebar />
+						<Box
+							component='main'
+							sx={{
+								flexGrow: 1,
+								bgcolor: 'white',
+								p: 3,
+								height: '100vh',
+							}}
 						>
-							<Routes>
-								<Route path='/' element={<Dashboard />} />
-								<Route path='/clients' element={<Contacts type='client' />} />
-								<Route
-									path='/suppliers'
-									element={<Contacts type='supplier' />}
-								/>
-								<Route path='/sales' element={<Orders type='sale' />} />
-								<Route path='/purchases' element={<Orders type='purchase' />} />
-								<Route path='/transactions' element={<Transactions />} />
-								<Route path='/users' element={<Users />} />
-							</Routes>
-						</Suspense>
+							<Suspense
+								fallback={
+									<Box
+										display='flex'
+										justifyContent='center'
+										alignItems='center'
+										height='100%'
+									>
+										<CircularProgress />
+									</Box>
+								}
+							>
+								<Routes>
+									<Route path='/' element={<Dashboard />} />
+									<Route path='/clients' element={<Contacts type='client' />} />
+									<Route
+										path='/suppliers'
+										element={<Contacts type='supplier' />}
+									/>
+									<Route path='/sales' element={<Orders type='sale' />} />
+									<Route
+										path='/purchases'
+										element={<Orders type='purchase' />}
+									/>
+									<Route path='/transactions' element={<Transactions />} />
+									<Route path='/users' element={<Users />} />
+								</Routes>
+							</Suspense>
+						</Box>
 					</Box>
-				</Box>
-			</LocalizationProvider>
+				</LocalizationProvider>
+			</DrawerProvider>
 		</ThemeProvider>
 	);
 }

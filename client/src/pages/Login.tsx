@@ -85,22 +85,13 @@ export default function Login() {
 							variant='outlined'
 							error={!!errors.name}
 							helperText={errors.name?.message as string}
-							InputProps={{
-								startAdornment: (
-									<InputAdornment position='start'>
-										<AccountCircle color='primary' />
-									</InputAdornment>
-								),
-							}}
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									bsaleRadius: 2,
-									'&:hover fieldset': {
-										bsaleColor: '#166C6B',
-									},
-									'&.Mui-focused fieldset': {
-										bsaleColor: '#166C6B',
-									},
+							slotProps={{
+								input: {
+									startAdornment: (
+										<InputAdornment position='start'>
+											<AccountCircle />
+										</InputAdornment>
+									),
 								},
 							}}
 						/>
@@ -114,36 +105,27 @@ export default function Login() {
 							variant='outlined'
 							error={!!errors.password}
 							helperText={errors.password?.message as string}
-							InputProps={{
-								startAdornment: (
-									<InputAdornment position='start'>
-										<Lock color='primary' />
-									</InputAdornment>
-								),
-								endAdornment: (
-									<InputAdornment position='end'>
-										<IconButton
-											onClick={() => setShowPassword(!showPassword)}
-											edge='end'
-											size='small'
-										>
-											{showPassword ? <VisibilityOff /> : <Visibility />}
-										</IconButton>
-									</InputAdornment>
-								),
-							}}
-							sx={{
-								'& .MuiOutlinedInput-root': {
-									bsaleRadius: 2,
-									'&:hover fieldset': {
-										bsaleColor: '#166C6B',
-									},
-									'&.Mui-focused fieldset': {
-										bsaleColor: '#166C6B',
-									},
+							slotProps={{
+								input: {
+									startAdornment: (
+										<InputAdornment position='start'>
+											<Lock />
+										</InputAdornment>
+									),
+									endAdornment: (
+										<InputAdornment position='end'>
+											<IconButton
+												onClick={() => setShowPassword(!showPassword)}
+												edge='end'
+												size='small'
+											>
+												{showPassword ? <VisibilityOff /> : <Visibility />}
+											</IconButton>
+										</InputAdornment>
+									),
 								},
-								mt: 2,
 							}}
+							sx={{ mt: 2 }}
 						/>
 
 						{/* Login Button */}

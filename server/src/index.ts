@@ -29,11 +29,12 @@ app.use(helmet());
 // Configure CORS based on environment
 const allowedOrigins = [process.env.CLIENT_URL];
 
-
 app.use(
 	cors({
 		origin: (origin, callback) => {
 			// Allow requests with no origin (like mobile apps or curl requests)
+			console.log(origin);
+			
 			if (!origin) return callback(null, true);
 
 			if (allowedOrigins.indexOf(origin) !== -1) {
@@ -85,7 +86,6 @@ app.use(
 // Start server
 app.listen(PORT, () => {
 	console.log(`🚀 Server running on port ${PORT}`);
-	console.log(`📊 Health check: http://localhost:${PORT}/health`);
 });
 
 // Graceful shutdown

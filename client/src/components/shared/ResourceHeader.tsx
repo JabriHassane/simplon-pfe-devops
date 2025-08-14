@@ -1,6 +1,7 @@
-import { Alert } from '@mui/material';
-import { Box, Button, Typography } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import { Alert, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Typography, IconButton } from '@mui/material';
+import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material';
+import { useDrawer } from '../../contexts/DrawerContext';
 
 interface ResourceHeaderProps {
 	title: string;
@@ -9,6 +10,10 @@ interface ResourceHeaderProps {
 }
 
 function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
+	const theme = useTheme();
+	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+	const { toggleDrawer } = useDrawer();
+
 	return (
 		<>
 			<Box
@@ -17,7 +22,14 @@ function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
 				alignItems='center'
 				mb={4}
 			>
-				<Typography variant='h4'>{title}</Typography>
+				<Box display='flex' alignItems='center' gap={1}>
+					{isMobile && (
+						<IconButton onClick={toggleDrawer} sx={{ size: 30 }}>
+							<MenuIcon />
+						</IconButton>
+					)}
+					<Typography variant='h4'>{title}</Typography>
+				</Box>
 				{handleAdd && (
 					<Button
 						variant='contained'
