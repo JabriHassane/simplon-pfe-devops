@@ -38,7 +38,7 @@ Axios.interceptors.response.use(
 				return Axios(originalRequest);
 			} catch (refreshError) {
 				// If refresh fails, redirect to login
-				// window.location.href = '/login';
+				window.location.href = '/login';
 				return Promise.reject(refreshError);
 			}
 		}

@@ -5,10 +5,8 @@ import {
 	Select,
 	MenuItem,
 	Grid,
-	InputAdornment,
-	IconButton,
 } from '@mui/material';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
 	CreateUserDto,
@@ -19,7 +17,6 @@ import ResourceForm from './ResourceForm';
 import { useCreateUser, useUpdateUser } from '../../hooks/ressources/useUsers';
 import useAutoFocus from '../../hooks/useAutoFocus';
 import { ROLES, type Role } from '../../../../shared/constants';
-import { Clear } from '@mui/icons-material';
 import { DICT } from '../../i18n/fr';
 
 interface UserFormProps {
@@ -34,7 +31,6 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 		register,
 		handleSubmit,
 		formState: { errors },
-		control,
 		setValue,
 		watch,
 	} = useForm({

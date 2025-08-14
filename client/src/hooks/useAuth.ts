@@ -67,7 +67,7 @@ export const useConnectedUser = () => {
 				return user;
 			} catch (error) {
 				console.error(error);
-				// navigate('/login');
+				navigate('/login');
 				showError("Erreur lors de la récupération de l'utilisateur connecté");
 				return null;
 			}
