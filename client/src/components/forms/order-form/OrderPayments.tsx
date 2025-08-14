@@ -18,9 +18,13 @@ import { PAYMENT_METHODS_COLOR_MAP } from '../../../../../shared/constants';
 
 interface OrderPaymentsProps {
 	showRef?: boolean;
+	totalDue: number;
 }
 
-export const OrderPayments = ({ showRef = false }: OrderPaymentsProps) => {
+export const 	OrderPayments = ({
+	showRef = false,
+	totalDue,
+}: OrderPaymentsProps) => {
 	const headers = [
 		{ id: 'date', name: 'Date' },
 		{ id: 'agent', name: 'Agent' },
@@ -121,7 +125,8 @@ export const OrderPayments = ({ showRef = false }: OrderPaymentsProps) => {
 
 			{openFormPopup && (
 				<PaymentFormPopup
-					init={selectedPayment}
+				init={selectedPayment}
+				totalDue={totalDue}
 					onSubmit={handlePaymentSubmit}
 					onClose={handleClosePopup}
 				/>

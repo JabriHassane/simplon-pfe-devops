@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from "../../prisma/prisma.config";
 
 const TABLE_PREFIX_MAP = {
 	users: 'UTI',
@@ -11,8 +11,6 @@ const TABLE_PREFIX_MAP = {
 };
 
 export const getNextRef = async (table: keyof typeof TABLE_PREFIX_MAP) => {
-	const prisma = new PrismaClient();
-
 	const [result] = await prisma.$queryRawUnsafe<{ nextval: number }[]>(
 		`SELECT nextval('${table}_ref_seq')`
 	);

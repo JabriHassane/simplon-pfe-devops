@@ -8,11 +8,8 @@ declare module 'axios' {
 	}
 }
 
-// const API_BASE_URL = 'http://localhost:8080/api';
-const API_BASE_URL = 'https://ppp-production-45fc.up.railway.app/api';
-
 export const Axios = axios.create({
-	baseURL: API_BASE_URL,
+	baseURL: import.meta.env.VITE_API_URL + '/api',
 	headers: {
 		'Content-Type': 'application/json',
 	},
@@ -41,7 +38,7 @@ Axios.interceptors.response.use(
 				return Axios(originalRequest);
 			} catch (refreshError) {
 				// If refresh fails, redirect to login
-				window.location.href = '/login';
+				// window.location.href = '/login';
 				return Promise.reject(refreshError);
 			}
 		}

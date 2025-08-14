@@ -18,4 +18,9 @@ export const DICT = {
 		bank_transfer: 'Virement',
 		deposit: 'Dépôt',
 	},
+	role: {
+		super_admin: 'Super admin',
+		admin: 'Admin',
+		agent: 'Agent',
+	},
 } as const;

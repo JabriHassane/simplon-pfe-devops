@@ -123,10 +123,10 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 
 					<Grid size={6}>
 						<ResourcePickerField
-							label='Contact'
+							label={type === 'sale' ? 'Client' : 'Fournisseur'}
 							init={init?.contact?.name}
 							onChange={({ id }) => setValue('contactId', id)}
-							resourceType='contact'
+							resourceType={type === 'sale' ? 'client' : 'supplier'}
 							error={!!errors.contactId}
 							helperText={errors.contactId?.message as string}
 						/>
@@ -199,7 +199,7 @@ export default function OrderForm({ init, onClose, type }: OrderFormProps) {
 					</Grid>
 
 					<Grid size={12}>
-						<OrderPayments showRef={!!init?.id} />
+						<OrderPayments totalDue={totalDue} showRef={!!init?.id} />
 					</Grid>
 				</Grid>
 			</ResourceForm>

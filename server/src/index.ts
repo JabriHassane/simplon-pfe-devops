@@ -12,24 +12,23 @@ import orderRouter from './routers/order.router';
 import transactionRouter from './routers/transaction.router';
 import cookieParser from 'cookie-parser';
 
-// Load environment variables
-dotenv.config();
+dotenv.config({
+	path: `.env.${process.env.NODE_ENV!}`,
+});
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT;
 
 // Initialize Prisma
-export const prisma = new PrismaClient();
+export const prisma = new PrismaClient({
+	datasourceUrl: process.env.DATABASE_URL!,
+});
 
 // Middleware
 app.use(helmet());
 // Configure CORS based on environment
-const allowedOrigins = [
-	'http://localhost:5173',
-	'https://ppp-production-45fc.up.railway.app',
-	'https://ppp-3yt.pages.dev',
-	process.env.CLIENT_URL,
-].filter(Boolean);
+const allowedOrigins = [process.env.CLIENT_URL];
+
 
 app.use(
 	cors({

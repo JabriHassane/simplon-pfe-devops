@@ -26,9 +26,10 @@ interface Props {
 	init: TransactionDto | null;
 	onClose: () => void;
 	onSubmit: (data: CreatePaymentDto) => void;
+	totalDue: number;
 }
 
-function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
+function PaymentFormPopup({ init, onClose, onSubmit, totalDue }: Props) {
 	const [user] = useContext(AuthContext);
 
 	const ref = useAutoFocus(!init);
@@ -46,7 +47,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 			date: init?.date || dayjs().toISOString(),
 			agentId: init?.agentId || user?.id,
 			agent: init?.agent || user,
-			amount: init?.amount || undefined,
+			amount: init?.amount || totalDue || undefined,
 			method: init?.method || 'cash',
 			cashingTransactionId: init?.cashingTransactionId,
 			depositTransactionId: init?.depositTransactionId,
@@ -56,7 +57,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 	return (
 		<ResourceFormPopup
 			onClose={onClose}
-			title={init ? `Modifier ${init.ref}` : 'Nouveau paiement'}
+			title={init ? `Modifier ${init.ref || 'le paiement'}` : 'Nouveau paiement'}
 		>
 			<ResourceForm onSubmit={handleSubmit(onSubmit)}>
 				<Grid container spacing={2}>
@@ -130,7 +131,7 @@ function PaymentFormPopup({ init, onClose, onSubmit }: Props) {
 							helperText={errors.amount?.message}
 							required
 							fullWidth
-							inputRef={(element: any) => (ref.current = element)}
+							inputRef={(element) => (ref.current = element)}
 						/>
 					</Grid>
 				</Grid>

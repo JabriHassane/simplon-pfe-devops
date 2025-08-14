@@ -130,8 +130,8 @@ export default function OrderFilters({
 					<ResourcePickerField
 						label={type === 'sale' ? 'Client' : 'Fournisseur'}
 						onChange={({ id }) => onFiltersChange({ contactId: id })}
-						resourceType='contact'
-						placeholder={type === 'sale' ? 'Sélectionner' : 'Sélectionner'}
+						resourceType={type === 'sale' ? 'client' : 'supplier'}
+						placeholder='Sélectionner'
 						clearButtonPosition='start'
 					/>
 				</Grid>

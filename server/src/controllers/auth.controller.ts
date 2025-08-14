@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { prisma } from '../index';
 import { generateToken, generateRefreshToken } from '../utils/auth.utils';
 import ms from 'ms';
+import { JWT_EXPIRES_IN } from '../../../shared/constants';
 
 export const AuthController = {
 	async login(req: Request, res: Response) {
@@ -50,15 +51,15 @@ export const AuthController = {
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'none',
-				maxAge: ms('15m'),
+				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+				maxAge: ms(JWT_EXPIRES_IN),
 			});
 
 			res.cookie('refreshToken', refreshToken, {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
-				sameSite: 'none',
-				maxAge: ms('7D'),
+				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+				expires: new Date(253402300799999), // Year 9999
 			});
 
 			// Return user data (without password)
@@ -81,18 +82,12 @@ export const AuthController = {
 
 			// Find refresh token in database
 			const tokenRecord = await prisma.refreshToken.findUnique({
-				where: { token: refreshToken },
+				where: { token: refreshToken, revokedAt: null },
 				include: { user: true },
 			});
 
-			if (
-				!tokenRecord ||
-				tokenRecord.revokedAt ||
-				tokenRecord.expiresAt < new Date()
-			) {
-				return res
-					.status(401)
-					.json({ message: 'Invalid or expired refresh token' });
+			if (!tokenRecord) {
+				return res.status(401).json({ message: 'Invalid refresh token' });
 			}
 
 			// Generate new access token
@@ -103,7 +98,7 @@ export const AuthController = {
 				httpOnly: true,
 				secure: process.env.NODE_ENV === 'production',
 				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-				maxAge: ms('15m'),
+				maxAge: ms(JWT_EXPIRES_IN),
 			});
 
 			res.json({ message: 'Token refreshed successfully' });

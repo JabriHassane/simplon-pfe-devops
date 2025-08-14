@@ -9,16 +9,15 @@ import {
 	TableCell,
 	TableContainer,
 	TableHead,
-	TableRow, IconButton,
+	TableRow,
+	IconButton,
 	Box,
 	Typography,
 	InputAdornment,
 	Divider,
-	TablePagination
+	TablePagination,
 } from '@mui/material';
-import {
-	Search as SearchIcon, Add
-} from '@mui/icons-material';
+import { Search as SearchIcon, Add } from '@mui/icons-material';
 import { useResource } from '../../hooks/ressources/useResource';
 import type { UserDto } from '../../../../shared/dtos/user.dto';
 import type { ContactDto } from '../../../../shared/dtos/contact.dto';
@@ -28,9 +27,10 @@ import usePopups from '../../hooks/usePopups';
 import ResourceFormPopup from './ResourceFormPopup';
 import UserForm from '../forms/UserForm';
 import ContactForm from '../forms/ContactForm';
+import useAutoFocus from '../../hooks/useAutoFocus';
 
-export type ResourceType = 'user' | 'contact' | 'order' | 'transaction';
-export type PickableResourceType = 'user' | 'contact';
+export type PickableResourceType = 'user' | 'client' | 'supplier';
+export type ResourceType = PickableResourceType | 'order' | 'transaction';
 export type Resource = UserDto | ContactDto | OrderDto | TransactionDto;
 export type PickableResource = UserDto | ContactDto;
 
@@ -50,6 +50,8 @@ export default function ResourcePickerPopup({
 	const [searchTerm, setSearchTerm] = useState('');
 	const [page, setPage] = useState(0);
 
+	const ref = useAutoFocus();
+
 	const { openFormPopup, handleOpenFormPopup, handleClosePopup } =
 		usePopups<PickableResource>();
 
@@ -61,6 +63,8 @@ export default function ResourcePickerPopup({
 		page: page + 1, // API uses 1-based pagination
 		pageSize: pageSize,
 		search: searchTerm.trim(),
+		...(resourceType === 'client' && { type: 'client' }),
+		...(resourceType === 'supplier' && { type: 'supplier' }),
 	});
 
 	const resources = (resourceData?.data || []) as PickableResource[];
@@ -102,6 +106,7 @@ export default function ResourcePickerPopup({
 						value={searchTerm}
 						onChange={handleSearchChange}
 						variant='outlined'
+						inputRef={(element) => (ref.current = element)}
 						slotProps={{
 							input: {
 								startAdornment: (
@@ -186,18 +191,22 @@ export default function ResourcePickerPopup({
 			{openFormPopup && (
 				<ResourceFormPopup
 					onClose={handleClosePopup}
-					title={`Nouveau ${
-						resourceType === 'contact' ? 'client' : 'fournisseur'
-					}`}
+					title={
+						resourceType === 'user'
+							? 'Nouvel utilisateur'
+							: `Nouveau ${
+									resourceType === 'client' ? 'client' : 'fournisseur'
+							  }`
+					}
 				>
-					{resourceType === 'contact' ? (
+					{resourceType === 'user' ? (
+						<UserForm init={null} onClose={handleClosePopup} />
+					) : (
 						<ContactForm
 							init={null}
 							onClose={handleClosePopup}
-							type={'client'}
+							type={resourceType === 'client' ? 'client' : 'supplier'}
 						/>
-					) : (
-						<UserForm init={null} onClose={handleClosePopup} />
 					)}
 				</ResourceFormPopup>
 			)}

@@ -5,6 +5,8 @@ import {
 	Select,
 	MenuItem,
 	Grid,
+	InputAdornment,
+	IconButton,
 } from '@mui/material';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,6 +18,9 @@ import {
 import ResourceForm from './ResourceForm';
 import { useCreateUser, useUpdateUser } from '../../hooks/ressources/useUsers';
 import useAutoFocus from '../../hooks/useAutoFocus';
+import { ROLES, type Role } from '../../../../shared/constants';
+import { Clear } from '@mui/icons-material';
+import { DICT } from '../../i18n/fr';
 
 interface UserFormProps {
 	init: UserDto | null;
@@ -30,26 +35,27 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 		handleSubmit,
 		formState: { errors },
 		control,
+		setValue,
+		watch,
 	} = useForm({
 		resolver: zodResolver(init ? UpdateUserDto : CreateUserDto),
-		defaultValues: init
-			? {
-					...init,
-					password: '',
-			  }
-			: {
-					name: '',
-					role: 'agent' as const,
-					password: '',
-			  },
+		defaultValues: {
+			name: init?.name,
+			role: init?.role || 'agent',
+			password: '',
+		},
 		mode: 'onChange',
 		reValidateMode: 'onChange',
 	});
+
+	const role = watch('role');
 
 	const createUserMutation = useCreateUser(onClose);
 	const updateUserMutation = useUpdateUser(onClose);
 
 	const onSubmit = async (data: CreateUserDto | UpdateUserDto) => {
+		console.log(data);
+
 		if (init) {
 			await updateUserMutation.mutateAsync({
 				id: init.id,
@@ -80,22 +86,29 @@ export default function UserForm({ init, onClose }: UserFormProps) {
 				</Grid>
 
 				<Grid size={6}>
-					<Controller
-						name='role'
-						control={control}
-						defaultValue='agent'
-						disabled={init?.role === 'super_admin'}
-						render={({ field }) => (
-							<FormControl fullWidth error={!!errors.role} required>
-								<InputLabel>Rôle</InputLabel>
-								<Select {...field} label='Rôle'>
-									<MenuItem value='agent'>Agent</MenuItem>
-									<MenuItem value='admin'>Admin</MenuItem>
-									<MenuItem value='super_admin'>Super admin</MenuItem>
-								</Select>
-							</FormControl>
-						)}
-					/>
+					<FormControl fullWidth>
+						<InputLabel>Rôle</InputLabel>
+						<Select
+							value={role || ''}
+							onChange={(e) => setValue('role', e.target.value as Role)}
+							label='Rôle'
+							displayEmpty
+							MenuProps={{
+								PaperProps: {
+									style: {
+										maxHeight: 300,
+									},
+								},
+							}}
+							disabled={init?.ref === 'UTI-1'}
+						>
+							{ROLES.map((role) => (
+								<MenuItem key={role} value={role}>
+									{DICT.role[role]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
 				</Grid>
 
 				<Grid size={12}>

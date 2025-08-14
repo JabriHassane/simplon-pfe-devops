@@ -72,6 +72,7 @@ export default function Users() {
 				}
 				onEdit={handleOpenFormPopup}
 				onDelete={handleOpenDeletePopup}
+				hideDelete={(item) => item.ref === 'UTI-1'}
 				pagination={pagination}
 				onPageChange={handlePageChange}
 				onRowsPerPageChange={handleRowsPerPageChange}

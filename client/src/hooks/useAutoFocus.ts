@@ -7,7 +7,7 @@ function useAutoFocus(condition = true) {
 		if (condition) {
 			ref.current?.focus();
 		}
-	}, [condition]);
+	}, [ref.current, condition]);
 
 	return ref;
 }

@@ -4,11 +4,6 @@ import ms from 'ms';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-here';
-const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '7D') as ms.StringValue;
-const REFRESH_TOKEN_EXPIRES_IN = (process.env.REFRESH_TOKEN_EXPIRES_IN ||
-	'7D') as ms.StringValue;
-
 export interface JWTPayload {
 	userId: string;
 	name: string;
@@ -22,7 +17,9 @@ export const generateToken = (user: User) => {
 		role: user.role,
 	};
 
-	return jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+	return jwt.sign(payload, process.env.JWT_SECRET!, {
+		expiresIn: '15m' as ms.StringValue,
+	});
 };
 
 export const generateRefreshToken = () => {
@@ -31,7 +28,7 @@ export const generateRefreshToken = () => {
 
 export const verifyToken = (token: string): JWTPayload => {
 	try {
-		return jwt.verify(token, JWT_SECRET) as JWTPayload;
+		return jwt.verify(token, process.env.JWT_SECRET!) as JWTPayload;
 	} catch (error) {
 		throw new Error('Invalid token');
 	}

@@ -65,6 +65,7 @@ interface Props {
 	onDelete: (item: any, index: number) => void;
 	isOrder?: boolean;
 	isPayment?: boolean;
+	hideDelete?: (item: any) => boolean;
 	pagination?: Pagination;
 	onPageChange?: (page: number) => void;
 	onRowsPerPageChange?: (pageSize: number) => void;
@@ -80,6 +81,7 @@ function ResourceTable({
 	pagination,
 	onPageChange,
 	onRowsPerPageChange,
+	hideDelete,
 }: Props) {
 	const [expandedOrderIndex, setExpandedOrderIndex] = useState<number | null>(null);
 
@@ -118,6 +120,7 @@ function ResourceTable({
 							isPayment={isPayment}
 							isExpanded={expandedOrderIndex === index}
 							onToggleExpand={() => handleToggleExpand(index)}
+							hideDelete={hideDelete?.(row.item)}
 						/>
 					))}
 				</TableBody>
@@ -157,6 +160,7 @@ interface RowProps {
 	isPayment?: boolean;
 	isExpanded?: boolean;
 	onToggleExpand: () => void;
+	hideDelete?: boolean;
 }
 
 function Row({
@@ -169,6 +173,7 @@ function Row({
 	isPayment,
 	isExpanded,
 	onToggleExpand,
+	hideDelete,
 }: RowProps) {
 	const {
 		openFormPopup,
@@ -364,7 +369,7 @@ function Row({
 						</Tooltip>
 					)}
 
-					{!isPayment && (
+					{!isPayment && !hideDelete && (
 						<Tooltip title='Supprimer'>
 							<IconButton
 								onClick={(e) => {

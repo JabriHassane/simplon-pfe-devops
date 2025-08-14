@@ -15,6 +15,8 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/fr';
 import Sidebar from './components/Sidebar';
 
+console.log(import.meta.env.VITE_API_URL);
+
 // Lazy load pages
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));

@@ -1,6 +1,4 @@
-import {
-	useContacts
-} from '../../hooks/ressources/useContacts';
+import { useContacts } from '../../hooks/ressources/useContacts';
 import { useUsers } from '../../hooks/ressources/useUsers';
 import type { ResourceType } from '../../components/shared/ResourcePickerPopup';
 import type {
@@ -16,7 +14,8 @@ export const useResource = <T>(
 	params?: PaginationParams & Record<string, any>
 ) => {
 	const hookMap = {
-		contact: useContacts,
+		client: useContacts,
+		supplier: useContacts,
 		user: useUsers,
 		order: useOrders,
 		transaction: useTransactions,
