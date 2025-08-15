@@ -7,4 +7,16 @@ export default defineConfig({
 	server: {
 		port: 3000,
 	},
+	build: {
+		chunkSizeWarningLimit: 1000, // Increase size limit to 1000kb
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					mui: ['@mui/material', '@mui/icons-material', '@mui/x-date-pickers'],
+					'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+					utils: ['dayjs', 'notistack', '@tanstack/react-query'],
+				},
+			},
+		},
+	},
 });
