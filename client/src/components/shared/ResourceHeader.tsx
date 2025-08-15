@@ -42,22 +42,9 @@ function ResourceHeader({
 						{title}
 					</Typography>
 				</Box>
-				{isMobile ? (
-					<IconButton onClick={onToggleFilters}>
-						<FilterIcon />
-					</IconButton>
-				) : (
-					handleAdd && (
-						<Button
-							variant='contained'
-							startIcon={<AddIcon />}
-							onClick={handleAdd}
-							disableElevation
-						>
-							Ajouter
-						</Button>
-					)
-				)}
+				<IconButton onClick={onToggleFilters}>
+					<FilterIcon />
+				</IconButton>
 			</Box>
 
 			{error && (
@@ -66,8 +53,7 @@ function ResourceHeader({
 				</Alert>
 			)}
 
-			{/* FAB for mobile */}
-			{isMobile && handleAdd && (
+			{handleAdd && (
 				<Fab
 					color='primary'
 					onClick={handleAdd}

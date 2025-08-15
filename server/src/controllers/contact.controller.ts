@@ -140,17 +140,6 @@ export const ContactController = {
 				return res.status(404).json({ message: 'Contact not found' });
 			}
 
-			// Check if contact has sales or purchases
-			const hasOrders = await prisma.order.findFirst({
-				where: { contactId: id },
-			});
-
-			if (hasOrders) {
-				return res.status(400).json({
-					message: 'Cannot delete contact with existing orders',
-				});
-			}
-
 			// Soft delete
 			await prisma.contact.update({
 				where: { id },

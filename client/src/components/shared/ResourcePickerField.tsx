@@ -2,11 +2,8 @@ import { useState } from 'react';
 import {
 	TextField,
 	FormControl,
-	FormHelperText,
-	IconButton,
-	InputAdornment,
+	FormHelperText
 } from '@mui/material';
-import { Clear } from '@mui/icons-material';
 import ResourcePickerPopup, {
 	type PickableResourceType,
 } from './ResourcePickerPopup';

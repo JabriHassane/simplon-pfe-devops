@@ -1,4 +1,4 @@
-import { Box, Chip } from '@mui/material';
+import { Chip, Typography } from '@mui/material';
 import OrderForm from '../components/forms/order-form/OrderForm';
 import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
 import type { OrderDto } from '../../../shared/dtos/order.dto';
@@ -117,8 +117,35 @@ export default function Orders({ type, status }: OrdersPageProps) {
 								receiptNumber: order.receiptNumber,
 								invoiceNumber: order.invoiceNumber,
 								total: formatPrice(order.totalPrice),
-								paid: formatPrice(order.totalPaid),
-								due: formatPrice(order.totalPrice - order.totalPaid),
+								paid: (
+									<>
+										<Typography
+											variant='body2'
+											fontWeight={orderStatus === 'paid' ? 'semibold' : 'normal'}
+											color={
+												orderStatus === 'paid'
+													? ORDER_STATUS_COLOR_MAP[orderStatus]
+													: undefined
+											}
+										>
+											{formatPrice(order.totalPaid)}
+										</Typography>
+									</>
+								),
+								due: (
+									<>
+										<Typography
+											variant='body2'
+											color={
+												orderStatus === 'partially_paid'
+													? ORDER_STATUS_COLOR_MAP[orderStatus]
+													: undefined
+											}
+										>
+											{formatPrice(order.totalPrice - order.totalPaid)}
+										</Typography>
+									</>
+								),
 								statut: (
 									<Chip
 										key={order.id}

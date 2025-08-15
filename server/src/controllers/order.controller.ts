@@ -310,25 +310,39 @@ export const OrderController = {
 				return res.status(404).json({ message: 'Order not found' });
 			}
 
-			// Check if order has transactions
-			const hasTransactions = await prisma.transaction.findFirst({
-				where: { orderId: id },
-			});
+			const followingTransactionsIds = existingOrder.payments
+				.map((p) => p.cashingTransactionId || p.depositTransactionId)
+				.filter((id) => id) as string[];
 
-			if (hasTransactions) {
-				return res.status(400).json({
-					message: 'Cannot delete order with existing transactions',
-				});
-			}
-
-			// Soft delete
-			await prisma.order.update({
-				where: { id },
-				data: {
-					deletedAt: new Date(),
-					deletedById: userId,
-				},
-			});
+			// Soft delete order
+			const promises = [
+				await prisma.order.update({
+					where: { id },
+					data: {
+						deletedAt: new Date(),
+						deletedById: userId,
+						payments: {
+							updateMany: {
+								where: {},
+								data: {
+									deletedAt: new Date(),
+									deletedById: userId,
+								},
+							},
+						},
+					},
+				}),
+				...followingTransactionsIds.map(async (transactionId) => {
+					await prisma.transaction.update({
+						where: { id: transactionId },
+						data: {
+							deletedAt: new Date(),
+							deletedById: userId,
+						},
+					});
+				}),
+			];
+			await Promise.all(promises);
 
 			res.json({ message: 'Order deleted successfully' });
 		} catch (error) {

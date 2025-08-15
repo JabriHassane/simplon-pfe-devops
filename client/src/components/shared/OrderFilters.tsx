@@ -5,7 +5,7 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Grid
+	Grid,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -35,7 +35,7 @@ export default function OrderFilters({
 	return (
 		<Box sx={{ my: 2 }}>
 			<Grid container columnSpacing={1} rowSpacing={2}>
-				<Grid size={{ xs: 12, md: 2 }}>
+				<Grid size={{ xs: 12, md: hideStatus ? 2.5 : 2 }}>
 					<TextField
 						value={filters.search}
 						onChange={(e) => onFiltersChange({ search: e.target.value })}

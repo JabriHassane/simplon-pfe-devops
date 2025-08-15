@@ -21,7 +21,7 @@ interface OrderPaymentsProps {
 	totalDue: number;
 }
 
-export const 	OrderPayments = ({
+export const OrderPayments = ({
 	showRef = false,
 	totalDue,
 }: OrderPaymentsProps) => {
@@ -57,6 +57,7 @@ export const 	OrderPayments = ({
 		} else {
 			newPayments.push(payment as PaymentDto);
 		}
+		newPayments.sort((a, b) => b.date.localeCompare(a.date));
 		setValue('payments', newPayments);
 		handleClosePopup();
 	};
@@ -106,17 +107,6 @@ export const 	OrderPayments = ({
 								sx={{ px: 0.5 }}
 							/>
 						),
-						// amount: (
-						// 	<Box display='flex' alignItems='center' gap={2}>
-						// 		{formatPrice(payment.amount)}
-						// 		<Chip
-						// 			label={DICT.methods[payment.method]}
-						// 			color={PAYMENT_METHODS_COLOR_MAP[payment.method]}
-						// 			size='small'
-						// 			sx={{ px: 0.5 }}
-						// 		/>
-						// 	</Box>
-						// ),
 					},
 				}))}
 				onEdit={handleOpenFormPopup}
@@ -125,8 +115,8 @@ export const 	OrderPayments = ({
 
 			{openFormPopup && (
 				<PaymentFormPopup
-				init={selectedPayment}
-				totalDue={totalDue}
+					init={selectedPayment}
+					totalDue={totalDue}
 					onSubmit={handlePaymentSubmit}
 					onClose={handleClosePopup}
 				/>
