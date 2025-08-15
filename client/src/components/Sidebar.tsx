@@ -7,8 +7,9 @@ import {
 	ListItem,
 	ListItemButton,
 	ListItemText,
-	ListItemIcon, useTheme,
-	useMediaQuery
+	ListItemIcon,
+	useTheme,
+	useMediaQuery,
 } from '@mui/material';
 import { AccountCircleOutlined } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';

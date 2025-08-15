@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 interface DrawerContextType {
 	mobileOpen: boolean;
@@ -8,7 +8,7 @@ interface DrawerContextType {
 
 const DrawerContext = createContext<DrawerContextType | undefined>(undefined);
 
-export function DrawerProvider({ children }: { children: ReactNode }) {
+export function DrawerProvider({ children }: { children: React.ReactNode }) {
 	const [mobileOpen, setMobileOpen] = useState(false);
 
 	const toggleDrawer = () => {
