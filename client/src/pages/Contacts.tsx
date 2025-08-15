@@ -10,12 +10,15 @@ import ContactFilters from '../components/shared/ContactFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
 import type { ContactFilterParams } from '../types/filters.types';
+import { useState } from 'react';
 
 interface Props {
 	type: 'client' | 'supplier';
 }
 
 export default function Contacts({ type }: Props) {
+	const [showFilters, setShowFilters] = useState(false);
+
 	const {
 		openFormPopup,
 		openDeletePopup,
@@ -55,9 +58,15 @@ export default function Contacts({ type }: Props) {
 				title={type === 'client' ? 'Clients' : 'Fournisseurs'}
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
+				onToggleFilters={() => setShowFilters(!showFilters)}
 			/>
 
-			<ContactFilters filters={filters} onFiltersChange={handleFiltersChange} />
+			{showFilters && (
+				<ContactFilters
+					filters={filters}
+					onFiltersChange={handleFiltersChange}
+				/>
+			)}
 
 			<ResourceTable
 				headers={[

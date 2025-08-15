@@ -19,6 +19,7 @@ import OrderFilters from '../components/shared/OrderFilters';
 import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
 import type { OrderFilterParams } from '../types/filters.types';
+import { useState } from 'react';
 
 interface OrdersPageProps {
 	type: 'sale' | 'purchase';
@@ -26,6 +27,8 @@ interface OrdersPageProps {
 }
 
 export default function Orders({ type, status }: OrdersPageProps) {
+	const [showFilters, setShowFilters] = useState(false);
+
 	const {
 		openFormPopup,
 		openDeletePopup,
@@ -61,7 +64,7 @@ export default function Orders({ type, status }: OrdersPageProps) {
 	};
 
 	return (
-		<Box>
+		<>
 			<ResourceHeader
 				title={
 					type === 'sale'
@@ -74,14 +77,17 @@ export default function Orders({ type, status }: OrdersPageProps) {
 				}
 				handleAdd={status ? undefined : () => handleOpenFormPopup(null)}
 				error={!!error}
+				onToggleFilters={() => setShowFilters(!showFilters)}
 			/>
 
-			<OrderFilters
-				type={type}
-				filters={filters}
-				onFiltersChange={handleFiltersChange}
-				hideStatus={status}
-			/>
+			{showFilters && (
+				<OrderFilters
+					type={type}
+					filters={filters}
+					onFiltersChange={handleFiltersChange}
+					hideStatus={status}
+				/>
+			)}
 
 			<ResourceTable
 				headers={[
@@ -162,6 +168,6 @@ export default function Orders({ type, status }: OrdersPageProps) {
 					onDelete={handleDelete}
 				/>
 			)}
-		</Box>
+		</>
 	);
 }

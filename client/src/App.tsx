@@ -31,7 +31,7 @@ function AppContent() {
 		<ThemeProvider theme={theme}>
 			<DrawerProvider>
 				<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale='fr'>
-					<Box sx={{ display: 'flex' }}>
+					<Box sx={{ display: 'flex', width: '100vw' }}>
 						<CssBaseline />
 						<Sidebar />
 						<Box
@@ -39,7 +39,8 @@ function AppContent() {
 							sx={{
 								flexGrow: 1,
 								bgcolor: 'white',
-								p: 3,
+								p: { xs: 2, md: 3 },
+								width: '100%',
 								height: '100vh',
 							}}
 						>
@@ -110,7 +111,7 @@ export default function App() {
 					</Router>
 				</AuthProvider>
 			</SnackbarProvider>
-			<ReactQueryDevtools initialIsOpen={false} />
+			<ReactQueryDevtools initialIsOpen={false} buttonPosition='bottom-left' />
 		</QueryClientProvider>
 	);
 }

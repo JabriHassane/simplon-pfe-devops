@@ -1,5 +1,6 @@
 import {
 	Badge,
+	Box,
 	Chip,
 	IconButton,
 	TablePagination,
@@ -15,8 +16,9 @@ import {
 } from '@mui/material';
 import {
 	AccountBalanceOutlined,
-	DeleteOutline, HistoryOutlined,
-	PaidOutlined
+	DeleteOutline,
+	HistoryOutlined,
+	PaidOutlined,
 } from '@mui/icons-material';
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
@@ -25,7 +27,7 @@ import type { OrderDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
 import {
 	ORDER_STATUS_COLOR_MAP,
-	PAYMENT_METHODS_COLOR_MAP
+	PAYMENT_METHODS_COLOR_MAP,
 } from '../../../../shared/constants';
 import type { Pagination } from '../../types/pagination.types';
 import {
@@ -83,7 +85,9 @@ function ResourceTable({
 	onRowsPerPageChange,
 	hideDelete,
 }: Props) {
-	const [expandedOrderIndex, setExpandedOrderIndex] = useState<number | null>(null);
+	const [expandedOrderIndex, setExpandedOrderIndex] = useState<number | null>(
+		null
+	);
 
 	const handleToggleExpand = (index: number) => {
 		if (expandedOrderIndex === index) {
@@ -91,40 +95,60 @@ function ResourceTable({
 		} else {
 			setExpandedOrderIndex(index);
 		}
-	};		
+	};
 
 	return (
 		<>
-			<Table size='small'>
-				<TableHead sx={{ backgroundColor: 'background.default' }}>
-					<TableRow>
-						{headers.map((header) => (
-							<TableCell key={header.id} sx={{ fontWeight: 'bold' }}>
-								{header.name}
-							</TableCell>
-						))}
-						<TableCell></TableCell>
-					</TableRow>
-				</TableHead>
+			<Box
+				sx={{
+					width: '100%',
+					overflowX: 'auto',
+					// mx: { xs: -2, md: 0 },
+					// px: { xs: 2, md: 0 },
+				}}
+			>
+				<Table size='small'>
+					<TableHead sx={{ backgroundColor: 'background.default' }}>
+						<TableRow>
+							{headers.map((header) => (
+								<TableCell
+									key={header.id}
+									sx={{
+										fontWeight: 'bold',
+										...(header.id === 'ref' && {
+											position: 'sticky',
+											left: 0,
+											backgroundColor: 'background.default',
+											zIndex: 1,
+										}),
+									}}
+								>
+									{header.name}
+								</TableCell>
+							))}
+							<TableCell></TableCell>
+						</TableRow>
+					</TableHead>
 
-				<TableBody>
-					{rows?.map((row, index) => (
-						<Row
-							key={index}
-							index={index}
-							headers={headers}
-							row={row}
-							onEdit={onEdit}
-							onDelete={onDelete}
-							isOrder={isOrder}
-							isPayment={isPayment}
-							isExpanded={expandedOrderIndex === index}
-							onToggleExpand={() => handleToggleExpand(index)}
-							hideDelete={hideDelete?.(row.item)}
-						/>
-					))}
-				</TableBody>
-			</Table>
+					<TableBody>
+						{rows?.map((row, index) => (
+							<Row
+								key={index}
+								index={index}
+								headers={headers}
+								row={row}
+								onEdit={onEdit}
+								onDelete={onDelete}
+								isOrder={isOrder}
+								isPayment={isPayment}
+								isExpanded={expandedOrderIndex === index}
+								onToggleExpand={() => handleToggleExpand(index)}
+								hideDelete={hideDelete?.(row.item)}
+							/>
+						))}
+					</TableBody>
+				</Table>
+			</Box>
 
 			{pagination && (
 				<TablePagination
@@ -141,7 +165,6 @@ function ResourceTable({
 					labelDisplayedRows={({ from, to, count }) =>
 						`${from}-${to} sur ${count !== -1 ? count : `plus de ${to}`}`
 					}
-					sx={{ mt: 2 }}
 				/>
 			)}
 		</>
@@ -268,7 +291,20 @@ function Row({
 				onClick={() => !isPayment && onEdit(row.item, index)}
 			>
 				{headers.map((header) => (
-					<TableCell key={header.id}>{row.data[header.id]}</TableCell>
+					<TableCell
+						key={header.id}
+						sx={{
+							...(header.id === 'ref' && {
+								position: 'sticky',
+								left: 0,
+								backgroundColor: { xs: 'white', md: 'transparent' },
+								zIndex: 1,
+								whiteSpace: 'nowrap',
+							}),
+						}}
+					>
+						{row.data[header.id]}
+					</TableCell>
 				))}
 
 				<TableCell align='right'>

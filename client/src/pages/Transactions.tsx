@@ -35,6 +35,7 @@ export default function Transactions() {
 		handleClosePopup,
 	} = usePopups<TransactionDto>();
 
+	const [showFilters, setShowFilters] = useState(false);
 	const [transferType, setTransferType] = useState<'cash' | 'deposit' | null>(
 		null
 	);
@@ -81,12 +82,15 @@ export default function Transactions() {
 				title='Opérations'
 				handleAdd={() => handleOpenFormPopup(null)}
 				error={!!error}
+				onToggleFilters={() => setShowFilters(!showFilters)}
 			/>
 
-			<TransactionFilters
-				filters={filters}
-				onFiltersChange={handleFiltersChange}
-			/>
+			{showFilters && (
+				<TransactionFilters
+					filters={filters}
+					onFiltersChange={handleFiltersChange}
+				/>
+			)}
 
 			<ResourceTable
 				headers={[

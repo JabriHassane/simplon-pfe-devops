@@ -1,15 +1,25 @@
-import { Alert, useMediaQuery, useTheme } from '@mui/material';
+import { Alert, useMediaQuery, useTheme, Fab } from '@mui/material';
 import { Box, Button, Typography, IconButton } from '@mui/material';
-import { Add as AddIcon, Menu as MenuIcon } from '@mui/icons-material';
+import {
+	Add as AddIcon,
+	Menu as MenuIcon,
+	FilterList as FilterIcon,
+} from '@mui/icons-material';
 import { useDrawer } from '../../contexts/DrawerContext';
 
 interface ResourceHeaderProps {
 	title: string;
 	handleAdd?: () => void;
 	error: boolean;
+	onToggleFilters?: () => void;
 }
 
-function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
+function ResourceHeader({
+	title,
+	handleAdd,
+	error,
+	onToggleFilters,
+}: ResourceHeaderProps) {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 	const { toggleDrawer } = useDrawer();
@@ -24,21 +34,29 @@ function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
 			>
 				<Box display='flex' alignItems='center' gap={1}>
 					{isMobile && (
-						<IconButton onClick={toggleDrawer} sx={{ size: 30 }}>
+						<IconButton onClick={toggleDrawer}>
 							<MenuIcon />
 						</IconButton>
 					)}
-					<Typography variant='h4'>{title}</Typography>
+					<Typography variant='h4' fontSize={30}>
+						{title}
+					</Typography>
 				</Box>
-				{handleAdd && (
-					<Button
-						variant='contained'
-						startIcon={<AddIcon />}
-						onClick={handleAdd}
-						disableElevation
-					>
-						Ajouter
-					</Button>
+				{isMobile ? (
+					<IconButton onClick={onToggleFilters}>
+						<FilterIcon />
+					</IconButton>
+				) : (
+					handleAdd && (
+						<Button
+							variant='contained'
+							startIcon={<AddIcon />}
+							onClick={handleAdd}
+							disableElevation
+						>
+							Ajouter
+						</Button>
+					)
 				)}
 			</Box>
 
@@ -46,6 +64,21 @@ function ResourceHeader({ title, handleAdd, error }: ResourceHeaderProps) {
 				<Alert severity='error' sx={{ mb: 2 }}>
 					Erreur lors de la récupération des {title.toLowerCase()}
 				</Alert>
+			)}
+
+			{/* FAB for mobile */}
+			{isMobile && handleAdd && (
+				<Fab
+					color='primary'
+					onClick={handleAdd}
+					sx={{
+						position: 'fixed',
+						bottom: 16,
+						right: 16,
+					}}
+				>
+					<AddIcon />
+				</Fab>
 			)}
 		</>
 	);

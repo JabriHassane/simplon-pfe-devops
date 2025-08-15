@@ -1,12 +1,6 @@
-import {
-	Box,
-	TextField,
-	Grid,
-	IconButton,
-	InputAdornment,
-} from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import type { ContactFilterParams } from '../../types/filters.types';
-import { Clear } from '@mui/icons-material';
+import InputClearButton from './InputClearButton';
 
 interface Props {
 	filters: ContactFilterParams;
@@ -16,32 +10,23 @@ interface Props {
 export default function ContactFilters({ filters, onFiltersChange }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
-			<Grid container spacing={1}>
-				<Grid size={2}>
-					<TextField
-						value={filters.search}
-						onChange={(e) => onFiltersChange({ search: e.target.value })}
-						label='Recherche'
-						variant='outlined'
-						placeholder='Référence, nom, téléphone'
-						fullWidth
-						slotProps={{
-							input: {
-								startAdornment: (
-									<InputAdornment position='start'>
-										<IconButton
-											size='small'
-											onClick={() => onFiltersChange({ search: '' })}
-										>
-											<Clear />
-										</IconButton>
-									</InputAdornment>
-								),
-							},
-						}}
-					/>
-				</Grid>
-			</Grid>
+			<TextField
+				value={filters.search}
+				onChange={(e) => onFiltersChange({ search: e.target.value })}
+				label='Recherche'
+				variant='outlined'
+				placeholder='Référence, nom, téléphone'
+				fullWidth
+				slotProps={{
+					input: {
+						startAdornment: (
+							<InputClearButton
+								onClick={() => onFiltersChange({ search: '' })}
+							/>
+						),
+					},
+				}}
+			/>
 		</Box>
 	);
 }

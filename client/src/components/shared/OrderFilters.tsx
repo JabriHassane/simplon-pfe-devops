@@ -5,11 +5,8 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Grid,
-	IconButton,
-	InputAdornment,
+	Grid
 } from '@mui/material';
-import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
@@ -20,6 +17,7 @@ import {
 } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
 import type { OrderFilterParams } from '../../types/filters.types';
+import InputClearButton from './InputClearButton';
 
 interface Props {
 	type: OrderType;
@@ -36,8 +34,8 @@ export default function OrderFilters({
 }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
-			<Grid container spacing={1}>
-				<Grid size={2}>
+			<Grid container columnSpacing={1} rowSpacing={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<TextField
 						value={filters.search}
 						onChange={(e) => onFiltersChange({ search: e.target.value })}
@@ -48,21 +46,16 @@ export default function OrderFilters({
 						slotProps={{
 							input: {
 								startAdornment: (
-									<InputAdornment position='start'>
-										<IconButton
-											size='small'
-											onClick={() => onFiltersChange({ search: '' })}
-										>
-											<Clear />
-										</IconButton>
-									</InputAdornment>
+									<InputClearButton
+										onClick={() => onFiltersChange({ search: '' })}
+									/>
 								),
 							},
 						}}
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<DatePicker
 						sx={{ width: '100%' }}
 						label='Date de début'
@@ -74,14 +67,9 @@ export default function OrderFilters({
 							textField: {
 								InputProps: {
 									startAdornment: (
-										<InputAdornment position='start'>
-											<IconButton
-												size='small'
-												onClick={() => onFiltersChange({ dateFrom: '' })}
-											>
-												<Clear />
-											</IconButton>
-										</InputAdornment>
+										<InputClearButton
+											onClick={() => onFiltersChange({ dateFrom: '' })}
+										/>
 									),
 								},
 							},
@@ -89,7 +77,7 @@ export default function OrderFilters({
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<DatePicker
 						sx={{ width: '100%' }}
 						label='Date de fin'
@@ -101,14 +89,9 @@ export default function OrderFilters({
 							textField: {
 								InputProps: {
 									startAdornment: (
-										<InputAdornment position='start'>
-											<IconButton
-												size='small'
-												onClick={() => onFiltersChange({ dateTo: '' })}
-											>
-												<Clear />
-											</IconButton>
-										</InputAdornment>
+										<InputClearButton
+											onClick={() => onFiltersChange({ dateTo: '' })}
+										/>
 									),
 								},
 							},
@@ -116,7 +99,7 @@ export default function OrderFilters({
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<ResourcePickerField
 						label='Agent'
 						onChange={({ id }) => onFiltersChange({ agentId: id })}
@@ -126,7 +109,7 @@ export default function OrderFilters({
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<ResourcePickerField
 						label={type === 'sale' ? 'Client' : 'Fournisseur'}
 						onChange={({ id }) => onFiltersChange({ contactId: id })}
@@ -137,7 +120,7 @@ export default function OrderFilters({
 				</Grid>
 
 				{!hideStatus && (
-					<Grid size={2}>
+					<Grid size={{ xs: 12, md: 2 }}>
 						<FormControl fullWidth>
 							<InputLabel>Statut</InputLabel>
 							<Select
@@ -146,14 +129,9 @@ export default function OrderFilters({
 								label='Statut'
 								displayEmpty
 								startAdornment={
-									<InputAdornment position='start'>
-										<IconButton
-											size='small'
-											onClick={() => onFiltersChange({ status: undefined })}
-										>
-											<Clear />
-										</IconButton>
-									</InputAdornment>
+									<InputClearButton
+										onClick={() => onFiltersChange({ status: undefined })}
+									/>
 								}
 								MenuProps={{
 									PaperProps: {

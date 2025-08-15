@@ -10,8 +10,11 @@ import usePagination from '../hooks/usePagination';
 import useFilters from '../hooks/useFilters';
 import UserFilters from '../components/shared/UserFilters';
 import type { UserFilterParams } from '../types/filters.types';
+import { useState } from 'react';
 
 export default function Users() {
+	const [showFilters, setShowFilters] = useState(false);
+
 	const {
 		openFormPopup,
 		openDeletePopup,
@@ -49,10 +52,13 @@ export default function Users() {
 			<ResourceHeader
 				title='Utilisateurs'
 				handleAdd={() => handleOpenFormPopup(null)}
+				onToggleFilters={() => setShowFilters(!showFilters)}
 				error={!!error}
 			/>
 
-			<UserFilters filters={filters} onFiltersChange={handleFiltersChange} />
+			{showFilters && (
+				<UserFilters filters={filters} onFiltersChange={handleFiltersChange} />
+			)}
 
 			<ResourceTable
 				headers={[

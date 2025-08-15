@@ -5,10 +5,11 @@ import {
 	InputLabel,
 	Select,
 	MenuItem,
-	Grid
+	Grid,
 } from '@mui/material';
-import { ROLES } from '../../../../shared/constants';
+import { ROLES, type Role } from '../../../../shared/constants';
 import type { UserFilterParams } from '../../types/filters.types';
+import InputClearButton from './InputClearButton';
 
 interface Props {
 	filters: UserFilterParams;
@@ -18,8 +19,8 @@ interface Props {
 export default function UserFilters({ filters, onFiltersChange }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
-			<Grid container spacing={1}>
-				<Grid size={2}>
+			<Grid container columnSpacing={1} rowSpacing={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<TextField
 						value={filters.search}
 						onChange={(e) => onFiltersChange({ search: e.target.value })}
@@ -27,16 +28,34 @@ export default function UserFilters({ filters, onFiltersChange }: Props) {
 						variant='outlined'
 						placeholder='Référence, nom'
 						fullWidth
+						slotProps={{
+							input: {
+								startAdornment: (
+									<InputClearButton
+										onClick={() => onFiltersChange({ search: '' })}
+									/>
+								),
+							},
+						}}
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<FormControl fullWidth>
 						<InputLabel>Rôle</InputLabel>
 						<Select
 							value={filters.role}
-							onChange={(e) => onFiltersChange({ role: e.target.value })}
+							onChange={(e) =>
+								onFiltersChange({ role: e.target.value as Role })
+							}
 							label='Rôle'
+							defaultValue=''
+							displayEmpty
+							startAdornment={
+								<InputClearButton
+									onClick={() => onFiltersChange({ role: undefined })}
+								/>
+							}
 							MenuProps={{
 								PaperProps: {
 									style: {
@@ -45,6 +64,7 @@ export default function UserFilters({ filters, onFiltersChange }: Props) {
 								},
 							}}
 						>
+							<MenuItem value=''>Tous</MenuItem>
 							{ROLES.map((role) => (
 								<MenuItem key={role} value={role}>
 									{role === 'super_admin' && 'Super Admin'}

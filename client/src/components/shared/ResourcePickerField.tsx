@@ -10,6 +10,7 @@ import { Clear } from '@mui/icons-material';
 import ResourcePickerPopup, {
 	type PickableResourceType,
 } from './ResourcePickerPopup';
+import InputClearButton from './InputClearButton';
 
 interface Resource {
 	id: string;
@@ -82,11 +83,10 @@ export default function ResourcePickerField({
 					input: {
 						readOnly: true,
 						[clearButtonPosition + 'Adornment']: !required && (
-							<InputAdornment position={clearButtonPosition}>
-								<IconButton size='small' onClick={handleClear}>
-									<Clear />
-								</IconButton>
-							</InputAdornment>
+							<InputClearButton
+								onClick={handleClear}
+								position={clearButtonPosition}
+							/>
 						),
 					},
 				}}

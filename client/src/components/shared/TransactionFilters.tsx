@@ -6,16 +6,14 @@ import {
 	Select,
 	MenuItem,
 	Grid,
-	IconButton,
-	InputAdornment,
 } from '@mui/material';
-import { Clear } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import {
 	TRANSFER_ACTORS,
 	type TransferActor,
 } from '../../../../shared/constants';
+import InputClearButton from './InputClearButton';
 
 export interface TransactionFiltersData {
 	search?: string;
@@ -35,8 +33,8 @@ export default function TransactionFilters({
 }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
-			<Grid container spacing={1}>
-				<Grid size={2}>
+			<Grid container columnSpacing={1} rowSpacing={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<TextField
 						value={filters.search}
 						onChange={(e) => onFiltersChange({ search: e.target.value })}
@@ -47,21 +45,16 @@ export default function TransactionFilters({
 						slotProps={{
 							input: {
 								startAdornment: (
-									<InputAdornment position='start'>
-										<IconButton
-											size='small'
-											onClick={() => onFiltersChange({ search: '' })}
-										>
-											<Clear />
-										</IconButton>
-									</InputAdornment>
+									<InputClearButton
+										onClick={() => onFiltersChange({ search: '' })}
+									/>
 								),
 							},
 						}}
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<DatePicker
 						sx={{ width: '100%' }}
 						label='Date de début'
@@ -73,14 +66,9 @@ export default function TransactionFilters({
 							textField: {
 								InputProps: {
 									startAdornment: (
-										<InputAdornment position='start'>
-											<IconButton
-												size='small'
-												onClick={() => onFiltersChange({ dateFrom: '' })}
-											>
-												<Clear />
-											</IconButton>
-										</InputAdornment>
+										<InputClearButton
+											onClick={() => onFiltersChange({ dateFrom: '' })}
+										/>
 									),
 								},
 							},
@@ -88,7 +76,7 @@ export default function TransactionFilters({
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<DatePicker
 						sx={{ width: '100%' }}
 						label='Date de fin'
@@ -100,14 +88,9 @@ export default function TransactionFilters({
 							textField: {
 								InputProps: {
 									startAdornment: (
-										<InputAdornment position='start'>
-											<IconButton
-												size='small'
-												onClick={() => onFiltersChange({ dateTo: '' })}
-											>
-												<Clear />
-											</IconButton>
-										</InputAdornment>
+										<InputClearButton
+											onClick={() => onFiltersChange({ dateTo: '' })}
+										/>
 									),
 								},
 							},
@@ -115,7 +98,7 @@ export default function TransactionFilters({
 					/>
 				</Grid>
 
-				<Grid size={2}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<FormControl fullWidth>
 						<InputLabel>Compte</InputLabel>
 						<Select
@@ -126,16 +109,9 @@ export default function TransactionFilters({
 							label='Compte'
 							displayEmpty
 							startAdornment={
-								<InputAdornment position='start'>
-									<IconButton
-										size='small'
-										onClick={() =>
-											onFiltersChange({ transferActor: undefined })
-										}
-									>
-										<Clear />
-									</IconButton>
-								</InputAdornment>
+								<InputClearButton
+									onClick={() => onFiltersChange({ transferActor: undefined })}
+								/>
 							}
 							MenuProps={{
 								PaperProps: {
