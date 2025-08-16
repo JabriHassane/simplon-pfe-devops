@@ -3,6 +3,7 @@ export const formatPrice = (price: number, showCurrency = true) => {
 		price
 			.toFixed(2)
 			.replace('.', ',')
-			.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (showCurrency ? ' DH' : '')
+			.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+			.replace(',00', '') + (showCurrency ? ' DH' : '')
 	);
 };

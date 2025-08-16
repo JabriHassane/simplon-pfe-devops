@@ -8,6 +8,7 @@ import {
 } from '../../../shared/constants';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import Orders from './Orders';
+import { DICT } from '../i18n/fr';
 
 const PaymentMethodCard = ({
 	title,
@@ -20,7 +21,7 @@ const PaymentMethodCard = ({
 	color: string;
 	type: TransactionMethod;
 }) => (
-	<Grid size={{ xs: 6, md: 2 }}>
+	<Grid size={{ xs: 6, md: 3 }}>
 		<Card variant='outlined'>
 			<CardContent
 				sx={{
@@ -28,13 +29,19 @@ const PaymentMethodCard = ({
 					flexDirection: 'column',
 					alignItems: 'center',
 					justifyContent: 'center',
-					height: '200px',
+					height: { xs: '150px', md: '200px' },
+					px: 0,
+					pt: 4,
 				}}
 			>
 				<img src={`/${type}.png`} alt={title} style={{ height: '60%' }} />
 
 				<Typography variant='h5' color={color} fontWeight='bold' mt={1}>
-					{formatPrice(amount, false)}
+					{formatPrice(amount)}
+				</Typography>
+
+				<Typography variant='body1' color='text.secondary' mt={1}>
+					{DICT.methods[type]}
 				</Typography>
 			</CardContent>
 		</Card>

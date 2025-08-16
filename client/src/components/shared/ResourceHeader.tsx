@@ -33,7 +33,7 @@ function ResourceHeader({
 				mb={4}
 			>
 				<Box display='flex' alignItems='center' gap={1}>
-					{isMobile && (
+					{isMobile && handleAdd && (
 						<IconButton onClick={toggleDrawer}>
 							<MenuIcon />
 						</IconButton>

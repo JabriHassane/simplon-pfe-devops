@@ -21,8 +21,8 @@ export const TRANSACTION_TYPES = [
 	'purchase',
 	'cashing',
 	'deposit',
-	'send',
 	'receive',
+	'send',
 ] as const;
 export type TransactionType = (typeof TRANSACTION_TYPES)[number];
 

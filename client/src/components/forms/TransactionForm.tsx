@@ -53,7 +53,7 @@ export default function TransactionForm({
 			date: init?.date || dayjs().toISOString(),
 			agentId: init?.agentId || user?.id,
 			amount: init?.amount,
-			type: init?.type || 'send',
+			type: init?.type || 'receive',
 			method: init?.method || 'cash',
 			transferActor: init?.transferActor,
 		},
@@ -128,7 +128,7 @@ export default function TransactionForm({
 									{...register('type')}
 									label='Type'
 									error={!!errors.type}
-									defaultValue='send'
+									defaultValue='receive'
 								>
 									{OPERATION_TYPES.map((type) => (
 										<MenuItem key={type} value={type}>

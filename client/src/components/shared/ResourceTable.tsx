@@ -25,9 +25,7 @@ import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
 import type { OrderDto, PaymentDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
-import {
-	PAYMENT_METHODS_COLOR_MAP
-} from '../../../../shared/constants';
+import { PAYMENT_METHODS_COLOR_MAP } from '../../../../shared/constants';
 import type { Pagination } from '../../types/pagination.types';
 import {
 	useDeleteTransaction,
@@ -311,7 +309,7 @@ function Row({
 				))}
 
 				<TableCell align='right'>
-					{isPayment && payment.method !== 'cash' && (
+					{order.type === 'sale' && isPayment && payment.method !== 'cash' && (
 						<>
 							<Tooltip
 								title={
