@@ -406,7 +406,7 @@ function Row({
 							>
 								<Badge
 									badgeContent={
-										order.payments.length > 1 ? unprocessedPaymentsCount : ''
+										order.payments.length > 1 ? order.payments.length : ''
 									}
 								>
 									<HistoryOutlined />
