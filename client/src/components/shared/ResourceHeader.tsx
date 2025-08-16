@@ -1,5 +1,5 @@
 import { Alert, useMediaQuery, useTheme, Fab } from '@mui/material';
-import { Box, Button, Typography, IconButton } from '@mui/material';
+import { Box, Typography, IconButton } from '@mui/material';
 import {
 	Add as AddIcon,
 	Menu as MenuIcon,
