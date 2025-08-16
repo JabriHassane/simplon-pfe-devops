@@ -326,7 +326,11 @@ function Row({
 									}
 									size='small'
 									disabled={!!payment.cashingTransactionId}
-									color={payment.depositTransactionId ? 'warning' : 'default'}
+									color={
+										payment.depositTransactionId
+											? PAYMENT_METHODS_COLOR_MAP[payment.method!]
+											: 'default'
+									}
 								>
 									<AccountBalanceOutlined />
 								</IconButton>
@@ -347,7 +351,11 @@ function Row({
 									}
 									size='small'
 									disabled={!!payment.depositTransactionId}
-									color={payment.cashingTransactionId ? 'warning' : 'default'}
+									color={
+										payment.cashingTransactionId
+											? PAYMENT_METHODS_COLOR_MAP[payment.method!]
+											: 'default'
+									}
 								>
 									<PaidOutlined />
 								</IconButton>
@@ -396,7 +404,11 @@ function Row({
 								color={isExpanded ? 'info' : 'default'}
 								disabled={payments.length === 0}
 							>
-								<Badge badgeContent={unprocessedPaymentsCount || ''}>
+								<Badge
+									badgeContent={
+										order.payments.length > 1 ? unprocessedPaymentsCount : ''
+									}
+								>
 									<HistoryOutlined />
 								</Badge>
 							</IconButton>

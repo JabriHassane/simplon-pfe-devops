@@ -40,7 +40,7 @@ function ResourceHeader({
 							<MenuIcon />
 						</IconButton>
 					)}
-					<Typography variant='h4' fontSize={26}>
+					<Typography variant='h4' fontSize={{ xs: 26, md: 30 }}>
 						{title}
 					</Typography>
 				</Box>

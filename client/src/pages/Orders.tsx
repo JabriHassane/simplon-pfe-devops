@@ -136,7 +136,9 @@ export default function Orders({
 									<>
 										<Typography
 											variant='body2'
-											fontWeight={orderStatus === 'partially_paid' ? 'bold' : 'normal'}
+											fontWeight={
+												orderStatus === 'partially_paid' ? 'bold' : 'normal'
+											}
 											color={
 												orderStatus === 'partially_paid'
 													? ORDER_STATUS_COLOR_MAP[orderStatus]
