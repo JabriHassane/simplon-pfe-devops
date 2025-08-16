@@ -1,4 +1,4 @@
-import { Box, Card, CardContent, Grid, Typography } from '@mui/material';
+import { Box, Card, Grid, Typography } from '@mui/material';
 import { usePaymentMethodStats } from '../hooks/ressources/useTransactions';
 import { formatPrice } from '../utils/price.utils';
 import {
@@ -21,30 +21,28 @@ const PaymentMethodCard = ({
 	color: string;
 	type: TransactionMethod;
 }) => (
-	<Grid size={{ xs: 6, md: 3 }}>
-		<Card variant='outlined'>
-			<CardContent
-				sx={{
-					display: 'flex',
-					flexDirection: 'column',
-					alignItems: 'center',
-					justifyContent: 'center',
-					height: { xs: '150px', md: '200px' },
-					px: 0,
-					pt: 4,
-				}}
-			>
-				<img src={`/${type}.png`} alt={title} style={{ height: '60%' }} />
+	<Grid
+		size={{ xs: 6, md: 3 }}
+		sx={{
+			display: 'flex',
+			flexDirection: { xs: 'column', md: 'row' },
+			alignItems: 'center',
+			justifyContent: 'center',
+			height: { xs: '100px', md: '120px' },
+			px: 0,
+			gap: { xs: 1, md: 3 },
+		}}
+	>
+		<img src={`/${type}.png`} alt={title} style={{ height: '60%' }} />
 
-				<Typography variant='h5' color={color} fontWeight='bold' mt={1}>
-					{formatPrice(amount)}
-				</Typography>
-
-				<Typography variant='body1' color='text.secondary' mt={1}>
-					{DICT.methods[type]}
-				</Typography>
-			</CardContent>
-		</Card>
+		<Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
+			<Typography variant='h5' color={color} fontWeight='bold'>
+				{formatPrice(amount)}
+			</Typography>
+			<Typography variant='body1' color='text.secondary'>
+				{DICT.methods[type]}
+			</Typography>
+		</Box>
 	</Grid>
 );
 
@@ -56,20 +54,22 @@ function Dashboard() {
 			<ResourceHeader title='Tableau de bord' error={!!error} />
 
 			<Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-				<Grid container spacing={2}>
-					{TRANSACTION_METHODS.map((method, index) => (
-						<PaymentMethodCard
-							key={index}
-							title={method}
-							amount={paymentStats?.[method] || 0}
-							color={PAYMENT_METHODS_COLOR_MAP[method]}
-							type={method}
-						/>
-					))}
-				</Grid>
+				<Card variant='outlined' sx={{ p: { xs: 3, md: 0 } }}>
+					<Grid container rowSpacing={6}>
+						{TRANSACTION_METHODS.map((method, index) => (
+							<PaymentMethodCard
+								key={index}
+								title={method}
+								amount={paymentStats?.[method] || 0}
+								color={PAYMENT_METHODS_COLOR_MAP[method]}
+								type={method}
+							/>
+						))}
+					</Grid>
+				</Card>
 
 				<Card variant='outlined' sx={{ p: 3 }}>
-					<Orders type='sale' onlyUnprocessedPayments />
+					<Orders type='sale' onlyUnprocessedPayments hideDrawerButton />
 				</Card>
 			</Box>
 		</>

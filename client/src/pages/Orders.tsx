@@ -23,11 +23,13 @@ import { useState } from 'react';
 interface OrdersPageProps {
 	type: 'sale' | 'purchase';
 	onlyUnprocessedPayments?: boolean;
+	hideDrawerButton?: boolean;
 }
 
 export default function Orders({
 	type,
 	onlyUnprocessedPayments,
+	hideDrawerButton,
 }: OrdersPageProps) {
 	const [showFilters, setShowFilters] = useState(false);
 
@@ -80,6 +82,7 @@ export default function Orders({
 				}
 				error={!!error}
 				onToggleFilters={() => setShowFilters(!showFilters)}
+				hideDrawerButton={hideDrawerButton}
 			/>
 
 			{showFilters && (

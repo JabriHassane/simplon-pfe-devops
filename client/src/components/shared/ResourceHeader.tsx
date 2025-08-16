@@ -12,6 +12,7 @@ interface ResourceHeaderProps {
 	handleAdd?: () => void;
 	error: boolean;
 	onToggleFilters?: () => void;
+	hideDrawerButton?: boolean;
 }
 
 function ResourceHeader({
@@ -19,6 +20,7 @@ function ResourceHeader({
 	handleAdd,
 	error,
 	onToggleFilters,
+	hideDrawerButton,
 }: ResourceHeaderProps) {
 	const theme = useTheme();
 	const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -33,12 +35,12 @@ function ResourceHeader({
 				mb={4}
 			>
 				<Box display='flex' alignItems='center' gap={1}>
-					{isMobile && handleAdd && (
+					{isMobile && !hideDrawerButton && (
 						<IconButton onClick={toggleDrawer}>
 							<MenuIcon />
 						</IconButton>
 					)}
-					<Typography variant='h4' fontSize={30}>
+					<Typography variant='h4' fontSize={26}>
 						{title}
 					</Typography>
 				</Box>
