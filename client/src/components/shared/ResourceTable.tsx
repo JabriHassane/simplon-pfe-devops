@@ -277,12 +277,12 @@ function Row({
 
 	const payment = row.item as TransactionDto;
 
-	const unprocessedPaymentsCount = payments.filter(
-		(payment) =>
-			payment.item.method !== 'cash' &&
-			!payment.item.cashingTransactionId &&
-			!payment.item.depositTransactionId
-	).length;
+	// const unprocessedPaymentsCount = payments.filter(
+	// 	(payment) =>
+	// 		payment.item.method !== 'cash' &&
+	// 		!payment.item.cashingTransactionId &&
+	// 		!payment.item.depositTransactionId
+	// ).length;
 
 	return (
 		<>
