@@ -42,9 +42,11 @@ function ResourceHeader({
 						{title}
 					</Typography>
 				</Box>
-				<IconButton onClick={onToggleFilters}>
-					<FilterIcon />
-				</IconButton>
+				{onToggleFilters && (
+					<IconButton onClick={onToggleFilters}>
+						<FilterIcon />
+					</IconButton>
+				)}
 			</Box>
 
 			{error && (

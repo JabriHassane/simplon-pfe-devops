@@ -1,7 +1,8 @@
-
-export const formatPrice = (price: number) => {
-	return new Intl.NumberFormat('fr-FR', {
-		style: 'currency',
-		currency: 'MAD',
-	}).format(price);
+export const formatPrice = (price: number, showCurrency = true) => {
+	return (
+		price
+			.toFixed(2)
+			.replace('.', ',')
+			.replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + (showCurrency ? ' DH' : '')
+	);
 };

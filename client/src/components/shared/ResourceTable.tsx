@@ -23,11 +23,10 @@ import {
 import { useState } from 'react';
 import { formatPrice } from '../../utils/price.utils';
 import { formatDate } from '../../utils/date.utils';
-import type { OrderDto } from '../../../../shared/dtos/order.dto';
+import type { OrderDto, PaymentDto } from '../../../../shared/dtos/order.dto';
 import { DICT } from '../../i18n/fr';
 import {
-	ORDER_STATUS_COLOR_MAP,
-	PAYMENT_METHODS_COLOR_MAP,
+	PAYMENT_METHODS_COLOR_MAP
 } from '../../../../shared/constants';
 import type { Pagination } from '../../types/pagination.types';
 import {
@@ -51,8 +50,8 @@ interface ResourceTableRowData {
 	[key: string]: React.ReactNode;
 }
 
-interface ResourceTableRow {
-	item: any;
+interface ResourceTableRow<T = any> {
+	item: T;
 	data: ResourceTableRowData;
 	items?: ResourceTableRow[];
 	payments?: ResourceTableRow[];
@@ -256,7 +255,7 @@ function Row({
 
 	const order = row.item as OrderDto;
 
-	let payments: ResourceTableRow[] = [];
+	let payments: ResourceTableRow<PaymentDto>[] = [];
 
 	if (isOrder) {
 		payments = order.payments.map((payment) => ({
@@ -280,8 +279,12 @@ function Row({
 
 	const payment = row.item as TransactionDto;
 
-	const orderStatus =
-		order.totalPrice === order.totalPaid ? 'paid' : 'partially_paid';
+	const unprocessedPaymentsCount = payments.filter(
+		(payment) =>
+			payment.item.method !== 'cash' &&
+			!payment.item.cashingTransactionId &&
+			!payment.item.depositTransactionId
+	).length;
 
 	return (
 		<>
@@ -395,10 +398,7 @@ function Row({
 								color={isExpanded ? 'info' : 'default'}
 								disabled={payments.length === 0}
 							>
-								<Badge
-									badgeContent={payments.length}
-									color={ORDER_STATUS_COLOR_MAP[orderStatus]}
-								>
+								<Badge badgeContent={unprocessedPaymentsCount || ''}>
 									<HistoryOutlined />
 								</Badge>
 							</IconButton>
