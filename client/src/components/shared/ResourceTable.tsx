@@ -404,11 +404,7 @@ function Row({
 								color={isExpanded ? 'info' : 'default'}
 								disabled={payments.length === 0}
 							>
-								<Badge
-									badgeContent={
-										order.payments.length > 1 ? order.payments.length : ''
-									}
-								>
+								<Badge badgeContent={order.payments.length || ''}>
 									<HistoryOutlined />
 								</Badge>
 							</IconButton>
