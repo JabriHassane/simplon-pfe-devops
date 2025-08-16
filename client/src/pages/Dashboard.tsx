@@ -62,11 +62,7 @@ function Dashboard() {
 				</Grid>
 
 				<Card variant='outlined' sx={{ p: 3 }}>
-					<Orders type='sale' status='partially_paid' />
-				</Card>
-
-				<Card variant='outlined' sx={{ p: 3 }}>
-					<Orders type='purchase' status='partially_paid' />
+					<Orders type='sale' onlyUnprocessedPayments />
 				</Card>
 			</Box>
 		</>

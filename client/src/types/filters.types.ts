@@ -1,4 +1,9 @@
-import type { OrderType, OrderStatus, Role, TransferActor } from '../../../shared/constants';
+import type {
+	OrderStatus,
+	OrderType,
+	Role,
+	TransferActor,
+} from '../../../shared/constants';
 import type { ContactType } from '../../../shared/dtos/contact.dto';
 
 export interface UserFilterParams {
@@ -19,6 +24,7 @@ export interface OrderFilterParams {
 	agentId?: string;
 	contactId?: string;
 	status?: OrderStatus;
+	onlyUnprocessedPayments?: boolean;
 }
 
 export interface TransactionFilterParams {

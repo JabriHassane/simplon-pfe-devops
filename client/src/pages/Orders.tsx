@@ -10,8 +10,7 @@ import usePopups from '../hooks/usePopups';
 import { DICT } from '../i18n/fr';
 import {
 	ORDER_STATUS_COLOR_MAP,
-	PAGE_SIZE,
-	type OrderStatus,
+	PAGE_SIZE
 } from '../../../shared/constants';
 import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
@@ -23,10 +22,13 @@ import { useState } from 'react';
 
 interface OrdersPageProps {
 	type: 'sale' | 'purchase';
-	status?: OrderStatus;
+	onlyUnprocessedPayments?: boolean;
 }
 
-export default function Orders({ type, status }: OrdersPageProps) {
+export default function Orders({
+	type,
+	onlyUnprocessedPayments,
+}: OrdersPageProps) {
 	const [showFilters, setShowFilters] = useState(false);
 
 	const {
@@ -39,7 +41,7 @@ export default function Orders({ type, status }: OrdersPageProps) {
 	} = usePopups<OrderDto>();
 
 	const { page, rowsPerPage, handlePageChange, handleRowsPerPageChange } =
-		usePagination(status === 'partially_paid' ? 5 : PAGE_SIZE);
+		usePagination(onlyUnprocessedPayments ? 10 : PAGE_SIZE);
 
 	const { filters, handleFiltersChange } = useFilters<OrderFilterParams>(() => {
 		handlePageChange(0);
@@ -49,7 +51,7 @@ export default function Orders({ type, status }: OrdersPageProps) {
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
-		status: status || filters.status,
+		onlyUnprocessedPayments: onlyUnprocessedPayments || undefined,
 		type,
 	});
 
@@ -67,15 +69,15 @@ export default function Orders({ type, status }: OrdersPageProps) {
 		<>
 			<ResourceHeader
 				title={
-					type === 'sale'
-						? status === 'partially_paid'
-							? 'Ventes en cours'
-							: 'Ventes'
-						: status === 'partially_paid'
-						? 'Achats en cours'
+					onlyUnprocessedPayments
+						? 'Paiements en attente'
+						: type === 'sale'
+						? 'Ventes'
 						: 'Achats'
 				}
-				handleAdd={status ? undefined : () => handleOpenFormPopup(null)}
+				handleAdd={
+					onlyUnprocessedPayments ? undefined : () => handleOpenFormPopup(null)
+				}
 				error={!!error}
 				onToggleFilters={() => setShowFilters(!showFilters)}
 			/>
@@ -85,7 +87,6 @@ export default function Orders({ type, status }: OrdersPageProps) {
 					type={type}
 					filters={filters}
 					onFiltersChange={handleFiltersChange}
-					hideStatus={status}
 				/>
 			)}
 
@@ -121,7 +122,9 @@ export default function Orders({ type, status }: OrdersPageProps) {
 									<>
 										<Typography
 											variant='body2'
-											fontWeight={orderStatus === 'paid' ? 'semibold' : 'normal'}
+											fontWeight={
+												orderStatus === 'paid' ? 'semibold' : 'normal'
+											}
 											color={
 												orderStatus === 'paid'
 													? ORDER_STATUS_COLOR_MAP[orderStatus]

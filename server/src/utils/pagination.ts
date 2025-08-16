@@ -79,6 +79,19 @@ export const getOrderPaginationCondition = (
 		};
 	}
 
+	// Only unprocessed payments filter
+	if (req.query.onlyUnprocessedPayments) {
+		whereClause.payments = {
+			some: {
+				method: {
+					not: 'cash',
+				},
+				depositTransactionId: null,
+				cashingTransactionId: null,
+			},
+		};
+	}
+
 	return {
 		page,
 		pageSize,

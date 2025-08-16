@@ -10,11 +10,7 @@ import {
 import { DatePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import ResourcePickerField from './ResourcePickerField';
-import {
-	ORDER_STATUSES,
-	type OrderStatus,
-	type OrderType,
-} from '../../../../shared/constants';
+import { ORDER_STATUSES, type OrderType } from '../../../../shared/constants';
 import { DICT } from '../../i18n/fr';
 import type { OrderFilterParams } from '../../types/filters.types';
 import InputClearButton from './InputClearButton';
@@ -23,19 +19,17 @@ interface Props {
 	type: OrderType;
 	filters: OrderFilterParams;
 	onFiltersChange: (newFilters: Partial<OrderFilterParams>) => void;
-	hideStatus?: OrderStatus;
 }
 
 export default function OrderFilters({
 	type,
 	filters,
 	onFiltersChange,
-	hideStatus,
 }: Props) {
 	return (
 		<Box sx={{ my: 2 }}>
 			<Grid container columnSpacing={1} rowSpacing={2}>
-				<Grid size={{ xs: 12, md: hideStatus ? 2.5 : 2 }}>
+				<Grid size={{ xs: 12, md: 2 }}>
 					<TextField
 						value={filters.search}
 						onChange={(e) => onFiltersChange({ search: e.target.value })}
@@ -119,38 +113,36 @@ export default function OrderFilters({
 					/>
 				</Grid>
 
-				{!hideStatus && (
-					<Grid size={{ xs: 12, md: 2 }}>
-						<FormControl fullWidth>
-							<InputLabel>Statut</InputLabel>
-							<Select
-								value={filters.status || ''}
-								onChange={(e) => onFiltersChange({ status: e.target.value })}
-								label='Statut'
-								displayEmpty
-								startAdornment={
-									<InputClearButton
-										onClick={() => onFiltersChange({ status: undefined })}
-									/>
-								}
-								MenuProps={{
-									PaperProps: {
-										style: {
-											maxHeight: 300,
-										},
+				<Grid size={{ xs: 12, md: 2 }}>
+					<FormControl fullWidth>
+						<InputLabel>Statut</InputLabel>
+						<Select
+							value={filters.status || ''}
+							onChange={(e) => onFiltersChange({ status: e.target.value })}
+							label='Statut'
+							displayEmpty
+							startAdornment={
+								<InputClearButton
+									onClick={() => onFiltersChange({ status: undefined })}
+								/>
+							}
+							MenuProps={{
+								PaperProps: {
+									style: {
+										maxHeight: 300,
 									},
-								}}
-							>
-								<MenuItem value=''>Tous</MenuItem>
-								{ORDER_STATUSES.map((status) => (
-									<MenuItem key={status} value={status}>
-										{DICT.orderStatus[status]}
-									</MenuItem>
-								))}
-							</Select>
-						</FormControl>
-					</Grid>
-				)}
+								},
+							}}
+						>
+							<MenuItem value=''>Tous</MenuItem>
+							{ORDER_STATUSES.map((status) => (
+								<MenuItem key={status} value={status}>
+									{DICT.orderStatus[status]}
+								</MenuItem>
+							))}
+						</Select>
+					</FormControl>
+				</Grid>
 			</Grid>
 		</Box>
 	);
