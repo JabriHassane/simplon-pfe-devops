@@ -1,4 +1,4 @@
-import { Chip, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import OrderForm from '../components/forms/order-form/OrderForm';
 import { useDeleteOrder, useOrders } from '../hooks/ressources/useOrders';
 import type { OrderDto } from '../../../shared/dtos/order.dto';
@@ -7,11 +7,7 @@ import ConfirmationPopup from '../components/shared/ConfirmationPopup';
 import ResourceFormPopup from '../components/shared/ResourceFormPopup';
 import ResourceHeader from '../components/shared/ResourceHeader';
 import usePopups from '../hooks/usePopups';
-import { DICT } from '../i18n/fr';
-import {
-	ORDER_STATUS_COLOR_MAP,
-	PAGE_SIZE
-} from '../../../shared/constants';
+import { ORDER_STATUS_COLOR_MAP, PAGE_SIZE } from '../../../shared/constants';
 import { formatPrice } from '../utils/price.utils';
 import ResourceTable from '../components/shared/ResourceTable';
 import OrderFilters from '../components/shared/OrderFilters';
@@ -104,7 +100,7 @@ export default function Orders({
 					{ id: 'total', name: 'Total' },
 					{ id: 'paid', name: 'Payé' },
 					{ id: 'due', name: 'Reste' },
-					{ id: 'statut', name: 'Statut' },
+					// { id: 'statut', name: 'Statut' },
 				]}
 				rows={
 					orders?.map((order) => {
@@ -125,9 +121,7 @@ export default function Orders({
 									<>
 										<Typography
 											variant='body2'
-											fontWeight={
-												orderStatus === 'paid' ? 'semibold' : 'normal'
-											}
+											fontWeight={orderStatus === 'paid' ? 'bold' : 'normal'}
 											color={
 												orderStatus === 'paid'
 													? ORDER_STATUS_COLOR_MAP[orderStatus]
@@ -142,6 +136,7 @@ export default function Orders({
 									<>
 										<Typography
 											variant='body2'
+											fontWeight={orderStatus === 'partially_paid' ? 'bold' : 'normal'}
 											color={
 												orderStatus === 'partially_paid'
 													? ORDER_STATUS_COLOR_MAP[orderStatus]
@@ -152,15 +147,15 @@ export default function Orders({
 										</Typography>
 									</>
 								),
-								statut: (
-									<Chip
-										key={order.id}
-										label={DICT.orderStatus[orderStatus]}
-										color={ORDER_STATUS_COLOR_MAP[orderStatus]}
-										size='small'
-										sx={{ px: 0.5 }}
-									/>
-								),
+								// statut: (
+								// 	<Chip
+								// 		key={order.id}
+								// 		label={DICT.orderStatus[orderStatus]}
+								// 		color={ORDER_STATUS_COLOR_MAP[orderStatus]}
+								// 		size='small'
+								// 		sx={{ px: 0.5 }}
+								// 	/>
+								// ),
 							},
 						};
 					}) || []
