@@ -1,10 +1,10 @@
 import {
 	Badge,
 	Box,
-	Chip,
-	IconButton,
+	Chip, IconButton,
+	LinearProgress,
 	TablePagination,
-	Tooltip,
+	Tooltip
 } from '@mui/material';
 
 import {
@@ -68,6 +68,7 @@ interface Props {
 	pagination?: Pagination;
 	onPageChange?: (page: number) => void;
 	onRowsPerPageChange?: (pageSize: number) => void;
+	isLoading?: boolean;
 }
 
 function ResourceTable({
@@ -81,6 +82,7 @@ function ResourceTable({
 	onPageChange,
 	onRowsPerPageChange,
 	hideDelete,
+	isLoading,
 }: Props) {
 	const [expandedOrderIndex, setExpandedOrderIndex] = useState<number | null>(
 		null
@@ -127,24 +129,27 @@ function ResourceTable({
 						</TableRow>
 					</TableHead>
 
-					<TableBody>
-						{rows?.map((row, index) => (
-							<Row
-								key={index}
-								index={index}
-								headers={headers}
-								row={row}
-								onEdit={onEdit}
-								onDelete={onDelete}
-								isOrder={isOrder}
-								isPayment={isPayment}
-								isExpanded={expandedOrderIndex === index}
-								onToggleExpand={() => handleToggleExpand(index)}
-								hideDelete={hideDelete?.(row.item)}
-							/>
-						))}
-					</TableBody>
+					{!isLoading && (
+						<TableBody>
+							{rows?.map((row, index) => (
+								<Row
+									key={index}
+									index={index}
+									headers={headers}
+									row={row}
+									onEdit={onEdit}
+									onDelete={onDelete}
+									isOrder={isOrder}
+									isPayment={isPayment}
+									isExpanded={expandedOrderIndex === index}
+									onToggleExpand={() => handleToggleExpand(index)}
+									hideDelete={hideDelete?.(row.item)}
+								/>
+							))}
+						</TableBody>
+					)}
 				</Table>
+				{isLoading && <LinearProgress sx={{ width: '100%' }} />}
 			</Box>
 
 			{pagination && (

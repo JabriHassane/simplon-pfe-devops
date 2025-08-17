@@ -45,7 +45,7 @@ export default function Orders({
 		handlePageChange(0);
 	});
 
-	const { data, error } = useOrders({
+	const { data, error, isLoading } = useOrders({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -168,6 +168,7 @@ export default function Orders({
 				pagination={pagination}
 				onPageChange={handlePageChange}
 				onRowsPerPageChange={handleRowsPerPageChange}
+				isLoading={isLoading}
 			/>
 
 			{openFormPopup && (

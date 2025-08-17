@@ -35,7 +35,7 @@ export default function Contacts({ type }: Props) {
 		handlePageChange(0)
 	);
 
-	const { data, error } = useContacts({
+	const { data, error, isLoading} = useContacts({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -91,6 +91,7 @@ export default function Contacts({ type }: Props) {
 				pagination={pagination}
 				onPageChange={handlePageChange}
 				onRowsPerPageChange={handleRowsPerPageChange}
+				isLoading={isLoading}
 			/>
 
 			{openFormPopup && (

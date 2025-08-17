@@ -1,4 +1,9 @@
-import { Box, Card, Grid, Typography } from '@mui/material';
+import {
+	Box,
+	Card,
+	CircularProgress,
+	Grid, Typography
+} from '@mui/material';
 import { usePaymentMethodStats } from '../hooks/ressources/useTransactions';
 import { formatPrice } from '../utils/price.utils';
 import {
@@ -15,11 +20,13 @@ const PaymentMethodCard = ({
 	amount,
 	color,
 	type,
+	isLoading,
 }: {
 	title: string;
 	amount: number;
 	color: string;
 	type: TransactionMethod;
+	isLoading?: boolean;
 }) => (
 	<Grid
 		size={{ xs: 6, md: 3 }}
@@ -35,10 +42,25 @@ const PaymentMethodCard = ({
 	>
 		<img src={`/${type}.png`} alt={title} style={{ height: '60%' }} />
 
-		<Box sx={{ textAlign: { xs: 'center', md: 'left' } }}>
-			<Typography variant='h5' color={color} fontWeight='bold'>
-				{formatPrice(amount)}
-			</Typography>
+		<Box
+			sx={{
+				textAlign: { xs: 'center', md: 'left' },
+				...(isLoading
+					? { display: 'flex', flexDirection: 'column', alignItems: 'center' }
+					: {}),
+			}}
+		>
+			{isLoading ? (
+				<CircularProgress
+					size={23}
+					color={color as any}
+					sx={{ mx: 'auto', mb: 1 }}
+				/>
+			) : (
+				<Typography variant='h5' color={color} fontWeight='bold'>
+					{formatPrice(amount)}
+				</Typography>
+			)}
 			<Typography variant='body1' color='text.secondary'>
 				{DICT.methods[type]}
 			</Typography>
@@ -47,7 +69,7 @@ const PaymentMethodCard = ({
 );
 
 function Dashboard() {
-	const { data: paymentStats, error } = usePaymentMethodStats();
+	const { data: paymentStats, error, isLoading } = usePaymentMethodStats();
 
 	return (
 		<>
@@ -63,6 +85,7 @@ function Dashboard() {
 								amount={paymentStats?.[method] || 0}
 								color={PAYMENT_METHODS_COLOR_MAP[method]}
 								type={method}
+								isLoading={isLoading}
 							/>
 						))}
 					</Grid>

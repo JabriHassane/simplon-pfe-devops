@@ -31,7 +31,7 @@ export default function Users() {
 		handlePageChange(0);
 	});
 
-	const { data, error } = useUsers({
+	const { data, error, isLoading } = useUsers({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -82,6 +82,7 @@ export default function Users() {
 				pagination={pagination}
 				onPageChange={handlePageChange}
 				onRowsPerPageChange={handleRowsPerPageChange}
+				isLoading={isLoading}
 			/>
 
 			{openFormPopup && (

@@ -49,7 +49,7 @@ export default function Transactions() {
 		}
 	);
 
-	const { data, error } = useTransactions({
+	const { data, error, isLoading } = useTransactions({
 		page: page + 1,
 		pageSize: rowsPerPage,
 		...filters,
@@ -150,6 +150,7 @@ export default function Transactions() {
 				pagination={pagination}
 				onPageChange={handlePageChange}
 				onRowsPerPageChange={handleRowsPerPageChange}
+				isLoading={isLoading}
 			/>
 
 			{openFormPopup && (
