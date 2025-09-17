@@ -52,8 +52,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
-	res.json({ status: 'OK', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+	try {
+		const usersCount = await prisma.user.count()
+		res.json({ status: 'OK', usersCount, timestamp: new Date().toISOString() });
+	} catch (error: any) {
+		console.error('Error in health check', error);
+		return res
+			.status(500)
+			.json({ message: error.message || 'Internal server error' });
+	}
 });
 
 // API Routes

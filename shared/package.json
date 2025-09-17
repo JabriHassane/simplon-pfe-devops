@@ -4,10 +4,10 @@
 	"private": true,
 	"main": "index.ts",
 	"types": "index.ts",
-	"dependencies": {
-		"zod": "^3.25.76"
-	},
 	"peerDependencies": {
 		"@prisma/client": "^5.7.1"
+	},
+	"devDependencies": {
+		"zod": "^4.1.8"
 	}
 }
