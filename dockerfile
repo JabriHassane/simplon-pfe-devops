@@ -22,6 +22,7 @@ COPY shared ./shared
 
 # Build server
 WORKDIR /app/server
+RUN npx prisma generate
 RUN npm run build
 
 EXPOSE 8080
