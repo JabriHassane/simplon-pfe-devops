@@ -70,7 +70,6 @@ services:
     image: ${{ secrets.DOCKERHUB_USERNAME }}/ppp:${IMAGE_TAG}
     container_name: ppp
     ports:
-      - 3000:3000
+      - 8080:8080
     restart: always
 \") up -d"
-
