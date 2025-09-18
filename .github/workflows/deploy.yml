@@ -65,7 +65,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
             echo 'Logging into Docker Hub' && \
             echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin && \
-            mkdir -p /home/${{ secrets.SSH_USER }}/${IMAGE_NAME} && cd /home/${{ secrets.SSH_USER }}/${IMAGE_NAME} && \
+            cd /home/ec2-user/${IMAGE_NAME} || mkdir -p /home/ec2-user/${IMAGE_NAME} && cd /home/ec2-user/${IMAGE_NAME} && \
             IMAGE_TAG=${IMAGE_TAG} docker compose pull && \
             IMAGE_TAG=${IMAGE_TAG} docker compose up -d --remove-orphans"
 
