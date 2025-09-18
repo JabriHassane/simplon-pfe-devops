@@ -17,7 +17,8 @@ jobs:
 
       - name: Set IMAGE_TAG to short commit SHA
         id: set-tag
-        run: echo "sha=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
+        run: |
+          echo "sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
 
       - name: Set Docker username environment variable
         run: echo "USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
@@ -54,19 +55,17 @@ jobs:
       SSH_USER: ${{ secrets.SSH_USER }}
       SSH_HOST: ${{ secrets.SSH_HOST }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      # DOCKERHUB_TOKEN is used only on EC2 side for docker login
     steps:
       - name: Start ssh-agent and add key
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Create a deploy docker-compose (replace server image with new tag)
+      - name: Create deploy docker-compose (replace server image with new tag)
         id: make_compose
         run: |
           IMAGE_TAG=${{ needs.build-and-push.outputs.image-tag }}
           DOCKER_USER=${{ secrets.DOCKERHUB_USERNAME }}
-          # Path to the compose file in your repo
           SRC_COMPOSE=./docker-compose.yml
           DST_COMPOSE=./docker-compose.deploy.yml
 
@@ -75,43 +74,22 @@ jobs:
             exit 1
           fi
 
-          # Replace any line that references an image containing "ppp" with the new image tag.
-          # This assumes the service in your compose that should run your built image references 'ppp' in its image name.
-          # It will replace any "image: something/ppp:..." with your built image tag.
-          sed -E "s#(image:[[:space:]]*)([^[:space:]]*ppp)(:[^[:space:]]*)?#\1${DOCKER_USER}/ppp:${IMAGE_TAG}#g" "$SRC_COMPOSE" > "$DST_COMPOSE"
+          # Replace any image line that contains 'ppp' with the built image tag.
+          # This targets lines like: image: something/ppp:tag
+          sed -E "s#(^[[:space:]]*image:[[:space:]]*)([^[:space:]]*ppp)(:[^[:space:]]*)?#\1${DOCKER_USER}/ppp:${IMAGE_TAG}#g" "$SRC_COMPOSE" > "$DST_COMPOSE"
 
           echo "Generated $DST_COMPOSE (server image replaced with ${DOCKER_USER}/ppp:${IMAGE_TAG})"
           ls -l "$DST_COMPOSE"
-          echo "::set-output name=compose-path::$DST_COMPOSE"
 
       - name: Copy generated docker-compose to EC2
         run: |
-          DST_COMPOSE=./docker-compose.deploy.yml
-          echo "Copying $DST_COMPOSE to ${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/docker-compose.yml"
-          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null "$DST_COMPOSE" "${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/docker-compose.yml"
+          echo "Copying ./docker-compose.deploy.yml to ${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/docker-compose.yml"
+          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ./docker-compose.deploy.yml ${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/docker-compose.yml
 
       - name: SSH to EC2: login to Docker Hub, pull images, start containers, cleanup
-        env:
-          IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
         run: |
-          # run commands on EC2: login, pull, up -d, remove compose file
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST} <<'SSH_EOF'
-            set -e
-            echo "Logging into Docker Hub on EC2"
-            printf '%s' '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin
-
-            cd /home/${USER:-ec2-user} || true
-            echo "docker-compose pull"
-            docker-compose pull
-
-            echo "docker-compose up -d --remove-orphans"
-            docker-compose up -d --remove-orphans
-
-            echo "Removing temporary docker-compose.yml from EC2"
-            rm -f docker-compose.yml
-
-            echo "Deployment finished on EC2"
-SSH_EOF
+          # Run a single quoted remote command to avoid YAML/heredoc issues
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST} "printf '%s' '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin && cd /home/${SSH_USER} && docker-compose -f docker-compose.yml pull && docker-compose -f docker-compose.yml up -d --remove-orphans --force-recreate && rm -f docker-compose.yml"
 
       - name: Cleanup runner temp compose
         if: always()
