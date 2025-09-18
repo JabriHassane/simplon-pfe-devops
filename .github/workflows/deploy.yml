@@ -6,21 +6,27 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+  DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  SSH_USER: ${{ secrets.SSH_USER }}
+  SSH_HOST: ${{ secrets.SSH_HOST }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      IMAGE_TAG: ${{ github.sha }}
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set IMAGE_TAG
-        run: echo "IMAGE_TAG=${GITHUB_SHA:0:8}" >> $GITHUB_ENV
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_TOKEN }}
 
       - name: Build and push server image
         uses: docker/build-push-action@v4
@@ -29,27 +35,23 @@ jobs:
           file: ./server/Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/ppp:${{ env.IMAGE_TAG }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/ppp:latest
+            ${{ env.DOCKERHUB_USERNAME }}/ppp:${{ env.IMAGE_TAG }}
+            ${{ env.DOCKERHUB_USERNAME }}/ppp:latest
 
   deploy:
     needs: build-and-push
     runs-on: ubuntu-latest
-    env:
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
 
     steps:
       - name: Start ssh-agent
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ env.SSH_PRIVATE_KEY }}
 
       - name: Pull and start containers on EC2
         run: |
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
-          cd ~/ && 
+          cd ~/ &&
           docker-compose pull &&
           docker-compose up -d --remove-orphans --force-recreate
           "
-
