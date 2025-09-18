@@ -74,7 +74,7 @@ jobs:
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
 
             # Pull the new server image and recreate containers
-            docker-compose pull
-            docker-compose up -d --remove-orphans --force-recreate
-          "
+             docker-compose --env-file /home/${SSH_USER}/ppp/server/.env.production pull &&
+             docker-compose --env-file /home/${SSH_USER}/ppp/server/.env.production up -d --remove-orphans --force-recreate
+           "
 
