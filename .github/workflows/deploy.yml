@@ -48,28 +48,28 @@ jobs:
             ${{ env.USERNAME }}/ppp:${{ steps.set-tag.outputs.sha }}
             ${{ env.USERNAME }}/ppp:latest
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    env:
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
-      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+ deploy:
+  needs: build-and-push
+  runs-on: ubuntu-latest
+  env:
+    SSH_USER: ${{ secrets.SSH_USER }}
+    SSH_HOST: ${{ secrets.SSH_HOST }}
+    DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    steps:
-      - name: Start ssh-agent
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+  steps:
+    - name: Start ssh-agent
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Pull and run containers on EC2
-        run: |
-          IMAGE_TAG=${{ needs.build-and-push.outputs.image-tag }}
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
-            cd ~/ &&
-            echo '${DOCKERHUB_TOKEN}' | docker login -u '${DOCKERHUB_USERNAME}' --password-stdin &&
-            docker-compose pull &&
-            docker-compose up -d --remove-orphans --force-recreate
-          "
+    - name: Pull and run containers on EC2
+      run: |
+        IMAGE_TAG=${{ needs.build-and-push.outputs.image-tag }}
+        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+          cd /home/${SSH_USER}/ppp &&
+          echo \"\$DOCKERHUB_TOKEN\" | docker login -u \"\$DOCKERHUB_USERNAME\" --password-stdin &&
+          docker-compose pull &&
+          docker-compose up -d --remove-orphans --force-recreate
+        "
 
