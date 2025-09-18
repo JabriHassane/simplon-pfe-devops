@@ -1,7 +1,10 @@
 name: Test Docker Tags
 
 on:
-  workflow_dispatch: # manual trigger for testing
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 jobs:
   debug-tags:
