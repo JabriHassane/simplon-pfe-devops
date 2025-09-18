@@ -56,6 +56,10 @@ jobs:
       SSH_HOST: ${{ secrets.SSH_HOST }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     steps:
+
+      - name: Checkout code (to access docker-compose.yml)
+        uses: actions/checkout@v4
+
       - name: Start ssh-agent and add key
         uses: webfactory/ssh-agent@v0.8.0
         with:
