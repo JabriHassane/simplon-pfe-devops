@@ -86,6 +86,7 @@ jobs:
 
       - name: Copy generated docker-compose to EC2
         run: |
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ${SSH_USER}@${SSH_HOST} "mkdir -p /home/${SSH_USER}/ppp"
           scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null ./docker-compose.deploy.yml ${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/ppp/docker-compose.yml
 
       - name: Login to Docker Hub on EC2
