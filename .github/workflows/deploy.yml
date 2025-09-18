@@ -5,9 +5,6 @@ on:
     branches:
       - main
 
-env:
-  IMAGE_NAME: ppp
-
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -21,10 +18,8 @@ jobs:
         id: set-tag
         run: echo "sha=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
 
-      - name: Debug tags
-        run: |
-          echo "Full tag will be: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.set-tag.outputs.sha }}"
-          echo "Latest tag will be: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest"
+      - name: Debug Docker username
+        run: echo "Docker username is '${{ secrets.DOCKERHUB_USERNAME }}'"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -42,8 +37,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ steps.set-tag.outputs.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/ppp:${{ steps.set-tag.outputs.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/ppp:latest
 
   deploy:
     needs: build-and-push
@@ -57,11 +52,11 @@ jobs:
       - name: Deploy to EC2 (pull image + restart)
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
-            echo '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin && \
-            mkdir -p /home/ec2-user/${IMAGE_NAME} && cd /home/ec2-user/${IMAGE_NAME} && \
+            echo 'Logging into Docker Hub' && \
+            printf '%s' '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin && \
+            cd /home/ec2-user/ppp || exit 1 && \
             IMAGE_TAG=${IMAGE_TAG} docker compose pull && \
-            IMAGE_TAG=${IMAGE_TAG} docker compose up -d --remove-orphans"
+            IMAGE_TAG=${IMAGE_TAG} docker compose up -d"
 
