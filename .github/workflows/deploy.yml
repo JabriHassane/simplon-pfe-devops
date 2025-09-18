@@ -20,6 +20,7 @@ jobs:
 
       - name: Debug Docker username
         run: echo "Docker username is '${{ secrets.DOCKERHUB_USERNAME }}'"
+        run: echo "Docker username is '${{ secrets.DOCKERHUB_USERNAME }}'"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
