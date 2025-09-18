@@ -17,6 +17,9 @@ jobs:
         id: set-tag
         run: echo "sha=${GITHUB_SHA::8}" >> $GITHUB_OUTPUT
 
+      - name: Debug Docker username
+        run: echo "Docker username is '${{ secrets.DOCKERHUB_USERNAME }}'"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
