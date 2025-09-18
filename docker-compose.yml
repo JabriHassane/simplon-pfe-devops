@@ -15,7 +15,7 @@ services:
       - ppp-network
 
   server:
-    image: ameskar/ppp:${IMAGE_TAG:-latest}
+    image: ameskar/ppp:latest
     container_name: my-server-container
     restart: unless-stopped
     depends_on:
@@ -29,6 +29,7 @@ services:
 
 volumes:
   db-data:
+    driver: local
 
 networks:
   ppp-network:
