@@ -56,14 +56,21 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to EC2 (pull image + restart)
+      - name: Deploy to EC2 (pull image + run container)
         env:
           IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "\
             echo 'Logging into Docker Hub' && \
             printf '%s' '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin && \
-            cd /home/ec2-user/ppp || exit 1 && \
-            IMAGE_TAG=${IMAGE_TAG} docker-compose pull && \
-            IMAGE_TAG=${IMAGE_TAG} docker-compose up -d"
+            docker-compose -f <(echo \"\
+version: '3.9'
+services:
+  app:
+    image: ${{ secrets.DOCKERHUB_USERNAME }}/ppp:${IMAGE_TAG}
+    container_name: ppp
+    ports:
+      - 3000:3000
+    restart: always
+\") up -d"
 
