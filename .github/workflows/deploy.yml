@@ -64,6 +64,6 @@ jobs:
             echo 'Logging into Docker Hub' && \
             printf '%s' '${{ secrets.DOCKERHUB_TOKEN }}' | docker login -u '${{ secrets.DOCKERHUB_USERNAME }}' --password-stdin && \
             cd /home/ec2-user/ppp || exit 1 && \
-            IMAGE_TAG=${IMAGE_TAG} docker compose pull && \
-            IMAGE_TAG=${IMAGE_TAG} docker compose up -d"
+            IMAGE_TAG=${IMAGE_TAG} docker-compose pull && \
+            IMAGE_TAG=${IMAGE_TAG} docker-compose up -d"
 
