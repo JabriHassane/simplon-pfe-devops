@@ -72,6 +72,6 @@ jobs:
           cd /home/${SSH_USER}/ppp
           echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
           docker-compose -f docker-compose.yml --env-file /home/${SSH_USER}/ppp/server/.env.production up -d --force-recreate --remove-orphans
-        "
+          "
 
 
