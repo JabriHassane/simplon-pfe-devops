@@ -68,24 +68,24 @@ jobs:
 
       - name: Deploy to production
         run: |
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "bash -s" <<'ENDSSH'
             # Create main deployment folder
-            mkdir -p /home/${SSH_USER}/ppp
+            mkdir -p ~/ppp
 
             # Write docker-compose.yml from repo
-            cat << 'EOF' > /home/${SSH_USER}/ppp/docker-compose.yml
+            cat > ~/ppp/docker-compose.yml <<'EOF_COMPOSE'
             $(cat docker-compose.yml)
-            EOF
+            EOF_COMPOSE
 
             # Write .env from GitHub secret
-            echo '${ENV_FILE_CONTENT}' > /home/${SSH_USER}/ppp/.env.production
+            echo "${ENV_FILE_CONTENT}" > ~/ppp/.env.production
 
             # Login to Docker Hub
-            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+            echo $DOCKERHUB_TOKEN | docker login -u $DOCKERHUB_USERNAME --password-stdin
 
             # Pull latest server image
-            docker-compose -f /home/${SSH_USER}/ppp/docker-compose.yml --env-file /home/${SSH_USER}/ppp/.env.production pull
+            docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production pull
 
             # Start/recreate containers
-            docker-compose -f /home/${SSH_USER}/ppp/docker-compose.yml --env-file /home/${SSH_USER}/ppp/.env.production up -d --force-recreate --remove-orphans
-          "
+            docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
+          ENDSSH
