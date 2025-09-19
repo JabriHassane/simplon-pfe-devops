@@ -72,7 +72,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp"
 
           # Copy docker-compose.yml from repo (most stable)
-          scp -o StrictHostKeyChecking=no docker-compose.yml ${SSH_USER}@${SSH_HOST}:~/ppp/docker-compose.yml
+          scp docker-compose.yml ${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/ppp/docker-compose.yml
 
           # Write .env.production from GitHub secret
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
