@@ -19,7 +19,8 @@ jobs:
 
       - name: Set IMAGE_TAG to short commit SHA
         id: set-tag
-        run: echo "sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
+        run: |
+          echo "sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
 
       - name: Set Docker username environment variable
         run: echo "USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
