@@ -72,7 +72,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             cd /home/${SSH_USER}/ppp
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-            docker-compose -f docker-compose.yml -f docker-compose.staging.yml --env-file server/.env.staging up -d --force-recreate --remove-orphans
+            docker-compose -f docker-compose.yml -f docker-compose.staging.yml --env-file /home/${SSH_USER}/ppp/server/.env.production up -d --force-recreate --remove-orphans
           "
 
   # Deploy to production server
@@ -97,6 +97,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             cd /home/${SSH_USER}/ppp
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-            docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file server/.env.production up -d --force-recreate --remove-orphans
+            docker-compose -f docker-compose.yml --env-file /home/${SSH_USER}/ppp/server/.env.production up -d --force-recreate --remove-orphans
           "
 
