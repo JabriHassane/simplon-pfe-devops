@@ -17,7 +17,7 @@ services:
 
   # Production server
   prod:
-    image: ameskar/ppp:${IMAGE_TAG}
+    image: ameskar/ppp:latest
     container_name: prod-server
     restart: unless-stopped
     depends_on:
