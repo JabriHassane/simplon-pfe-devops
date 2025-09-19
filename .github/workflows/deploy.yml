@@ -70,7 +70,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp"
 
-          cat docker-compose.yml | ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "cat > /home/${SSH_USER}/ppp/docker-compose.yml
+
+          curl -sSL -o ~/ppp/docker-compose.yml \
+              https://github.com/AMeskar/DevOps-Project-PPP/main/docker-compose.yml
+          "
 
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
 
