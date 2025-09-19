@@ -68,22 +68,16 @@ jobs:
 
       - name: Deploy to production
         run: |
-          # Create folder
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp"
 
-          # Copy docker-compose.yml from repo (most stable)
-          scp docker-compose.yml ${SSH_USER}@${SSH_HOST}:/home/${SSH_USER}/ppp/docker-compose.yml
+          cat docker-compose.yml | ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "cat > /home/${SSH_USER}/ppp/docker-compose.yml
 
-          # Write .env.production from GitHub secret
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
 
-          # Pull Docker image first
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
             docker pull ${DOCKERHUB_USERNAME}/ppp:latest
           "
-
-          # Run docker-compose for DB + Nginx + links to your server container
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
           "
