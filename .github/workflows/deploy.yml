@@ -67,12 +67,12 @@ jobs:
 
       - name: Deploy to production
         run: |
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} << 'EOF'
-            export IMAGE_TAG=latest
-            cd /home/${SSH_USER}/ppp
-            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker-compose -f docker-compose.yml --env-file ppp/server/.env.production up -d --force-recreate --remove-orphans
-          EOF
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+          export IMAGE_TAG=latest
+          cd /home/${SSH_USER}/ppp
+          echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+          docker-compose -f docker-compose.yml --env-file /home/${SSH_USER}/ppp/server/.env.production up -d --force-recreate --remove-orphans
+          "
 
 
 
