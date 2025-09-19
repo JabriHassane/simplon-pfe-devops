@@ -1,3 +1,5 @@
+#version: '3.9'
+
 services:
   # Database
   db:
@@ -28,7 +30,6 @@ services:
       - ppp-network
 
   # Nginx reverse proxy
-  #hello
   nginx:
     image: nginx:alpine
     container_name: nginx-proxy
@@ -40,6 +41,7 @@ services:
       - ./nginx/certs:/etc/nginx/certs:ro
     depends_on:
       - prod
+      #- staging
     networks:
       - ppp-network
 
