@@ -68,9 +68,13 @@ jobs:
 
       - name: Deploy to production
         run: |
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp"
+        
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-          cat docker-compose.yml | ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp/docker-compose.yml > /dev/null"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp"
+          cat docker-compose.yml | ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp/docker-compose.yml > /dev/null"
 
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
 
