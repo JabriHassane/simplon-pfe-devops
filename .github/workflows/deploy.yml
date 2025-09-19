@@ -3,11 +3,12 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main       # Production
-      - dev        # Staging
+      - main
+      - dev
   workflow_dispatch:
 
 jobs:
+  # Build and push Docker image
   build-and-push:
     runs-on: ubuntu-latest
     outputs:
@@ -48,53 +49,53 @@ jobs:
             ${{ env.USERNAME }}/ppp:${{ steps.set-tag.outputs.sha }}
             ${{ env.USERNAME }}/ppp:latest
 
+  # Deploy to staging server
   deploy-staging:
-    if: github.ref == 'refs/heads/dev'
     needs: build-and-push
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main'
     env:
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.STAGING_SSH_USER }}
+      SSH_HOST: ${{ secrets.STAGING_SSH_HOST }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
-
     steps:
       - name: Start ssh-agent
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.STAGING_SSH_PRIVATE_KEY }}
 
-      - name: Pull and run containers on EC2 (staging)
+      - name: Deploy to staging
         run: |
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             cd /home/${SSH_USER}/ppp
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-            docker-compose -f docker-compose.yml -f docker-compose.staging.yml up -d --remove-orphans --force-recreate
+            docker-compose -f docker-compose.yml -f docker-compose.staging.yml --env-file server/.env.staging up -d --force-recreate --remove-orphans
           "
 
+  # Deploy to production server
   deploy-production:
-    if: github.ref == 'refs/heads/main'
     needs: build-and-push
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     env:
-      SSH_USER: ${{ secrets.SSH_USER }}
-      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.PROD_SSH_USER }}
+      SSH_HOST: ${{ secrets.PROD_SSH_HOST }}
       DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
       IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
-
     steps:
       - name: Start ssh-agent
         uses: webfactory/ssh-agent@v0.8.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.PROD_SSH_PRIVATE_KEY }}
 
-      - name: Pull and run containers on EC2 (production)
+      - name: Deploy to production
         run: |
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             cd /home/${SSH_USER}/ppp
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-            docker-compose --env-file server/.env.production up -d --remove-orphans --force-recreate
+            docker-compose -f docker-compose.yml -f docker-compose.prod.yml --env-file server/.env.production up -d --force-recreate --remove-orphans
           "
 
