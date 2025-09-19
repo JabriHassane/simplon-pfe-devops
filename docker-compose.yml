@@ -5,7 +5,7 @@ services:
     container_name: ppp-db
     restart: unless-stopped
     env_file:
-      - ${ENV_FILE:-.env.development}
+      - ${ENV_FILE:-.env.production}
     ports:
       - "5432:5432"
     volumes:
@@ -22,8 +22,8 @@ services:
       - db
     env_file:
       - ${ENV_FILE:-.env.production}
-    expose:
-      - "8080"
+    ports:
+      - "8080:8080"       # exposed publicly
     networks:
       - ppp-network
 
@@ -31,6 +31,7 @@ services:
   nginx:
     image: nginx:alpine
     container_name: nginx-proxy
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
