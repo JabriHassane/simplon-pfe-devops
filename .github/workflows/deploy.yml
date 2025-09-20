@@ -6,6 +6,8 @@ on:
       - main
   workflow_dispatch:
 
+jobs:
+
   # Deploy to production server
   deploy-production:
     needs: build-and-push
@@ -31,4 +33,12 @@ on:
           cat docker-compose.yml | ssh -i ssh-private-key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp/docker-compose.yml > /dev/null"
 
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
+
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+            docker pull ${DOCKERHUB_USERNAME}/ppp:latest
+          "
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+            docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
+          "
 
