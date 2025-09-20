@@ -29,7 +29,7 @@ services:
 
   # Nginx reverse proxy
   nginx:
-    build: ./nginx             # build from nginx folder in repo
+    image: ameskar/nginx-proxy:latest   # use the image from Docker Hub
     container_name: nginx-proxy
     restart: unless-stopped
     ports:
@@ -39,6 +39,7 @@ services:
       - prod
     networks:
       - ppp-network
+
 
 volumes:
   db-data:
