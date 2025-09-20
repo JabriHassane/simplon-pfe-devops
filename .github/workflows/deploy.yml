@@ -68,19 +68,17 @@ jobs:
 
       - name: Deploy to production
         run: |
+        
+          ssh -i ssh-private-key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp"
+          cat ./docker-compose.yml | ssh -i ssh-private-key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp/docker-compose.yml > /dev/null"
 
-          set -euo pipefail
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
 
-          # Write the SSH private key to a file with correct perms
-          install -m 600 /dev/null /tmp/deploy_key
-          printf '%s\n' "$SSH_PRIVATE_KEY" > /tmp/deploy_key
-
-          # 1) Ensure remote dir exists
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "${SSH_USER}@${SSH_HOST}" 'mkdir -p ~/ppp'
-
-          # 2) Send docker-compose.yml via stdin -> tee (no quoting pitfalls)
-          ssh -i /tmp/deploy_key -o StrictHostKeyChecking=no "${SSH_USER}@${SSH_HOST}" \
-            'tee ~/ppp/docker-compose.yml > /dev/null' < docker-compose.yml
-
-
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+            docker pull ${DOCKERHUB_USERNAME}/ppp:latest
+          "
+          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+            docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
+          "
 
