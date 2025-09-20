@@ -48,6 +48,14 @@ jobs:
           tags: |
             ${{ env.USERNAME }}/ppp:latest
 
+      - name: Build and push Nginx
+        uses: docker/build-push-action@v4
+        with:
+          context: ./nginx
+          file: ./nginx/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nginx-proxy:latest
+
   # Deploy to production server
   deploy-production:
     needs: build-and-push
@@ -84,4 +92,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
             docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
           "
-
+          docker run -d --name nginx-proxy --network ppp-network -p 80:80 -p 443:443 ${DOCKERHUB_USERNAME}/nginx-proxy:latest
+          "
