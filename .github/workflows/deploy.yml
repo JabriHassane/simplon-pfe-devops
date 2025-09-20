@@ -6,48 +6,6 @@ on:
       - main
   workflow_dispatch:
 
-jobs:
-  # Build and push Docker image
-  build-and-push:
-    runs-on: ubuntu-latest
-    outputs:
-      image-tag: ${{ steps.set-tag.outputs.sha }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set IMAGE_TAG to short commit SHA
-        id: set-tag
-        run: |
-          echo "sha=${GITHUB_SHA:0:8}" >> $GITHUB_OUTPUT
-
-      - name: Set Docker username environment variable
-        run: echo "USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
-
-      - name: Debug final tags
-        run: |
-          IMAGE_TAG=${{ steps.set-tag.outputs.sha }}
-          echo "Image tag with SHA: $USERNAME/ppp:$IMAGE_TAG"
-          echo "Latest tag: $USERNAME/ppp:latest"
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          context: ./
-          file: ./Dockerfile
-          push: true
-          tags: |
-            ${{ env.USERNAME }}/ppp:latest
-
   # Deploy to production server
   deploy-production:
     needs: build-and-push
@@ -73,12 +31,4 @@ jobs:
           cat docker-compose.yml | ssh -i ssh-private-key -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp/docker-compose.yml > /dev/null"
 
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp/.env.production"
-
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
-            echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
-            docker pull ${DOCKERHUB_USERNAME}/ppp:latest
-          "
-          ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
-            docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
-          "
 
