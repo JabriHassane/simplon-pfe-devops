@@ -97,7 +97,7 @@ jobs:
             echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
             docker pull ${DOCKERHUB_USERNAME}/ppp:latest
             docker pull ${DOCKERHUB_USERNAME}/nginx-proxy-stage:latest
-            docker-compose -f ~/ppp-stage/docker-compose.stage.yml --env-file ~/ppp-stage/.env.stage up -d --force-recreate --remove-orphans
+            docker compose -f ~/ppp-stage/docker-compose.yml --env-file ~/ppp-stage/.env.stage up -d --force-recreate --remove-orphans
           "
 
   deploy-production:
