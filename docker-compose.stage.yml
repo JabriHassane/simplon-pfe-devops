@@ -26,8 +26,8 @@ services:
       - stage-network
 
   nginx:
-    image: ameskar/nginx-stage:latest
-    container_name: nginx-stage
+    image: ameskar/nginx-proxy-stage:latest
+    container_name: nginx-proxy-stage
     restart: unless-stopped
     ports:
       - "80:80"
