@@ -20,7 +20,8 @@ services:
       - db
     env_file:
       - .env.stage
-    
+    ports:
+      - "8081:8080" 
     networks:
       - stage-network
 
