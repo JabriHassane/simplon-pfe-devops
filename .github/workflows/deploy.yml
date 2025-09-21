@@ -89,7 +89,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp-stage"
 
-          cat docker-compose.stage.yml | ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp-stage/docker-compose.stage.yml > /dev/null"
+          cat docker-compose.stage.yml | ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp-stage/docker-compose.yml > /dev/null"
 
           ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp-stage/.env.stage"
 
