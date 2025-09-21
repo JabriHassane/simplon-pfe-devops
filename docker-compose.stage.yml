@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    container_name: stage-db
+    restart: unless-stopped
+    env_file:
+      - .env.stage
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - stage-network
+
+  stage-server:
+    image: ameskar/ppp:latest
+    container_name: stage-server
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env.stage
+    ports:
+      - "8081:8081"
+    networks:
+      - stage-network
+
+  nginx:
+    image: ameskar/nginx-stage:latest
+    container_name: nginx-stage
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - stage-server
+    networks:
+      - stage-network
+
+volumes:
+  db-data:
+    driver: local
+
+networks:
+  stage-network:
+    driver: bridge

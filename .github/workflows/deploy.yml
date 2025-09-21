@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - stage
   workflow_dispatch:
 
 jobs:
@@ -55,6 +56,50 @@ jobs:
           file: ./nginx/Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/nginx-proxy:latest
+      
+      - name: Build and push Stage Nginx
+        uses: docker/build-push-action@v4
+        with:
+          context: ./nginx
+          file: ./nginx-stage/Dockerfile.stage
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/nginx-stage:latest
+  
+  deploy-stage:
+  needs: build-and-push
+  runs-on: ubuntu-latest
+  if: github.ref == 'refs/heads/stage'
+  env:
+    SSH_USER: ${{ secrets.STAGE_SSH_USER }}
+    SSH_HOST: ${{ secrets.STAGE_SSH_HOST }}
+    DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+    DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+    ENV_FILE_CONTENT: ${{ secrets.ENV_FILE_STAGE }}
+    IMAGE_TAG: ${{ needs.build-and-push.outputs.image-tag }}
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Start ssh-agent
+      uses: webfactory/ssh-agent@v0.8.0
+      with:
+        ssh-private-key: ${{ secrets.STAGE_SSH_PRIVATE_KEY }}
+
+    - name: Deploy staging
+      run: |
+        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "mkdir -p ~/ppp-stage"
+
+        cat docker-compose.stage.yml | ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "tee ~/ppp-stage/docker-compose.stage.yml > /dev/null"
+
+        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "echo '${ENV_FILE_CONTENT}' > ~/ppp-stage/.env.stage"
+
+        ssh -o StrictHostKeyChecking=no ${SSH_USER}@${SSH_HOST} "
+          echo \$DOCKERHUB_TOKEN | docker login -u \$DOCKERHUB_USERNAME --password-stdin
+          docker pull ${DOCKERHUB_USERNAME}/ppp:latest
+          docker pull ${DOCKERHUB_USERNAME}/nginx-proxy:latest
+          docker-compose -f ~/ppp-stage/docker-compose.stage.yml --env-file ~/ppp-stage/.env.stage up -d --force-recreate --remove-orphans
+        "
+
 
   # Deploy to production server
   deploy-production:
