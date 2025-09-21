@@ -61,7 +61,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./nginx
-          file: ./nginx-stage/Dockerfile.stage
+          file: ./nginx/Dockerfile.stage
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/nginx-stage:latest
 
