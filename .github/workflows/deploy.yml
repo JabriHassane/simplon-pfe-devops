@@ -100,6 +100,25 @@ jobs:
             docker pull ${DOCKERHUB_USERNAME}/nginx-proxy-stage:latest
             docker compose -f ~/ppp-stage/docker-compose.yml --env-file ~/ppp-stage/.env.stage up -d --force-recreate --remove-orphans
           "
+          
+      - name: Notify Slack on Success
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+            -H 'Content-type: application/json; charset=utf-8' \
+            --data '{"channel":"#deployments","text":"✅ Deployment succeeded for *${{ github.repository }}* on branch *${{ github.ref }}*"}' \
+            https://slack.com/api/chat.postMessage
+
+      - name: Notify Slack on Failure
+        if: failure()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+            -H 'Content-type: application/json; charset=utf-8' \
+            --data '{"channel":"#deployments","text":"❌ Deployment failed for *${{ github.repository }}* on branch *${{ github.ref }}*"}' \
+            https://slack.com/api/chat.postMessage
+
 
   deploy-production:
     needs: build-and-push
@@ -135,3 +154,21 @@ jobs:
             docker pull ${DOCKERHUB_USERNAME}/nginx-proxy:latest
             docker-compose -f ~/ppp/docker-compose.yml --env-file ~/ppp/.env.production up -d --force-recreate --remove-orphans
           "
+
+      - name: Notify Slack on Success
+        if: success()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+            -H 'Content-type: application/json; charset=utf-8' \
+            --data '{"channel":"#deployments","text":"✅ Deployment succeeded for *${{ github.repository }}* on branch *${{ github.ref }}*"}' \
+            https://slack.com/api/chat.postMessage
+
+      - name: Notify Slack on Failure
+        if: failure()
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.SLACK_BOT_TOKEN }}" \
+            -H 'Content-type: application/json; charset=utf-8' \
+            --data '{"channel":"#deployments","text":"❌ Deployment failed for *${{ github.repository }}* on branch *${{ github.ref }}*"}' \
+            https://slack.com/api/chat.postMessage
