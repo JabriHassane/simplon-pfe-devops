@@ -90,9 +90,8 @@ jobs:
       - name: Build Client
         run: |
           cd client
-          npm install zod
-          npm install --save-dev @types/zod
           npm install
+          npm install zod
           npm run build
 
       - name: Sync Client to S3
