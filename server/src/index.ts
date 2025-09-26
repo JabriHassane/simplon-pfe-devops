@@ -27,8 +27,7 @@ export const prisma = new PrismaClient({
 // Middleware
 app.use(helmet());
 // Configure CORS based on environment
-// const allowedOrigins = [process.env.CLIENT_URL];
-const allowedOrigins = ['https://dxcvad0o82c6i.cloudfront.net',]
+const allowedOrigins = [process.env.CLIENT_URL];
 
 app.use(
 	cors({
