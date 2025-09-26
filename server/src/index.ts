@@ -27,11 +27,18 @@ export const prisma = new PrismaClient({
 // Middleware
 app.use(helmet());
 // Configure CORS based on environment
-const allowedOrigins = [process.env.CLIENT_URL];
+// const allowedOrigins = [process.env.CLIENT_URL];
+
+const allowedOrigins = [
+  'https://dxcvad0o82c6i.cloudfront.net',
+  process.env.CLIENT_URL, // keep this if you use other environments
+];
+
 
 app.use(
 	cors({
 		origin: (origin, callback) => {
+			console.log("Allowed CLIENT_URL:", process.env.CLIENT_URL);
 			console.log("Origin", origin)
 			// return callback(null, true)
 			// Allow requests with no origin (like mobile apps or curl requests)
