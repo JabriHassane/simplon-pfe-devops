@@ -31,10 +31,8 @@ const allowedOrigins = [process.env.CLIENT_URL];
 
 app.use(
 	cors({
-		origin: (origin, callback) => {
-			
-		console.log("NODE_ENV is:", process.env.NODE_ENV);
-        console.trace("NODE_ENV was loaded from here");
+		origin: (origin, callback) => {	
+		console.log("allowedOrigins :", process.env.CLIENT_URL);
 
 		if (!origin) return callback(null, true);
 
