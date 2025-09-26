@@ -32,6 +32,7 @@ const allowedOrigins = [process.env.CLIENT_URL];
 app.use(
 	cors({
 		origin: (origin, callback) => {
+			console.log("Origin", origin)
 			// Allow requests with no origin (like mobile apps or curl requests)
 			if (!origin) return callback(null, true);
 
