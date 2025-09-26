@@ -6,6 +6,8 @@ services:
       POSTGRES_USER: mac
       POSTGRES_PASSWORD: pppp
       POSTGRES_DB: ppp_stage
+    env_file:
+      - ${ENV_FILE:-.env.stage} 
     ports:
       - "5433:5432"
     networks:
@@ -15,9 +17,10 @@ services:
 
   stage-server:
     image: ameskar/ppp:latest
+    env_file:
+      - ${ENV_FILE:-.env.stage}
     environment:
       DATABASE_URL: postgres://mac:pppp@stage-db:5432/ppp_stage
-      NODE_ENV: stage
       PORT: 8080
     ports:
       - "8081:8080"
