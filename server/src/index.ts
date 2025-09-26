@@ -30,10 +30,9 @@ app.use(helmet());
 // const allowedOrigins = [process.env.CLIENT_URL];
 
 const allowedOrigins = [
+  'https://myapp.com',
   'https://dxcvad0o82c6i.cloudfront.net',
-  process.env.CLIENT_URL, // keep this if you use other environments
 ];
-
 
 app.use(
 	cors({
