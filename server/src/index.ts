@@ -33,6 +33,7 @@ app.use(
 	cors({
 		origin: (origin, callback) => {
 		console.log("Origin", origin);
+		console.log("allowedOrigins", process.env.CLIENT_URL)
 
 		if (!origin) return callback(null, true);
 
