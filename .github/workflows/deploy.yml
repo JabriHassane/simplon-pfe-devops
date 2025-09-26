@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./
-          file: Dockerfile.stage
+          file: ./dockerfile.stage
           push: true
           tags: |
             ${{ env.USERNAME }}/ppp:stage-${{ steps.set-tag.outputs.sha }}
@@ -46,7 +46,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./
-          file: Dockerfile
+          file: ./dockerfile
           push: true
           tags: |
             ${{ env.USERNAME }}/ppp:prod-${{ steps.set-tag.outputs.sha }}
