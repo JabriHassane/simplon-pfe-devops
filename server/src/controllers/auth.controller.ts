@@ -50,15 +50,15 @@ export const AuthController = {
 			// Set tokens in cookies
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+				secure: process.env.NODE_ENV !== 'development',
+				sameSite: process.env.NODE_ENV !== 'development' ? 'none' : 'lax',
 				maxAge: ms(JWT_EXPIRES_IN),
 			});
 
 			res.cookie('refreshToken', refreshToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+				secure: process.env.NODE_ENV !== 'development',
+				sameSite: process.env.NODE_ENV !== 'development' ? 'none' : 'lax',
 				expires: new Date(253402300799999), // Year 9999
 			});
 
@@ -96,11 +96,11 @@ export const AuthController = {
 			// Set new access token in cookie
 			res.cookie('accessToken', accessToken, {
 				httpOnly: true,
-				secure: process.env.NODE_ENV === 'production',
-				sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+				secure: process.env.NODE_ENV !== 'development',
+				sameSite: process.env.NODE_ENV !== 'development' ? 'none' : 'lax',
 				maxAge: ms(JWT_EXPIRES_IN),
 			});
-
+	
 			res.json({ message: 'Token refreshed successfully' });
 		} catch (error) {
 			console.error('Error in AuthController.refresh', error);
