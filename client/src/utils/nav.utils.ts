@@ -1,5 +1,3 @@
-import { Router } from "react-router-dom";
-
 // nav.ts
 let _navigate: (to: string, opts?: { replace?: boolean }) => void;
 
