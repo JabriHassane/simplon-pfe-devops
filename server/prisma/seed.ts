@@ -3,10 +3,10 @@ import { getNextRef } from '../src/utils/db.utils';
 import { prisma } from './prisma.config';
 
 async function main() {
-	if (process.env.NODE_ENV === 'production') {
-		console.log('🚫 Seeding is disabled in production');
-		return;
-	}
+	// if (process.env.NODE_ENV === 'production') {
+	// 	console.log('🚫 Seeding is disabled in production');
+	// 	return;
+	// }
 
 	console.log('🌱 Starting database seed...');
 
