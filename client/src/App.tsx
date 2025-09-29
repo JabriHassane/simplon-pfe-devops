@@ -15,6 +15,7 @@ import { theme } from './theme';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'dayjs/locale/fr';
 import Sidebar from './components/Sidebar';
+import NavBinder from './components/NavBinder';
 
 console.log(import.meta.env.VITE_API_URL);
 
@@ -97,6 +98,7 @@ export default function App() {
 			<SnackbarProvider maxSnack={5} autoHideDuration={3000}>
 				<AuthProvider>
 					<Router>
+						<NavBinder/>
 						<Routes>
 							<Route path='/login' element={<Login />} />
 							<Route
