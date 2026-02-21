@@ -2,7 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import morgan from 'morgan';
 import { PrismaClient } from '@prisma/client';
+import logger, { morganStream } from './utils/logger';
 
 // Import routes
 import authRouter from './routers/auth.router';
@@ -49,7 +51,8 @@ app.use(
 	})
 );
 
-// app.use(morgan('combined'));
+// Logging middleware
+app.use(morgan('combined', { stream: morganStream }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -60,7 +63,7 @@ app.get('/api/health', async (req, res) => {
 		const usersCount = await prisma.user.count()
 		res.json({ status: 'OK', usersCount, timestamp: new Date().toISOString() });
 	} catch (error: any) {
-		console.error('Error in health check', error);
+		logger.error('Error in health check', { error });
 		return res
 			.status(500)
 			.json({ message: error.message || 'Internal server error' });
@@ -87,25 +90,35 @@ app.use(
 		res: express.Response,
 		next: express.NextFunction
 	) => {
-		console.error(err.stack);
+		logger.error('Unhandled error', { error: err.stack, path: req.path });
 		res.status(500).json({ message: 'Something went wrong!' });
 	}
 );
 
 // Start server
 app.listen(PORT, () => {
-	console.log(`🚀 Server running on port: ${PORT}`);
+	logger.info(`🚀 Server running on port: ${PORT}`);
 });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
-	console.log('SIGTERM received, shutting down gracefully');
+	logger.info('SIGTERM received, shutting down gracefully');
 	await prisma.$disconnect();
 	process.exit(0);
 });
 
 process.on('SIGINT', async () => {
-	console.log('SIGINT received, shutting down gracefully');
+	logger.info('SIGINT received, shutting down gracefully');
 	await prisma.$disconnect();
 	process.exit(0);
+});
+
+// Error handlers
+process.on('unhandledRejection', (reason, promise) => {
+	logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+	logger.error('Uncaught Exception:', error);
+	process.exit(1);
 });

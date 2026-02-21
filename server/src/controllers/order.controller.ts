@@ -8,6 +8,8 @@ import {
 } from '../../../shared/dtos/order.dto';
 import { getNextRef } from '../utils/db.utils';
 import { TransactionMethod, TransactionType } from '../../../shared/constants';
+import { SQSService } from '../services/sqs.service';
+import logger from '../utils/logger';
 
 export const OrderController = {
 	async getPage(req: Request, res: Response) {
@@ -182,9 +184,29 @@ export const OrderController = {
 				},
 			});
 
+			// Send message to SQS for async processing
+			try {
+				await SQSService.sendMessage({
+					type: 'ORDER_CREATED',
+					id: order.id,
+					data: {
+						orderId: order.id,
+						ref: order.ref,
+						type: order.type,
+						totalPrice: order.totalPrice,
+						contactId: order.contactId,
+						agentId: order.agentId,
+					},
+				});
+				logger.info('Order creation message sent to SQS', { orderId: order.id });
+			} catch (sqsError) {
+				// Log error but don't fail the request
+				logger.error('Failed to send message to SQS', { error: sqsError, orderId: order.id });
+			}
+
 			res.status(201).json(order);
 		} catch (error) {
-			console.error('Error in OrderController.create', error);
+			logger.error('Error in OrderController.create', { error });
 			res.status(500).json({ message: 'Internal server error' });
 		}
 	},

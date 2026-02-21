@@ -11,28 +11,12 @@ async function main() {
 	console.log('🌱 Starting database seed...');
 
 	// Clear existing data (in correct order due to foreign key constraints)
+	await prisma.refreshToken.deleteMany();
 	await prisma.transaction.deleteMany();
 	await prisma.order.deleteMany();
 	await prisma.contact.deleteMany();
 	await prisma.user.deleteMany();
-
-	const sequences = [
-		'users',
-		'clients',
-		'suppliers',
-		'sales',
-		'purchases',
-		'transactions',
-	];
-
-	for (const sequence of sequences) {
-		await prisma.$executeRawUnsafe(
-			`DROP SEQUENCE IF EXISTS ${sequence}_ref_seq`
-		);
-		await prisma.$queryRawUnsafe(
-			`CREATE SEQUENCE IF NOT EXISTS ${sequence}_ref_seq START 1`
-		);
-	}
+	await prisma.refCounter.deleteMany();
 
 	console.log('🗑️  Cleared existing data');
 

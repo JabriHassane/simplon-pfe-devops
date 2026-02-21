@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sqs-worker
+  namespace: devops-ppp
+  labels:
+    app: sqs-worker
+    version: v1
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: sqs-worker
+  template:
+    metadata:
+      labels:
+        app: sqs-worker
+        version: v1
+    spec:
+      serviceAccountName: sqs-consumer
+      containers:
+      - name: sqs-worker
+        image: ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/devops-ppp-production-backend:latest
+        imagePullPolicy: Always
+        command: ["node", "dist/server/src/workers/sqs-worker.js"]
+        env:
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: NODE_ENV
+        - name: SQS_QUEUE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SQS_QUEUE_URL
+        - name: AWS_REGION
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: AWS_REGION
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: DATABASE_URL
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        # CloudWatch Logs
+        volumeMounts:
+        - name: aws-logs
+          mountPath: /var/log/app
+      volumes:
+      - name: aws-logs
+        emptyDir: {}

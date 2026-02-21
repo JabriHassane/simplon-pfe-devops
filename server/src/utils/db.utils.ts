@@ -11,9 +11,10 @@ const TABLE_PREFIX_MAP = {
 };
 
 export const getNextRef = async (table: keyof typeof TABLE_PREFIX_MAP) => {
-	const [result] = await prisma.$queryRawUnsafe<{ nextval: number }[]>(
-		`SELECT nextval('${table}_ref_seq')`
-	);
-	const nextId = result.nextval;
-	return `${TABLE_PREFIX_MAP[table]}-${nextId}`;
+	const result = await prisma.refCounter.upsert({
+		where: { table },
+		update: { counter: { increment: 1 } },
+		create: { table, counter: 1 },
+	});
+	return `${TABLE_PREFIX_MAP[table]}-${result.counter}`;
 };

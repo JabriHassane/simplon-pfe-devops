@@ -1,22 +1,21 @@
 services:
   stage-db:
-    image: postgres:16
+    image: mysql:8.0
     container_name: stage-db
     environment:
-      POSTGRES_USER: mac
-      POSTGRES_PASSWORD: pppp
-      POSTGRES_DB: ppp_stage
+      MYSQL_ROOT_PASSWORD: pppp
+      MYSQL_DATABASE: ppp_stage
     ports:
-      - "5433:5432"
+      - "3307:3306"
     networks:
       - stage-network
     volumes:
-      - stage-db-data:/var/lib/postgresql/data
+      - stage-db-data:/var/lib/mysql
 
   stage-server:
     image: ameskar/ppp:stage-latest
     environment:
-      DATABASE_URL: postgres://mac:pppp@stage-db:5432/ppp_stage
+      DATABASE_URL: mysql://root:pppp@stage-db:3306/ppp_stage
       NODE_ENV: stage
       PORT: 8080
     ports:

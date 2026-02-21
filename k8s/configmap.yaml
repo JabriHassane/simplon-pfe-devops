@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: devops-ppp
+data:
+  NODE_ENV: "production"
+  PORT: "8080"
+  CLIENT_URL: "http://frontend-service:80"
+  # Database URL will be set from Secret
+  # SQS Queue URL will be set from Secret

@@ -1,0 +1,20 @@
+aws_region = "us-east-1"
+project_name = "devops-ppp"
+environment = "production"
+
+vpc_cidr = "10.0.0.0/16"
+
+db_name = "pppdb"
+db_username = "admin"
+db_password = "CHANGE_ME_STRONG_PASSWORD"
+
+eks_cluster_version = "1.28"
+eks_instance_types = ["t3.medium"]
+eks_desired_capacity = 2
+eks_min_size = 1
+eks_max_size = 4
+
+tags = {
+  Owner = "DevOps Team"
+  CostCenter = "Engineering"
+}
