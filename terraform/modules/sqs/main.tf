@@ -18,7 +18,6 @@ resource "aws_sqs_queue" "main" {
 
   visibility_timeout_seconds = 300
   message_retention_seconds  = 345600 # 4 days
-  max_receive_count          = 3
 
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.dlq.arn
