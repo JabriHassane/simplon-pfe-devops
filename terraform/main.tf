@@ -138,34 +138,4 @@ module "cloudwatch" {
   tags = var.tags
 }
 
-# Outputs
-output "vpc_id" {
-  description = "VPC ID"
-  value       = module.vpc.vpc_id
-}
 
-output "eks_cluster_name" {
-  description = "EKS Cluster Name"
-  value       = module.eks.cluster_name
-}
-
-output "eks_cluster_endpoint" {
-  description = "EKS Cluster Endpoint"
-  value       = module.eks.cluster_endpoint
-}
-
-output "rds_endpoint" {
-  description = "RDS Endpoint"
-  value       = module.rds.endpoint
-  sensitive   = true
-}
-
-output "sqs_queue_url" {
-  description = "SQS Queue URL"
-  value       = module.sqs.queue_url
-}
-
-output "ecr_repositories" {
-  description = "ECR Repository URLs"
-  value       = module.ecr.repository_urls
-}
