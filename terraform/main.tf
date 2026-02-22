@@ -48,7 +48,7 @@ module "vpc" {
   project_name     = var.project_name
   environment      = var.environment
   vpc_cidr         = var.vpc_cidr
-  availability_zones = data.aws_availability_zones.available.names
+  availability_zones = slice(data.aws_availability_zones.available.names, 0, 2)
   
   tags = var.tags
 }
@@ -99,20 +99,20 @@ module "sqs" {
   tags = var.tags
 }
 
-# ECR Repositories
-module "ecr" {
-  source = "./modules/ecr"
-  
-  project_name = var.project_name
-  environment  = var.environment
-  
-  repositories = [
-    "backend",
-    "frontend"
-  ]
-  
-  tags = var.tags
-}
+# ECR Repositories - Commented out because CI/CD auto-creates them
+# module "ecr" {
+#   source = "./modules/ecr"
+#   
+#   project_name = var.project_name
+#   environment  = var.environment
+#   
+#   repositories = [
+#     "backend",
+#     "frontend"
+#   ]
+#   
+#   tags = var.tags
+# }
 
 # IAM Roles for EKS Pods
 module "iam" {
