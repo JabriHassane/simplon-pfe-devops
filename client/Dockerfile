@@ -7,10 +7,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 COPY client/package*.json ./client/
+COPY shared/package*.json ./shared/
 
 # Install dependencies
+WORKDIR /app/shared
+RUN npm install
+
 WORKDIR /app/client
-RUN npm ci --only=production=false
+RUN npm install
 
 # Copy source code
 WORKDIR /app
