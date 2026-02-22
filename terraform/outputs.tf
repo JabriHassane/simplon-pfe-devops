@@ -49,7 +49,7 @@ output "sqs_queue_arn" {
   value       = module.sqs.queue_arn
 }
 
-output "ecr_repository_urls" {
-  description = "ECR Repository URLs"
-  value       = module.ecr.repository_urls
-}
+# output "ecr_repository_urls" {
+#   description = "ECR Repository URLs"
+#   value       = module.ecr.repository_urls
+# }
