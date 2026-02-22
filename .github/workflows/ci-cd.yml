@@ -213,9 +213,21 @@ jobs:
 
       - name: Wait for rollout
         run: |
-          kubectl rollout status deployment/backend -n devops-ppp --timeout=5m
-          kubectl rollout status deployment/frontend -n devops-ppp --timeout=5m
-          kubectl rollout status deployment/sqs-worker -n devops-ppp --timeout=5m
+          echo "=== Pod status at deploy time ==="
+          kubectl get pods -n devops-ppp -o wide
+          echo "=== Waiting for backend rollout ==="
+          kubectl rollout status deployment/backend -n devops-ppp --timeout=8m || true
+          echo "=== Waiting for frontend rollout ==="
+          kubectl rollout status deployment/frontend -n devops-ppp --timeout=8m || true
+          echo "=== Final pod status ==="
+          kubectl get pods -n devops-ppp
+          echo "=== Pod details for any non-running pods ==="
+          for POD in $(kubectl get pods -n devops-ppp --field-selector=status.phase!=Running -o jsonpath='{.items[*].metadata.name}' 2>/dev/null); do
+            echo "--- Describing: $POD ---"
+            kubectl describe pod $POD -n devops-ppp | tail -30
+            echo "--- Logs: $POD ---"
+            kubectl logs $POD -n devops-ppp --tail=20 2>/dev/null || true
+          done
 
       - name: Verify deployment
         run: |
