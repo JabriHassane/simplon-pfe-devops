@@ -168,9 +168,36 @@ jobs:
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
 
-      - name: Update image in deployment files
+      - name: Generate Kubernetes Secrets from GitHub Secrets
         run: |
+          cat > k8s/secrets.yaml <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: app-secrets
+            namespace: devops-ppp
+          type: Opaque
+          stringData:
+            DATABASE_URL: "${{ secrets.DATABASE_URL }}"
+            JWT_SECRET: "${{ secrets.JWT_SECRET }}"
+            SQS_QUEUE_URL: "https://sqs.${{ env.AWS_REGION }}.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}/ppp-v4-production-queue"
+            AWS_REGION: "${{ env.AWS_REGION }}"
+          ---
+          apiVersion: v1
+          kind: ServiceAccount
+          metadata:
+            name: sqs-consumer
+            namespace: devops-ppp
+            annotations:
+              eks.amazonaws.com/role-arn: "arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ppp-v4-production-sqs-consumer-role"
+          EOF
+
+      - name: Update image references in deployment files
+        run: |
+          # Replace ECR registry placeholder with real registry
           sed -i "s|ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com|${{ env.ECR_REGISTRY }}|g" k8s/*.yaml
+          # Replace old ECR repo prefix with current one (ppp-v4)
+          sed -i "s|devops-ppp-production-|ppp-v4-production-|g" k8s/*.yaml
 
       - name: Apply Kubernetes manifests
         run: |
