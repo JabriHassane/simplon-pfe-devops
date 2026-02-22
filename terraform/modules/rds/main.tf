@@ -63,9 +63,7 @@ resource "aws_db_instance" "main" {
 
   skip_final_snapshot = true
 
-  enabled_cloudwatch_logs_exports = ["error", "general", "slowquery"]
-  performance_insights_enabled    = false
-  deletion_protection             = false
+  deletion_protection = false
 
   tags = merge(
     var.tags,
