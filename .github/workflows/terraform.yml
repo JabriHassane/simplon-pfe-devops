@@ -46,74 +46,46 @@ jobs:
 
       # -------------------------------------------------------
       # PRE-APPLY CLEANUP
-      # Deletes orphaned resources that exist in AWS but not in
-      # Terraform state (caused by previous partial applies).
-      # Also frees VPC slots used by prior failed deployments.
+      # Frees VPC slots consumed by prior failed deployments.
+      # NOTE: ppp-v4 IAM/CloudWatch are tracked in S3 state and
+      # must NOT be deleted here — that causes EKS recreation.
       # -------------------------------------------------------
-      - name: Pre-apply cleanup
+      - name: Pre-apply cleanup (free VPC slots from old deployments)
         run: |
-          echo "=== Clearing ppp-v4 orphaned IAM + CloudWatch (created by partial runs) ==="
-          for LG in /aws/ppp-v4/production/application /aws/ppp-v4/production/backend /aws/ppp-v4/production/frontend /aws/eks/ppp-v4-production-cluster/cluster; do
-            aws logs delete-log-group --log-group-name "$LG" 2>/dev/null && echo "Deleted log group: $LG" || true
-          done
-
-          for ROLE in ppp-v4-production-eks-cluster-role ppp-v4-production-eks-node-group-role ppp-v4-production-sqs-consumer-role; do
-            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy 2>/dev/null || true
-            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy 2>/dev/null || true
-            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy 2>/dev/null || true
-            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly 2>/dev/null || true
-            POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='ppp-v4-production-sqs-access-policy'].Arn" --output text 2>/dev/null || echo "")
-            [ -n "$POLICY_ARN" ] && [ "$POLICY_ARN" != "None" ] && aws iam detach-role-policy --role-name $ROLE --policy-arn $POLICY_ARN 2>/dev/null || true
-            aws iam delete-role --role-name $ROLE 2>/dev/null && echo "Deleted role: $ROLE" || true
-          done
-          POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='ppp-v4-production-sqs-access-policy'].Arn" --output text 2>/dev/null || echo "")
-          [ -n "$POLICY_ARN" ] && [ "$POLICY_ARN" != "None" ] && aws iam delete-policy --policy-arn $POLICY_ARN 2>/dev/null && echo "Deleted IAM policy" || true
-
-          echo "=== Freeing VPC slots from ppp-v2/ppp-v3/devops-ppp orphaned deployments ==="
           delete_vpc() {
             local VPC_ID=$1
             echo "  Tearing down VPC: $VPC_ID"
-            # Delete NAT Gateways and wait for them
-            NGW_LIST=""
             for NGW in $(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC_ID" "Name=state,Values=available,pending" --query 'NatGateways[*].NatGatewayId' --output text 2>/dev/null); do
-              [ "$NGW" != "None" ] && aws ec2 delete-nat-gateway --nat-gateway-id $NGW 2>/dev/null && NGW_LIST="$NGW_LIST $NGW" && echo "    Deleting NAT GW: $NGW"
+              [ "$NGW" != "None" ] && aws ec2 delete-nat-gateway --nat-gateway-id $NGW 2>/dev/null && echo "    Deleting NAT GW: $NGW" || true
             done
-            if [ -n "$NGW_LIST" ]; then
-              echo "    Waiting 50s for NAT Gateways to delete..."
-              sleep 50
-            fi
-            # Release unassociated EIPs
+            echo "    Waiting 50s for NAT Gateways to finish deleting..."
+            sleep 50
             for EIP in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].AllocationId' --output text 2>/dev/null); do
-              [ -n "$EIP" ] && [ "$EIP" != "None" ] && aws ec2 release-address --allocation-id $EIP 2>/dev/null && echo "    Released EIP: $EIP" || true
+              [ -n "$EIP" ] && [ "$EIP" != "None" ] && aws ec2 release-address --allocation-id $EIP 2>/dev/null || true
             done
-            # Detach + delete Internet Gateways
             for IGW in $(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC_ID" --query 'InternetGateways[*].InternetGatewayId' --output text 2>/dev/null); do
               [ -n "$IGW" ] && [ "$IGW" != "None" ] && aws ec2 detach-internet-gateway --internet-gateway-id $IGW --vpc-id $VPC_ID 2>/dev/null || true
-              [ -n "$IGW" ] && [ "$IGW" != "None" ] && aws ec2 delete-internet-gateway --internet-gateway-id $IGW 2>/dev/null && echo "    Deleted IGW: $IGW" || true
+              [ -n "$IGW" ] && [ "$IGW" != "None" ] && aws ec2 delete-internet-gateway --internet-gateway-id $IGW 2>/dev/null || true
             done
-            # Delete subnets
             for SUBNET in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[*].SubnetId' --output text 2>/dev/null); do
               [ -n "$SUBNET" ] && [ "$SUBNET" != "None" ] && aws ec2 delete-subnet --subnet-id $SUBNET 2>/dev/null || true
             done
-            # Delete non-main route tables
             for RT in $(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPC_ID" --query 'RouteTables[?length(Associations[?Main==`true`])==`0`].RouteTableId' --output text 2>/dev/null); do
               [ -n "$RT" ] && [ "$RT" != "None" ] && aws ec2 delete-route-table --route-table-id $RT 2>/dev/null || true
             done
-            # Delete non-default security groups
             for SG in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text 2>/dev/null); do
               [ -n "$SG" ] && [ "$SG" != "None" ] && aws ec2 delete-security-group --group-id $SG 2>/dev/null || true
             done
-            # Finally delete the VPC
-            aws ec2 delete-vpc --vpc-id $VPC_ID 2>/dev/null && echo "  ✓ Deleted VPC $VPC_ID" || echo "  ✗ Could not delete VPC $VPC_ID (may still have dependencies)"
+            aws ec2 delete-vpc --vpc-id $VPC_ID 2>/dev/null && echo "  Deleted VPC $VPC_ID" || echo "  Could not delete $VPC_ID (skipping)"
           }
 
           for PREFIX in devops-ppp ppp-v2 ppp-v3; do
             VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=${PREFIX}-production-vpc" --query 'Vpcs[0].VpcId' --output text 2>/dev/null)
             if [ -n "$VPC_ID" ] && [ "$VPC_ID" != "None" ]; then
-              echo "Found orphaned VPC for $PREFIX: $VPC_ID"
+              echo "Found orphaned VPC for $PREFIX: $VPC_ID — deleting"
               delete_vpc $VPC_ID
             else
-              echo "No orphaned VPC found for $PREFIX"
+              echo "No orphaned VPC for $PREFIX"
             fi
           done
           echo "=== Pre-apply cleanup complete ==="
