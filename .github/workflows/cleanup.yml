@@ -10,34 +10,50 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Cleanup Orphaned Roles and EIPs
+      - name: Cleanup All Regions
         run: |
-          echo "Deleting IAM Roles..."
-          aws iam detach-role-policy --role-name devops-ppp-production-eks-cluster-role --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy || true
-          aws iam delete-role --role-name devops-ppp-production-eks-cluster-role || true
-          
-          aws iam detach-role-policy --role-name devops-ppp-production-eks-node-group-role --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy || true
-          aws iam detach-role-policy --role-name devops-ppp-production-eks-node-group-role --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy || true
-          aws iam detach-role-policy --role-name devops-ppp-production-eks-node-group-role --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly || true
-          aws iam delete-role --role-name devops-ppp-production-eks-node-group-role || true
-          
-          POLICY=$(aws iam list-policies --query 'Policies[?PolicyName==`devops-ppp-production-sqs-access-policy`].Arn' --output text)
-          if [ -n "$POLICY" ]; then
-            aws iam detach-role-policy --role-name devops-ppp-production-sqs-consumer-role --policy-arn $POLICY || true
-            aws iam delete-policy --policy-arn $POLICY || true
-          fi
-          aws iam delete-role --role-name devops-ppp-production-sqs-consumer-role || true
-          
-          echo "Releasing orphaned Elastic IPs..."
-          for eip in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].AllocationId' --output text); do
-            echo "Releasing EIP: $eip"
-            aws ec2 release-address --allocation-id $eip || true
+          for REGION in "us-east-1" "us-east-2"; do
+            echo "--- Cleaning up region $REGION ---"
+            export AWS_DEFAULT_REGION=$REGION
+            
+            # Global Roles (Region independent but we can run them here, ignores if deleted)
+            for PREFIX in "devops-ppp" "ppp-v2"; do
+              for ROLE in "${PREFIX}-production-eks-cluster-role" "${PREFIX}-production-eks-node-group-role" "${PREFIX}-production-sqs-consumer-role"; do
+                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy >/dev/null 2>&1 || true
+                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy >/dev/null 2>&1 || true
+                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy >/dev/null 2>&1 || true
+                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly >/dev/null 2>&1 || true
+                
+                POLICY=$(aws iam list-policies --query "Policies[?PolicyName==\`${PREFIX}-production-sqs-access-policy\`].Arn" --output text 2>/dev/null || echo "")
+                if [ -n "$POLICY" ] && [ "$POLICY" != "None" ]; then
+                  aws iam detach-role-policy --role-name $ROLE --policy-arn $POLICY >/dev/null 2>&1 || true
+                fi
+                aws iam delete-role --role-name $ROLE >/dev/null 2>&1 || true
+              done
+              
+              POLICY=$(aws iam list-policies --query "Policies[?PolicyName==\`${PREFIX}-production-sqs-access-policy\`].Arn" --output text 2>/dev/null || echo "")
+              if [ -n "$POLICY" ] && [ "$POLICY" != "None" ]; then
+                aws iam delete-policy --policy-arn $POLICY >/dev/null 2>&1 || true
+              fi
+            done
+            
+            # Release orphaned EIPs in this region
+            for eip in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].AllocationId' --output text 2>/dev/null || echo ""); do
+              if [ -n "$eip" ] && [ "$eip" != "None" ]; then
+                echo "Releasing orphaned EIP: $eip"
+                aws ec2 release-address --allocation-id $eip >/dev/null 2>&1 || true
+              fi
+            done
+            
+            # Delete Log Groups and SQS
+            for PREFIX in "devops-ppp" "ppp-v2"; do
+              aws logs delete-log-group --log-group-name /aws/${PREFIX}/production/application >/dev/null 2>&1 || true
+              aws logs delete-log-group --log-group-name /aws/${PREFIX}/production/backend >/dev/null 2>&1 || true
+              aws logs delete-log-group --log-group-name /aws/${PREFIX}/production/frontend >/dev/null 2>&1 || true
+              aws logs delete-log-group --log-group-name /aws/eks/${PREFIX}-production-cluster/cluster >/dev/null 2>&1 || true
+              
+              aws sqs delete-queue --queue-url https://sqs.${REGION}.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}/${PREFIX}-production-dlq >/dev/null 2>&1 || true
+              aws sqs delete-queue --queue-url https://sqs.${REGION}.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}/${PREFIX}-production-queue >/dev/null 2>&1 || true
+            done
           done
-          
-          echo "Deleting Log Groups..."
-          aws logs delete-log-group --log-group-name /aws/devops-ppp/production/application || true
-          aws logs delete-log-group --log-group-name /aws/devops-ppp/production/backend || true
-          aws logs delete-log-group --log-group-name /aws/devops-ppp/production/frontend || true
-          aws logs delete-log-group --log-group-name /aws/eks/devops-ppp-production-cluster/cluster || true
-          
-          echo "DONE. Note: Please manually delete the VPC named 'devops-ppp-production-vpc' in the AWS Console (us-east-1)."
+          echo "DONE. Remember to manually delete the 'devops-ppp-production-vpc' (us-east-1) and 'ppp-v2-production-vpc' (us-east-2) in the AWS Console."
