@@ -9,19 +9,26 @@ on:
       - main
   workflow_dispatch:
 
+# Prevent concurrent runs — ensures only one terraform apply runs at a time
+# and subsequent pushes queue rather than triggering a parallel stale plan.
+concurrency:
+  group: terraform-deployment
+  cancel-in-progress: false
+
 env:
   AWS_REGION: us-east-2
   TF_VERSION: 1.5.0
   TF_STATE_BUCKET: ppp-tf-state-simplon-pfe-v4
 
 jobs:
-  terraform-plan:
-    name: Terraform Plan
+  terraform:
+    name: Terraform Apply
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     defaults:
       run:
         working-directory: ./terraform
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -43,10 +50,11 @@ jobs:
           aws s3api create-bucket \
             --bucket ${{ env.TF_STATE_BUCKET }} \
             --region ${{ env.AWS_REGION }} \
-            --create-bucket-configuration LocationConstraint=${{ env.AWS_REGION }} || echo "Bucket already exists"
+            --create-bucket-configuration LocationConstraint=${{ env.AWS_REGION }} 2>/dev/null \
+            && echo "Bucket created" || echo "Bucket already exists"
           aws s3api put-bucket-versioning \
             --bucket ${{ env.TF_STATE_BUCKET }} \
-            --versioning-configuration Status=Enabled || true
+            --versioning-configuration Status=Enabled 2>/dev/null || true
 
       - name: Terraform Init
         run: |
@@ -58,65 +66,50 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      # Import any ppp-v4 resources that were created in a previous partial run
+      # but are not yet tracked in state. This prevents "already exists" errors.
+      - name: Import existing resources into state
+        run: |
+          import_if_missing() {
+            local ADDR=$1
+            local ID=$2
+            terraform state show "$ADDR" >/dev/null 2>&1 && echo "Already in state: $ADDR" || \
+              terraform import "$ADDR" "$ID" 2>/dev/null && echo "Imported: $ADDR" || echo "Not found or import skipped: $ADDR"
+          }
 
+          # IAM Roles
+          aws iam get-role --role-name ppp-v4-production-eks-cluster-role >/dev/null 2>&1 && \
+            import_if_missing module.eks.aws_iam_role.cluster ppp-v4-production-eks-cluster-role || true
 
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
+          aws iam get-role --role-name ppp-v4-production-eks-node-group-role >/dev/null 2>&1 && \
+            import_if_missing module.eks.aws_iam_role.node_group ppp-v4-production-eks-node-group-role || true
+
+          aws iam get-role --role-name ppp-v4-production-sqs-consumer-role >/dev/null 2>&1 && \
+            import_if_missing module.iam.aws_iam_role.sqs_consumer ppp-v4-production-sqs-consumer-role || true
+
+          # IAM Policy
+          POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='ppp-v4-production-sqs-access-policy'].Arn" --output text 2>/dev/null || echo "")
+          if [ -n "$POLICY_ARN" ] && [ "$POLICY_ARN" != "None" ]; then
+            import_if_missing module.iam.aws_iam_policy.sqs_access "$POLICY_ARN" || true
+          fi
+
+          # CloudWatch Log Groups
+          aws logs describe-log-groups --log-group-name-prefix /aws/ppp-v4/production/application --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "application" && \
+            import_if_missing module.cloudwatch.aws_cloudwatch_log_group.app_logs /aws/ppp-v4/production/application || true
+
+          aws logs describe-log-groups --log-group-name-prefix /aws/ppp-v4/production/backend --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "backend" && \
+            import_if_missing module.cloudwatch.aws_cloudwatch_log_group.backend_logs /aws/ppp-v4/production/backend || true
+
+          aws logs describe-log-groups --log-group-name-prefix /aws/ppp-v4/production/frontend --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "frontend" && \
+            import_if_missing module.cloudwatch.aws_cloudwatch_log_group.frontend_logs /aws/ppp-v4/production/frontend || true
+
+          aws logs describe-log-groups --log-group-name-prefix /aws/eks/ppp-v4-production-cluster --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "cluster" && \
+            import_if_missing module.eks.aws_cloudwatch_log_group.eks_cluster /aws/eks/ppp-v4-production-cluster/cluster || true
+
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
-      - name: Upload Terraform Plan
-        uses: actions/upload-artifact@v4
-        with:
-          name: terraform-plan
-          path: terraform/tfplan
-
-  terraform-apply:
-    name: Terraform Apply
-    runs-on: ubuntu-latest
-    needs: terraform-plan
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    defaults:
-      run:
-        working-directory: ./terraform
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: ${{ env.TF_VERSION }}
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name: Download Terraform Plan
-        uses: actions/download-artifact@v4
-        with:
-          name: terraform-plan
-          path: terraform
-
-      - name: Create S3 state bucket
-        run: |
-          aws s3api create-bucket \
-            --bucket ${{ env.TF_STATE_BUCKET }} \
-            --region ${{ env.AWS_REGION }} \
-            --create-bucket-configuration LocationConstraint=${{ env.AWS_REGION }} || echo "Bucket already exists"
-
-      - name: Terraform Init
-        run: |
-          terraform init \
-            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
-            -backend-config="key=ppp-v4/terraform.tfstate" \
-            -backend-config="region=${{ env.AWS_REGION }}"
-
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform apply -auto-approve
         env:
           TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
