@@ -9,51 +9,114 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-      - name: Cleanup All Regions
+          aws-region: us-east-2
+
+      - name: Cleanup IAM Roles and Policies (global)
         run: |
-          for REGION in "us-east-1" "us-east-2"; do
-            echo "--- Cleaning up region $REGION ---"
-            export AWS_DEFAULT_REGION=$REGION
-            
-            # Global Roles (Region independent but we can run them here, ignores if deleted)
-            for PREFIX in "devops-ppp" "ppp-v2"; do
-              for ROLE in "${PREFIX}-production-eks-cluster-role" "${PREFIX}-production-eks-node-group-role" "${PREFIX}-production-sqs-consumer-role"; do
-                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy >/dev/null 2>&1 || true
-                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy >/dev/null 2>&1 || true
-                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy >/dev/null 2>&1 || true
-                aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly >/dev/null 2>&1 || true
-                
-                POLICY=$(aws iam list-policies --query "Policies[?PolicyName==\`${PREFIX}-production-sqs-access-policy\`].Arn" --output text 2>/dev/null || echo "")
-                if [ -n "$POLICY" ] && [ "$POLICY" != "None" ]; then
-                  aws iam detach-role-policy --role-name $ROLE --policy-arn $POLICY >/dev/null 2>&1 || true
-                fi
-                aws iam delete-role --role-name $ROLE >/dev/null 2>&1 || true
-              done
-              
+          for PREFIX in "devops-ppp" "ppp-v2" "ppp-v3"; do
+            echo "--- Cleaning IAM for prefix: $PREFIX ---"
+            for ROLE in "${PREFIX}-production-eks-cluster-role" "${PREFIX}-production-eks-node-group-role" "${PREFIX}-production-sqs-consumer-role"; do
+              aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy >/dev/null 2>&1 || true
+              aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy >/dev/null 2>&1 || true
+              aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy >/dev/null 2>&1 || true
+              aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly >/dev/null 2>&1 || true
               POLICY=$(aws iam list-policies --query "Policies[?PolicyName==\`${PREFIX}-production-sqs-access-policy\`].Arn" --output text 2>/dev/null || echo "")
               if [ -n "$POLICY" ] && [ "$POLICY" != "None" ]; then
-                aws iam delete-policy --policy-arn $POLICY >/dev/null 2>&1 || true
+                aws iam detach-role-policy --role-name $ROLE --policy-arn $POLICY >/dev/null 2>&1 || true
+              fi
+              aws iam delete-role --role-name $ROLE >/dev/null 2>&1 || true
+            done
+            POLICY=$(aws iam list-policies --query "Policies[?PolicyName==\`${PREFIX}-production-sqs-access-policy\`].Arn" --output text 2>/dev/null || echo "")
+            if [ -n "$POLICY" ] && [ "$POLICY" != "None" ]; then
+              aws iam delete-policy --policy-arn $POLICY >/dev/null 2>&1 || true
+            fi
+          done
+
+      - name: Cleanup Orphaned VPCs and all their dependencies
+        run: |
+          delete_vpc() {
+            local VPC_ID=$1
+            local REGION=$2
+            export AWS_DEFAULT_REGION=$REGION
+            echo "Deleting VPC $VPC_ID in $REGION..."
+
+            # 1. Delete NAT Gateways and wait
+            NGW_IDS=$(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC_ID" "Name=state,Values=available,pending" --query 'NatGateways[*].NatGatewayId' --output text 2>/dev/null || echo "")
+            for NGW in $NGW_IDS; do
+              echo "  Deleting NAT Gateway: $NGW"
+              aws ec2 delete-nat-gateway --nat-gateway-id $NGW >/dev/null 2>&1 || true
+            done
+            if [ -n "$NGW_IDS" ]; then
+              echo "  Waiting 60s for NAT Gateways to finish deleting..."
+              sleep 60
+            fi
+
+            # 2. Release unassociated EIPs
+            for EIP in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].AllocationId' --output text 2>/dev/null || echo ""); do
+              if [ -n "$EIP" ] && [ "$EIP" != "None" ]; then
+                echo "  Releasing EIP: $EIP"
+                aws ec2 release-address --allocation-id $EIP >/dev/null 2>&1 || true
               fi
             done
-            
-            # Release orphaned EIPs in this region
-            for eip in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].AllocationId' --output text 2>/dev/null || echo ""); do
-              if [ -n "$eip" ] && [ "$eip" != "None" ]; then
-                echo "Releasing orphaned EIP: $eip"
-                aws ec2 release-address --allocation-id $eip >/dev/null 2>&1 || true
+
+            # 3. Detach and delete Internet Gateways
+            for IGW in $(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC_ID" --query 'InternetGateways[*].InternetGatewayId' --output text 2>/dev/null || echo ""); do
+              echo "  Deleting IGW: $IGW"
+              aws ec2 detach-internet-gateway --internet-gateway-id $IGW --vpc-id $VPC_ID >/dev/null 2>&1 || true
+              aws ec2 delete-internet-gateway --internet-gateway-id $IGW >/dev/null 2>&1 || true
+            done
+
+            # 4. Delete subnets
+            for SUBNET in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[*].SubnetId' --output text 2>/dev/null || echo ""); do
+              echo "  Deleting subnet: $SUBNET"
+              aws ec2 delete-subnet --subnet-id $SUBNET >/dev/null 2>&1 || true
+            done
+
+            # 5. Delete non-main route table associations and route tables
+            for RT in $(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPC_ID" --query 'RouteTables[?length(Associations[?Main==`true`])==`0`].RouteTableId' --output text 2>/dev/null || echo ""); do
+              echo "  Deleting route table: $RT"
+              for ASSOC in $(aws ec2 describe-route-tables --route-table-ids $RT --query 'RouteTables[*].Associations[*].RouteTableAssociationId' --output text 2>/dev/null || echo ""); do
+                aws ec2 disassociate-route-table --association-id $ASSOC >/dev/null 2>&1 || true
+              done
+              aws ec2 delete-route-table --route-table-id $RT >/dev/null 2>&1 || true
+            done
+
+            # 6. Delete non-default security groups
+            for SG in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text 2>/dev/null || echo ""); do
+              echo "  Deleting security group: $SG"
+              aws ec2 delete-security-group --group-id $SG >/dev/null 2>&1 || true
+            done
+
+            # 7. Finally delete the VPC
+            aws ec2 delete-vpc --vpc-id $VPC_ID >/dev/null 2>&1 && echo "  VPC $VPC_ID deleted!" || echo "  Could not delete VPC $VPC_ID (may still have dependencies)"
+          }
+
+          for REGION in "us-east-1" "us-east-2"; do
+            export AWS_DEFAULT_REGION=$REGION
+            echo "=== Scanning for orphaned VPCs in $REGION ==="
+            for PREFIX in "devops-ppp" "ppp-v2" "ppp-v3"; do
+              VPC_ID=$(aws ec2 describe-vpcs \
+                --filters "Name=tag:Name,Values=${PREFIX}-production-vpc" \
+                --query 'Vpcs[0].VpcId' --output text 2>/dev/null || echo "None")
+              if [ -n "$VPC_ID" ] && [ "$VPC_ID" != "None" ]; then
+                delete_vpc $VPC_ID $REGION
+              else
+                echo "No VPC found for $PREFIX in $REGION"
               fi
             done
-            
-            # Delete Log Groups and SQS
-            for PREFIX in "devops-ppp" "ppp-v2"; do
+          done
+
+      - name: Cleanup Log Groups and SQS Queues
+        run: |
+          for REGION in "us-east-1" "us-east-2"; do
+            export AWS_DEFAULT_REGION=$REGION
+            for PREFIX in "devops-ppp" "ppp-v2" "ppp-v3"; do
               aws logs delete-log-group --log-group-name /aws/${PREFIX}/production/application >/dev/null 2>&1 || true
               aws logs delete-log-group --log-group-name /aws/${PREFIX}/production/backend >/dev/null 2>&1 || true
               aws logs delete-log-group --log-group-name /aws/${PREFIX}/production/frontend >/dev/null 2>&1 || true
               aws logs delete-log-group --log-group-name /aws/eks/${PREFIX}-production-cluster/cluster >/dev/null 2>&1 || true
-              
               aws sqs delete-queue --queue-url https://sqs.${REGION}.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}/${PREFIX}-production-dlq >/dev/null 2>&1 || true
               aws sqs delete-queue --queue-url https://sqs.${REGION}.amazonaws.com/${{ secrets.AWS_ACCOUNT_ID }}/${PREFIX}-production-queue >/dev/null 2>&1 || true
             done
           done
-          echo "DONE. Remember to manually delete the 'devops-ppp-production-vpc' (us-east-1) and 'ppp-v2-production-vpc' (us-east-2) in the AWS Console."
+          echo "DONE. All orphaned resources cleaned up."
