@@ -12,7 +12,7 @@ on:
 env:
   AWS_REGION: us-east-2
   ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-2.amazonaws.com
-  EKS_CLUSTER_NAME: ppp-v3-production-cluster
+  EKS_CLUSTER_NAME: ppp-v4-production-cluster
 
 jobs:
   # Build and Test
@@ -115,7 +115,7 @@ jobs:
       - name: Build, tag, and push backend image
         if: matrix.service == 'backend'
         env:
-          ECR_REPOSITORY: ppp-v3-production-backend
+          ECR_REPOSITORY: ppp-v4-production-backend
           IMAGE_TAG: ${{ steps.image-tag.outputs.tag }}
         run: |
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || aws ecr create-repository --repository-name $ECR_REPOSITORY
@@ -127,7 +127,7 @@ jobs:
       - name: Build, tag, and push frontend image
         if: matrix.service == 'frontend'
         env:
-          ECR_REPOSITORY: ppp-v3-production-frontend
+          ECR_REPOSITORY: ppp-v4-production-frontend
           IMAGE_TAG: ${{ steps.image-tag.outputs.tag }}
         run: |
           aws ecr describe-repositories --repository-names $ECR_REPOSITORY || aws ecr create-repository --repository-name $ECR_REPOSITORY

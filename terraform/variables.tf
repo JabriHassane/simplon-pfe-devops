@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "ppp-v3"
+  default     = "ppp-v4"
 }
 
 variable "environment" {
