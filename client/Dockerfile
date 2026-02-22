@@ -21,6 +21,10 @@ WORKDIR /app
 COPY client ./client
 COPY shared ./shared
 
+# Accept backend URL as build arg (baked into the React bundle at build time)
+ARG VITE_API_URL=http://localhost:8080
+ENV VITE_API_URL=$VITE_API_URL
+
 # Build the application
 WORKDIR /app/client
 RUN npm run build
