@@ -164,6 +164,27 @@ jobs:
         with:
           version: 'latest'
 
+      - name: Wait for EKS cluster to be ACTIVE
+        run: |
+          echo "Polling EKS cluster status (up to 20 minutes)..."
+          for i in $(seq 1 40); do
+            STATUS=$(aws eks describe-cluster --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }} --query 'cluster.status' --output text 2>/dev/null || echo "NOT_FOUND")
+            echo "[$i/40] Cluster status: $STATUS"
+            if [ "$STATUS" = "ACTIVE" ]; then
+              echo "Cluster is ACTIVE — proceeding with deploy!"
+              break
+            fi
+            if [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "NOT_FOUND" ]; then
+              echo "Cluster is in '$STATUS' state — cannot deploy"
+              exit 1
+            fi
+            sleep 30
+          done
+          if [ "$STATUS" != "ACTIVE" ]; then
+            echo "Timed out waiting for cluster to become ACTIVE"
+            exit 1
+          fi
+
       - name: Update kubeconfig
         run: |
           aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
