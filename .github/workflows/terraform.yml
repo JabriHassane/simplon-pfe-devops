@@ -9,8 +9,7 @@ on:
       - main
   workflow_dispatch:
 
-# Prevent concurrent runs — ensures only one terraform apply runs at a time
-# and subsequent pushes queue rather than triggering a parallel stale plan.
+# Prevent concurrent runs so state is never written by two jobs simultaneously
 concurrency:
   group: terraform-deployment
   cancel-in-progress: false
@@ -45,13 +44,87 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
+      # -------------------------------------------------------
+      # PRE-APPLY CLEANUP
+      # Deletes orphaned resources that exist in AWS but not in
+      # Terraform state (caused by previous partial applies).
+      # Also frees VPC slots used by prior failed deployments.
+      # -------------------------------------------------------
+      - name: Pre-apply cleanup
+        run: |
+          echo "=== Clearing ppp-v4 orphaned IAM + CloudWatch (created by partial runs) ==="
+          for LG in /aws/ppp-v4/production/application /aws/ppp-v4/production/backend /aws/ppp-v4/production/frontend /aws/eks/ppp-v4-production-cluster/cluster; do
+            aws logs delete-log-group --log-group-name "$LG" 2>/dev/null && echo "Deleted log group: $LG" || true
+          done
+
+          for ROLE in ppp-v4-production-eks-cluster-role ppp-v4-production-eks-node-group-role ppp-v4-production-sqs-consumer-role; do
+            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSClusterPolicy 2>/dev/null || true
+            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy 2>/dev/null || true
+            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy 2>/dev/null || true
+            aws iam detach-role-policy --role-name $ROLE --policy-arn arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly 2>/dev/null || true
+            POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='ppp-v4-production-sqs-access-policy'].Arn" --output text 2>/dev/null || echo "")
+            [ -n "$POLICY_ARN" ] && [ "$POLICY_ARN" != "None" ] && aws iam detach-role-policy --role-name $ROLE --policy-arn $POLICY_ARN 2>/dev/null || true
+            aws iam delete-role --role-name $ROLE 2>/dev/null && echo "Deleted role: $ROLE" || true
+          done
+          POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='ppp-v4-production-sqs-access-policy'].Arn" --output text 2>/dev/null || echo "")
+          [ -n "$POLICY_ARN" ] && [ "$POLICY_ARN" != "None" ] && aws iam delete-policy --policy-arn $POLICY_ARN 2>/dev/null && echo "Deleted IAM policy" || true
+
+          echo "=== Freeing VPC slots from ppp-v2/ppp-v3/devops-ppp orphaned deployments ==="
+          delete_vpc() {
+            local VPC_ID=$1
+            echo "  Tearing down VPC: $VPC_ID"
+            # Delete NAT Gateways and wait for them
+            NGW_LIST=""
+            for NGW in $(aws ec2 describe-nat-gateways --filter "Name=vpc-id,Values=$VPC_ID" "Name=state,Values=available,pending" --query 'NatGateways[*].NatGatewayId' --output text 2>/dev/null); do
+              [ "$NGW" != "None" ] && aws ec2 delete-nat-gateway --nat-gateway-id $NGW 2>/dev/null && NGW_LIST="$NGW_LIST $NGW" && echo "    Deleting NAT GW: $NGW"
+            done
+            if [ -n "$NGW_LIST" ]; then
+              echo "    Waiting 50s for NAT Gateways to delete..."
+              sleep 50
+            fi
+            # Release unassociated EIPs
+            for EIP in $(aws ec2 describe-addresses --query 'Addresses[?AssociationId==null].AllocationId' --output text 2>/dev/null); do
+              [ -n "$EIP" ] && [ "$EIP" != "None" ] && aws ec2 release-address --allocation-id $EIP 2>/dev/null && echo "    Released EIP: $EIP" || true
+            done
+            # Detach + delete Internet Gateways
+            for IGW in $(aws ec2 describe-internet-gateways --filters "Name=attachment.vpc-id,Values=$VPC_ID" --query 'InternetGateways[*].InternetGatewayId' --output text 2>/dev/null); do
+              [ -n "$IGW" ] && [ "$IGW" != "None" ] && aws ec2 detach-internet-gateway --internet-gateway-id $IGW --vpc-id $VPC_ID 2>/dev/null || true
+              [ -n "$IGW" ] && [ "$IGW" != "None" ] && aws ec2 delete-internet-gateway --internet-gateway-id $IGW 2>/dev/null && echo "    Deleted IGW: $IGW" || true
+            done
+            # Delete subnets
+            for SUBNET in $(aws ec2 describe-subnets --filters "Name=vpc-id,Values=$VPC_ID" --query 'Subnets[*].SubnetId' --output text 2>/dev/null); do
+              [ -n "$SUBNET" ] && [ "$SUBNET" != "None" ] && aws ec2 delete-subnet --subnet-id $SUBNET 2>/dev/null || true
+            done
+            # Delete non-main route tables
+            for RT in $(aws ec2 describe-route-tables --filters "Name=vpc-id,Values=$VPC_ID" --query 'RouteTables[?length(Associations[?Main==`true`])==`0`].RouteTableId' --output text 2>/dev/null); do
+              [ -n "$RT" ] && [ "$RT" != "None" ] && aws ec2 delete-route-table --route-table-id $RT 2>/dev/null || true
+            done
+            # Delete non-default security groups
+            for SG in $(aws ec2 describe-security-groups --filters "Name=vpc-id,Values=$VPC_ID" --query 'SecurityGroups[?GroupName!=`default`].GroupId' --output text 2>/dev/null); do
+              [ -n "$SG" ] && [ "$SG" != "None" ] && aws ec2 delete-security-group --group-id $SG 2>/dev/null || true
+            done
+            # Finally delete the VPC
+            aws ec2 delete-vpc --vpc-id $VPC_ID 2>/dev/null && echo "  ✓ Deleted VPC $VPC_ID" || echo "  ✗ Could not delete VPC $VPC_ID (may still have dependencies)"
+          }
+
+          for PREFIX in devops-ppp ppp-v2 ppp-v3; do
+            VPC_ID=$(aws ec2 describe-vpcs --filters "Name=tag:Name,Values=${PREFIX}-production-vpc" --query 'Vpcs[0].VpcId' --output text 2>/dev/null)
+            if [ -n "$VPC_ID" ] && [ "$VPC_ID" != "None" ]; then
+              echo "Found orphaned VPC for $PREFIX: $VPC_ID"
+              delete_vpc $VPC_ID
+            else
+              echo "No orphaned VPC found for $PREFIX"
+            fi
+          done
+          echo "=== Pre-apply cleanup complete ==="
+
       - name: Create S3 state bucket
         run: |
           aws s3api create-bucket \
             --bucket ${{ env.TF_STATE_BUCKET }} \
             --region ${{ env.AWS_REGION }} \
             --create-bucket-configuration LocationConstraint=${{ env.AWS_REGION }} 2>/dev/null \
-            && echo "Bucket created" || echo "Bucket already exists"
+            && echo "Bucket created" || echo "Bucket already exists (ok)"
           aws s3api put-bucket-versioning \
             --bucket ${{ env.TF_STATE_BUCKET }} \
             --versioning-configuration Status=Enabled 2>/dev/null || true
@@ -65,49 +138,6 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
-
-      # Import any ppp-v4 resources that were created in a previous partial run
-      # but are not yet tracked in state. This prevents "already exists" errors.
-      - name: Import existing resources into state
-        run: |
-          import_if_missing() {
-            local ADDR=$1
-            local ID=$2
-            terraform state show "$ADDR" >/dev/null 2>&1 && echo "Already in state: $ADDR" || \
-              terraform import "$ADDR" "$ID" 2>/dev/null && echo "Imported: $ADDR" || echo "Not found or import skipped: $ADDR"
-          }
-
-          # IAM Roles
-          aws iam get-role --role-name ppp-v4-production-eks-cluster-role >/dev/null 2>&1 && \
-            import_if_missing module.eks.aws_iam_role.cluster ppp-v4-production-eks-cluster-role || true
-
-          aws iam get-role --role-name ppp-v4-production-eks-node-group-role >/dev/null 2>&1 && \
-            import_if_missing module.eks.aws_iam_role.node_group ppp-v4-production-eks-node-group-role || true
-
-          aws iam get-role --role-name ppp-v4-production-sqs-consumer-role >/dev/null 2>&1 && \
-            import_if_missing module.iam.aws_iam_role.sqs_consumer ppp-v4-production-sqs-consumer-role || true
-
-          # IAM Policy
-          POLICY_ARN=$(aws iam list-policies --query "Policies[?PolicyName=='ppp-v4-production-sqs-access-policy'].Arn" --output text 2>/dev/null || echo "")
-          if [ -n "$POLICY_ARN" ] && [ "$POLICY_ARN" != "None" ]; then
-            import_if_missing module.iam.aws_iam_policy.sqs_access "$POLICY_ARN" || true
-          fi
-
-          # CloudWatch Log Groups
-          aws logs describe-log-groups --log-group-name-prefix /aws/ppp-v4/production/application --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "application" && \
-            import_if_missing module.cloudwatch.aws_cloudwatch_log_group.app_logs /aws/ppp-v4/production/application || true
-
-          aws logs describe-log-groups --log-group-name-prefix /aws/ppp-v4/production/backend --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "backend" && \
-            import_if_missing module.cloudwatch.aws_cloudwatch_log_group.backend_logs /aws/ppp-v4/production/backend || true
-
-          aws logs describe-log-groups --log-group-name-prefix /aws/ppp-v4/production/frontend --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "frontend" && \
-            import_if_missing module.cloudwatch.aws_cloudwatch_log_group.frontend_logs /aws/ppp-v4/production/frontend || true
-
-          aws logs describe-log-groups --log-group-name-prefix /aws/eks/ppp-v4-production-cluster --query 'logGroups[0].logGroupName' --output text 2>/dev/null | grep -q "cluster" && \
-            import_if_missing module.eks.aws_cloudwatch_log_group.eks_cluster /aws/eks/ppp-v4-production-cluster/cluster || true
-
-        env:
-          TF_VAR_db_password: ${{ secrets.DB_PASSWORD }}
 
       - name: Terraform Apply
         run: terraform apply -auto-approve
